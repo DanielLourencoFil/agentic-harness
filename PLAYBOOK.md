@@ -138,6 +138,38 @@ startup (fail fast); errors are handled paths with consistent shapes, no stack l
 
 ---
 
+## PIPELINE (CI is universal; CD scales with the surface)
+
+**Universal CI (every project):**
+- CI runs `verify` on **every push AND every pull_request** — never PR-only. (Lesson learned:
+  PR-only triggers + a direct-push workflow = deploys from commits that never ran CI.)
+- **Hermetic CI:** no cloud dependencies, no shared state. Ephemeral services (DB/Redis as
+  workflow `services:`) when needed; a runtime guard that rejects cloud URLs in test env.
+- **Branch protection + required status check** on the main branch — merge is physically
+  blocked without green CI. Don't rename the required job (it's pinned by name in the rule).
+- Hygiene: `concurrency: cancel-in-progress`, a job timeout, skip dependabot actors.
+- Known pitfall: `paths-ignore` + required checks can leave docs-only PRs stuck on a pending
+  check (GitHub's workaround: a no-op job with the same name). Prefer no path filtering
+  unless CI cost is real.
+- Weekly dependency audit job (`pnpm audit --prod --audit-level=high`).
+
+**CD — frontend-only (SPA/static):**
+- Platform auto-deploy (Vercel/Netlify) from green main + **preview deploy per PR**. That is
+  the whole pipeline — do not add ceremony.
+
+**CD — backend/DB surface pack (add when the surface exists):**
+- **One artifact, config via env** — the same container image runs in every region/env;
+  behavior differs only by environment variables.
+- **Migrations tested in CI** (apply to the ephemeral DB before tests) and **applied at
+  release** (`migrate deploy` at container startup is fine for single-instance platforms;
+  use a release phase/job when instances scale horizontally).
+- Deploy only from green: enable the platform's "wait for CI" check, or deploy via a
+  workflow that depends on the verify job.
+- Post-deploy: a health endpoint checked after release; rollback = redeploy previous image
+  (know the platform's mechanism before you need it).
+
+---
+
 ## KICKOFF CHECKLIST (execute at project start, after layers are chosen)
 
 1. **Scaffold + harness first, features second.** Copy the language template

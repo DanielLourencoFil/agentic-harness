@@ -165,6 +165,11 @@ startup (fail fast); errors are handled paths with consistent shapes, no stack l
   reviewing the diff, and arming `gh pr merge --auto`. Never combine an auto-fixing bot with
   pre-armed auto-merge such that unreviewed code can merge — 100% of the *work* automated,
   100% of the *decision* human ("never ship what you don't understand").
+- **Commit/push rite — automatic, never asked.** The agent commits atomically (gated by
+  verify) and pushes the work branch without asking; pushing a work branch has no
+  irreversible consequence once branch protection walls the default branch, force-push is
+  denied, and secrets are read-blocked. The ask-worthy act is the **merge**, not the push.
+  Team context: identical, plus required approvals ≥1 on the PR.
 - **Solo flow:** work branch → PR → agent-watched CI → human reviews diff and arms auto-merge
   → merges on green → platform deploys from main.
 
@@ -197,8 +202,11 @@ startup (fail fast); errors are handled paths with consistent shapes, no stack l
    learning stays private; never `git add -f` them).
 4. **`.claude/settings.json` baseline:**
    - deny **read** on `.env`, `.env.*` (secrets — the agent never sees them);
-   - `ask` on `git commit` / `git push`; deny `--no-verify` and force-push;
-   - deny pushing/merging to the default branch (the agent opens PRs — the human merges);
+   - **allow** `git commit` and `git push` to work branches — the commit/push rite is
+     automatic, never asked (safe because verify gates commits, branch protection walls
+     master, and force-push is denied);
+   - deny `--no-verify`, force-push, and pushing/merging to the default branch
+     (the agent opens PRs — the human merges);
    - file lockdown (deny **write**, keep read) only later, when a critical file stabilizes.
 5. **CI** wired and green before the first feature (verify runs on every push/PR).
 6. **Branch protection — server-side, scripted (if the repo is on GitHub):** apply a ruleset

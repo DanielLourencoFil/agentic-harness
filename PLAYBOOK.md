@@ -198,9 +198,17 @@ startup (fail fast); errors are handled paths with consistent shapes, no stack l
 4. **`.claude/settings.json` baseline:**
    - deny **read** on `.env`, `.env.*` (secrets — the agent never sees them);
    - `ask` on `git commit` / `git push`; deny `--no-verify` and force-push;
+   - deny pushing/merging to the default branch (the agent opens PRs — the human merges);
    - file lockdown (deny **write**, keep read) only later, when a critical file stabilizes.
 5. **CI** wired and green before the first feature (verify runs on every push/PR).
-6. Skills: create none by default. Only add a **task-named** skill when a heavy recurring
+6. **Branch protection — server-side, scripted (if the repo is on GitHub):** apply a ruleset
+   via `gh api repos/{owner}/{repo}/rulesets` — require PR (0 approvals when solo — you can't
+   approve your own PR; the real gate is the required check + the human clicking merge),
+   `non_fast_forward` (no force-push), `deletion`. After the first CI run exists, add the
+   verify job as a **required status check**. This binds *everyone* — human, local agent,
+   bots — even if local settings fail. (Free on public repos; private needs a paid plan.)
+   Agent may **open** PRs; merging to the default branch is always the human's act.
+7. Skills: create none by default. Only add a **task-named** skill when a heavy recurring
    procedure with a script emerges (see Mechanism selection).
 
 ## ROUTINE — feature loop (every feature, no exceptions)

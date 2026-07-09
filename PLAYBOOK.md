@@ -153,11 +153,20 @@ startup (fail fast); errors are handled paths with consistent shapes, no stack l
   unless CI cost is real.
 - Weekly dependency audit job (`pnpm audit --prod --audit-level=high`).
 - **CI is confirmation, not discovery.** If CI goes red often, the local gate is too weak —
-  run full `verify` on pre-push/pre-commit so red CI is rare. On a red run, the agent reads
-  the log itself (`gh run view --log-failed`) — the human never copy-pastes errors.
-- **Solo flow:** work branch → PR with `gh pr merge --auto` armed → merges itself on green →
-  platform deploys from main. The only manual step left is the one that should be manual:
-  reviewing the diff and deciding the PR exists.
+  run full `verify` on pre-push/pre-commit so red CI is rare.
+- **Automation by default: whatever can be automated, is.** The red-CI loop has two layers:
+  - *In-session:* after any push, the agent watches the run in the background (`gh run watch`)
+    and on failure reads `gh run view --log-failed` and fixes — the human neither reports the
+    failure nor pastes logs.
+  - *Out-of-session (optional):* a `workflow_run`-on-failure trigger invokes a coding-agent
+    action that diagnoses the failed log and pushes a fix to the PR branch — the repo heals
+    itself while the human is away. (Needs an API token secret; costs credits.)
+- **The boundary that stays manual — by principle, not by limitation:** deciding a PR exists,
+  reviewing the diff, and arming `gh pr merge --auto`. Never combine an auto-fixing bot with
+  pre-armed auto-merge such that unreviewed code can merge — 100% of the *work* automated,
+  100% of the *decision* human ("never ship what you don't understand").
+- **Solo flow:** work branch → PR → agent-watched CI → human reviews diff and arms auto-merge
+  → merges on green → platform deploys from main.
 
 **CD — frontend-only (SPA/static):**
 - Platform auto-deploy (Vercel/Netlify) from green main + **preview deploy per PR**. That is

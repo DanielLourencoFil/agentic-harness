@@ -206,7 +206,7 @@ that never fires).
 
 ## Roadmap (assets to extract as stacks get used)
 
-- `ts-base` ✅ (unvalidated until first consumption — validate in OrgLab Fase 0)
+- `ts-base` ✅
 - `vue-starter` = ts-base + Vue module → **extract during OrgLab Fase 0**
 - `react-starter`, `nest-base` → extract on first real use, not before
 - Later: push starters as GitHub template repos (`degit`)

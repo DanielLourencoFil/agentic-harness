@@ -41,8 +41,8 @@ below, `pnpm install`. Framework modules (Vue/React/Nest) layer **on top** (see
 3. `pnpm install` (pin the versions it resolves), then `chmod +x .husky/pre-commit`.
 4. `pnpm verify` must be green on an empty project before writing any feature code.
 
-## Status
+## Evolution
 
-**Baseline — not yet validated in a real run.** It gets proven the first time a project
-consumes it (OrgLab, Fase 0). After that it's the trusted `ts-starter`; `vue-starter` =
-this + the Vue module. Later, push as a GitHub template and `degit` it.
+Validated through consumption — every project that uses it feeds fixes back here.
+Next extraction: `vue-starter` = this + the Vue framework module (see `PLAYBOOK.md`,
+Layer 2). Later: publish starters as GitHub template repos (`degit`).

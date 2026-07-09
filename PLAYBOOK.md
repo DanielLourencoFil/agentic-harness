@@ -173,6 +173,17 @@ startup (fail fast); errors are handled paths with consistent shapes, no stack l
 - **Solo flow:** work branch → PR → agent-watched CI → human reviews diff and arms auto-merge
   → merges on green → platform deploys from main.
 
+**Cost hygiene (matters at company scale; learned by blowing a deploy quota in 10 days):**
+- **Decouple CI from CD: CI runs per push, deploy runs per merge.** Push = save/verify
+  (cheap, frequent); merge = publish (expensive, deliberate). Never wire the deploy platform
+  to every push of a working branch — that coupling is both a cost and a risk defect.
+- Order steps cheap→expensive (typecheck/lint → tests → build) and fail fast; cache hard
+  (package store, build cache, generated clients, Docker layers); `cancel-in-progress`.
+- A strong local gate cuts red runs, which cuts re-runs (CI as confirmation).
+- Expensive infra deploys deliberately: on merge to main, or batched by tag/release.
+- Company context: engineer time >> CI minutes — never optimize cents at the cost of dev
+  friction; the levers that matter at scale are self-hosted runners and public-repo Actions.
+
 **CD — frontend-only (SPA/static):**
 - Platform auto-deploy (Vercel/Netlify) from green main + **preview deploy per PR**. That is
   the whole pipeline — do not add ceremony.

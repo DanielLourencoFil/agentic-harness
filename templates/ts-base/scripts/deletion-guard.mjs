@@ -8,7 +8,8 @@ const diff = execSync("git diff --cached --numstat", { encoding: "utf8" });
 let deleted = 0;
 for (const line of diff.split("\n")) {
   const [, del, file] = line.split("\t");
-  if (!file || file.includes("lock")) continue; // ignore lockfiles
+  if (!file || /(^|\/)(pnpm-lock\.yaml|package-lock\.json|yarn\.lock)$/.test(file))
+    continue; // ignore lockfiles only — not any file with "lock" in its name
   const n = Number(del);
   if (!Number.isNaN(n)) deleted += n;
 }

@@ -18,5 +18,10 @@ export default tseslint.config(
       "no-console": "error",
     },
   },
+  {
+    // Plain JS (scripts/, configs) — typed rules would fail on files outside tsconfig.
+    files: ["**/*.{js,mjs,cjs}"],
+    ...tseslint.configs.disableTypeChecked,
+  },
   { ignores: ["dist/", "coverage/", "node_modules/", "**/*.config.*"] },
 );

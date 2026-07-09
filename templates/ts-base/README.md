@@ -32,8 +32,8 @@ below, `pnpm install`. Framework modules (Vue/React/Nest) layer **on top** (see
   "lint-staged": { "*.{ts,tsx,json,md,css}": "prettier --write" },
   "devDependencies": {
     "@eslint/js": "^9", "typescript-eslint": "^8", "eslint": "^9",
-    "prettier": "^3", "vitest": "^3", "@vitest/coverage-v8": "^3",
-    "husky": "^9", "lint-staged": "^16", "typescript": "^5"
+    "prettier": "^3", "vitest": "^4", "@vitest/coverage-v8": "^4",
+    "husky": "^9", "lint-staged": "^17", "typescript": "^5"
   }
 }
 ```

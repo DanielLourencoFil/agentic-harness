@@ -11,6 +11,7 @@ project kickoff.
 ```
 agentic-harness/
 ├── PLAYBOOK.md          # the assembly spec an AI reads at project kickoff
+├── scripts/selftest.sh  # consumes ts-base as documented; run by CI on every push
 └── templates/
     └── ts-base/         # the TypeScript quality cage — copy, don't rebuild
 ```
@@ -52,5 +53,7 @@ bugs).
    the semantic gap is closed by owned test scenarios and human review.
 4. **Knowing ≠ applying.** Maturity is choosing which practices *not* to use.
 
-Battle-tested across my projects, including a production SaaS. Continuously refined —
-each project feeds lessons back into the playbook.
+Distilled from my projects, including a production SaaS, and held to its own standard:
+this repo's CI runs `scripts/selftest.sh`, which consumes the template exactly as its
+README instructs — the template's claims are gates, not prose. Each project feeds
+lessons back into the playbook.

@@ -1,4 +1,5 @@
 import js from "@eslint/js";
+import globals from "globals";
 import tseslint from "typescript-eslint";
 
 // Force layer: objective, local constraints the AI cannot argue its way past.
@@ -22,6 +23,13 @@ export default tseslint.config(
     // Plain JS (scripts/, configs) — typed rules would fail on files outside tsconfig.
     files: ["**/*.{js,mjs,cjs}"],
     ...tseslint.configs.disableTypeChecked,
+  },
+  {
+    // Node CLI scripts: they run under Node (process/console are real globals) and
+    // console IS their interface — `no-console` targets application code, not tooling.
+    files: ["scripts/**/*.{js,mjs,cjs}"],
+    languageOptions: { globals: globals.node },
+    rules: { "no-console": "off" },
   },
   { ignores: ["dist/", "coverage/", "node_modules/", "**/*.config.*"] },
 );

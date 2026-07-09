@@ -53,12 +53,20 @@ tool/test/hook, wire it; only what cannot be reified goes into CLAUDE.md as conv
 ## Layer 1 — TypeScript (any TS project)
 
 **Template: copy `~/Dev/agentic-harness/templates/ts-base/` — do not rebuild.** It contains:
-- `tsconfig` strict + `noUncheckedIndexedAccess`, `noImplicitOverride`, `verbatimModuleSyntax`.
+- `tsconfig` strict + `noUncheckedIndexedAccess`, `noImplicitOverride`, `verbatimModuleSyntax`
+  (base + a consumable `tsconfig.json` that always has ≥1 input, so empty-scaffold typecheck
+  is green).
 - ESLint (flat, typed): `strictTypeChecked` + as **errors**: `no-explicit-any`,
   `no-floating-promises`, `ban-ts-comment`, `complexity: 10`, `max-lines-per-function: 60`,
-  `max-lines: 300`, `no-console`.
-- Vitest (coverage as diagnostic, no threshold) · Husky pre-commit (deletion-guard →
-  lint-staged → verify) · CI workflow running verify.
+  `max-lines: 300`, `no-console` (CLI scripts in `scripts/**` exempt — console is their
+  interface — and given Node globals).
+- Vitest (coverage as diagnostic, no threshold; `passWithNoTests` so the empty scaffold
+  verifies green — inert once the first real test lands) · Husky pre-commit (deletion-guard →
+  lint-staged → verify) · `.gitignore` (deps/build/secrets + privacy block) · CI running
+  verify on every push + PR with the hygiene below, plus a weekly audit workflow.
+- The template's claims are **enforced by `scripts/selftest.sh`** (run in this repo's CI):
+  it consumes the template exactly as the README instructs and fails if empty-scaffold
+  verify, the commit #1 hook, or the deletion guard regress.
 
 **Convention:** rely on inference internally; explicit types at public boundaries. `unknown` +
 narrowing instead of `any`. Runtime validation at trust boundaries is schema-first (**Zod**),
@@ -203,14 +211,17 @@ startup (fail fast); errors are handled paths with consistent shapes, no stack l
 
 ## KICKOFF CHECKLIST (execute at project start, after layers are chosen)
 
-1. **Scaffold + harness first, features second.** Copy the language template
-   (`~/Dev/agentic-harness/templates/ts-base/`), add framework module rules, get `pnpm verify` green on the
-   empty scaffold. Commit #1 = "chore: scaffold + guardrails".
+1. **Scaffold + harness first, features second.** `git init` **before** `pnpm install`
+   (husky's prepare needs `.git` and fails silently without it — hooks never install).
+   Copy the language template (`~/Dev/agentic-harness/templates/ts-base/`), add framework
+   module rules, get `pnpm verify` green on the empty scaffold. Commit #1 = "chore: scaffold
+   + guardrails", **including `pnpm-lock.yaml`** (CI uses `--frozen-lockfile`).
 2. **Docs skeleton:** `docs/SPEC.md` (what/why/scope in-out) · `docs/DECISIONS.md` (dated
    one-line ADRs) · `AGENT-LOG.md` (public: where the agent helped/failed) · project
    `CLAUDE.md` (only conventions the tooling cannot enforce — no duplication of lint rules).
-3. **`.gitignore` privacy block** from day one: `INTERVIEW-NOTES.md`, `/notes/` (personal
-   learning stays private; never `git add -f` them).
+3. **`.gitignore` from day one** — the template ships it (deps/build/coverage, `.env*`,
+   and the privacy block: `INTERVIEW-NOTES.md`, `/notes/` — personal learning stays
+   private; never `git add -f` them). Extend, don't remove entries.
 4. **`.claude/settings.json` baseline:**
    - deny **read** on `.env`, `.env.*` (secrets — the agent never sees them);
    - **allow** `git commit` and `git push` to work branches — the commit/push rite is

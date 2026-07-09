@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+*.local
+
+# Secrets — never committed; the agent is also read-blocked on these
+.env
+.env.*
+
+# Private — personal learning / interview prep (never `git add -f`)
+/notes/
+INTERVIEW-NOTES.md

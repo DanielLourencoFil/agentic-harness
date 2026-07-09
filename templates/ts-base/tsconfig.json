@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.base.json",
+  // vitest.config.ts listed explicitly so an EMPTY scaffold still has one input
+  // (tsc errors with TS18003 when include matches nothing).
+  "include": ["src", "tests", "vitest.config.ts"]
+}

@@ -1,0 +1,23 @@
+name: Selftest
+# The harness eats its own dog food: every change to the template must survive
+# the exact consumption path the README documents.
+on:
+  push:
+  pull_request:
+concurrency:
+  group: selftest-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  selftest:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: bash scripts/selftest.sh

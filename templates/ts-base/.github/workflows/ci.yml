@@ -1,16 +1,23 @@
 name: CI
+# Every push AND every pull_request — never PR-only (a work-branch push with no PR
+# open must still run CI). A branch with an open PR runs twice (branch + merge
+# preview); accepted — engineer time >> CI minutes.
 on:
   push:
-    branches: [main]
   pull_request:
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   verify:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
       - uses: actions/setup-node@v4
         with:
           node-version: 22

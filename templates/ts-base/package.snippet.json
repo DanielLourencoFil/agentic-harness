@@ -1,0 +1,23 @@
+{
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "verify": "pnpm typecheck && pnpm lint && pnpm test",
+    "prepare": "husky"
+  },
+  "lint-staged": { "*.{ts,tsx,json,md,css}": "prettier --write" },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "typescript-eslint": "^8",
+    "eslint": "^9",
+    "globals": "^16",
+    "prettier": "^3",
+    "vitest": "^4",
+    "@vitest/coverage-v8": "^4",
+    "husky": "^9",
+    "lint-staged": "^17",
+    "typescript": "^5"
+  }
+}

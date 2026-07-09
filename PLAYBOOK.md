@@ -152,6 +152,12 @@ startup (fail fast); errors are handled paths with consistent shapes, no stack l
   check (GitHub's workaround: a no-op job with the same name). Prefer no path filtering
   unless CI cost is real.
 - Weekly dependency audit job (`pnpm audit --prod --audit-level=high`).
+- **CI is confirmation, not discovery.** If CI goes red often, the local gate is too weak —
+  run full `verify` on pre-push/pre-commit so red CI is rare. On a red run, the agent reads
+  the log itself (`gh run view --log-failed`) — the human never copy-pastes errors.
+- **Solo flow:** work branch → PR with `gh pr merge --auto` armed → merges itself on green →
+  platform deploys from main. The only manual step left is the one that should be manual:
+  reviewing the diff and deciding the PR exists.
 
 **CD — frontend-only (SPA/static):**
 - Platform auto-deploy (Vercel/Netlify) from green main + **preview deploy per PR**. That is

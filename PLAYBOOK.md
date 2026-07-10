@@ -178,6 +178,14 @@ startup (fail fast); errors are handled paths with consistent shapes, no stack l
   irreversible consequence once branch protection walls the default branch, force-push is
   denied, and secrets are read-blocked. The ask-worthy act is the **merge**, not the push.
   Team context: identical, plus required approvals ≥1 on the PR.
+- **Parallel agent sessions must never share a git index.** Git has one staging area per
+  worktree; two agents adding/committing concurrently sweep each other's staged files
+  into mislabeled commits (learned the hard way: a parallel session's 10 files landed
+  under another session's lockdown commit message, and a timed-out hook left HEAD with a
+  test referencing imports it didn't have). Rules: when the repo may be shared, commit
+  with **explicit paths only** (`git commit -- <paths>`, never trusting the shared
+  index), or give each session its **own worktree**. Shared history is never rewritten
+  to fix a collision; fix forward with a completing commit.
 - **Solo flow:** work branch → PR → agent-watched CI → human reviews diff and arms auto-merge
   → merges on green → platform deploys from main.
 

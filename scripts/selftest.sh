@@ -4,7 +4,9 @@
 #   0. AGENTS.md is canonical and the vendor adapters (CLAUDE.md/GEMINI.md/.claude) cohere;
 #   1. `pnpm verify` is green on the empty scaffold;
 #   2. commit #1 passes the pre-commit hook (deletion-guard → lint-staged → verify);
-#   3. the deletion guard actually blocks a >80-line deletion.
+#   3. the deletion guard actually blocks a >80-line deletion;
+#   4. the gate REJECTS violating code — a rule never seen saying "no" is decoration
+#      (lesson of 2026-07-10: import-x/no-cycle shipped wired-but-blind; see AGENT-LOG).
 # Wired into this repo's CI: the claims are gates, not prose.
 set -euo pipefail
 
@@ -61,4 +63,40 @@ if git commit -m "test: should be blocked" 2>guard.log; then
 fi
 grep -q "Deletion guard" guard.log || { cat guard.log >&2; exit 1; }
 
-echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks."
+echo "==> Claim 4: the gate must REJECT violating code (negative tests of the gate itself)"
+mkdir -p src
+cat > src/violations.ts <<'EOF'
+type Kind = "a" | "b";
+export function label(k: Kind): string {
+  switch (k) {
+    case "a":
+      return "A";
+  }
+  return "?";
+}
+export function loose(x: any): boolean {
+  return (x as unknown) == ("1" as unknown);
+}
+EOF
+cat > src/cycle-a.ts <<'EOF'
+import { b } from "./cycle-b";
+export const a: number = b + 1;
+EOF
+cat > src/cycle-b.ts <<'EOF'
+import { a } from "./cycle-a";
+export const b: number = a + 1;
+EOF
+if pnpm lint > lint.log 2>&1; then
+  echo "FAIL: lint accepted code that violates four rules at once" >&2
+  cat lint.log >&2
+  exit 1
+fi
+for rule in "no-explicit-any" "eqeqeq" "switch-exhaustiveness-check" "import-x/no-cycle"; do
+  grep -q "$rule" lint.log || {
+    echo "FAIL: rule '$rule' did not fire on a deliberate violation (wired-but-blind)" >&2
+    cat lint.log >&2
+    exit 1
+  }
+done
+
+echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects."

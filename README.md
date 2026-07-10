@@ -10,11 +10,14 @@ project kickoff.
 
 ```
 agentic-harness/
-├── PLAYBOOK.md          # the assembly spec an AI reads at project kickoff
-├── docs/DECISIONS.md    # dated one-line ADRs, sources cited inline
-├── scripts/selftest.sh  # consumes ts-base as documented; run by CI on every push
+├── PLAYBOOK.md            # the assembly spec an AI reads at project kickoff
+├── docs/TOUR.md           # see the harness bite, in ten minutes
+├── docs/DECISIONS.md      # dated one-line ADRs, sources cited inline
+├── docs/RATIONALE.md      # why these rules exist (the four-category taxonomy)
+├── scripts/selftest*.sh   # consume the templates as documented; run by CI on every push
 └── templates/
-    └── ts-base/         # the TypeScript quality cage — copy, don't rebuild
+    ├── ts-base/           # the TypeScript quality cage — copy, don't rebuild
+    └── vue-starter/       # Layer 2 overlay on create-vue, extracted from real use
 ```
 
 The harness is **agent-agnostic by construction**: conventions live in the vendor-neutral

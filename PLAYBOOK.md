@@ -83,6 +83,8 @@ direction) — not SOLID, not correctness. The semantic gap is closed by tests +
 ## Layer 2 — FRAMEWORK modules (stack `ts-base` + one of these)
 
 ### Vue 3
+**Template: `~/Dev/agentic-harness/templates/vue-starter/` — an overlay on `create-vue`,
+do not rebuild (its README is the consumption recipe; `scripts/selftest-vue.sh` enforces it).**
 **Enforce — `eslint-plugin-vue` (preset ≥ `strongly-recommended`) with as errors:**
 `no-mutating-props` · `require-v-for-key` · `no-use-v-if-with-v-for` ·
 `no-side-effects-in-computed-properties` · `require-explicit-emits` · `no-v-html` (XSS) ·
@@ -328,7 +330,8 @@ that never fires).
 
 ## Roadmap (assets to extract as stacks get used)
 
-- `ts-base` ✅
-- `vue-starter` = ts-base + Vue module → **extract during OrgLab Fase 0**
+- `ts-base` ✅ (selftest in CI)
+- `vue-starter` ✅ — extracted from OrgLab Fase 0 (2026-07-10); overlay on `create-vue`,
+  own selftest in CI including negative gate tests
 - `react-starter`, `nest-base` → extract on first real use, not before
 - Later: push starters as GitHub template repos (`degit`)

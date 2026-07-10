@@ -1,0 +1,24 @@
+{
+  "scripts": {
+    "typecheck": "vue-tsc --build",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "verify": "pnpm typecheck && pnpm lint && pnpm test",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,vue,json,md,css}": "prettier --write"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4",
+    "eslint-plugin-vuejs-accessibility": "^2",
+    "eslint-plugin-import-x": "^4",
+    "eslint-import-resolver-typescript": "^4",
+    "globals": "^16",
+    "husky": "^9",
+    "lint-staged": "^17",
+    "prettier": "^3"
+  },
+  "removeDevDependencies": ["oxlint", "eslint-plugin-oxlint"],
+  "removeScripts": ["lint:oxlint", "lint:eslint", "test:unit"]
+}

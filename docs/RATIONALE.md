@@ -2,7 +2,8 @@
 
 The configs say *what* is enforced; this file says *why*. Rules never carry this
 vocabulary — a lint rule is named `eqeqeq`, not "anti-equivocation". The mapping lives
-here, for whoever asks.
+here, for whoever asks. Extended treatment, principle by principle:
+[rational-code](https://github.com/DanielLourencoFil/rational-code).
 
 ## The organizing idea
 

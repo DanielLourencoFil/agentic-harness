@@ -11,10 +11,16 @@ project kickoff.
 ```
 agentic-harness/
 ├── PLAYBOOK.md          # the assembly spec an AI reads at project kickoff
+├── docs/DECISIONS.md    # dated one-line ADRs, sources cited inline
 ├── scripts/selftest.sh  # consumes ts-base as documented; run by CI on every push
 └── templates/
     └── ts-base/         # the TypeScript quality cage — copy, don't rebuild
 ```
+
+The harness is **agent-agnostic by construction**: conventions live in the vendor-neutral
+`AGENTS.md` (with `CLAUDE.md`/`GEMINI.md` as one-line adapters), and the layers that
+actually *force* quality — git hooks, CI, branch rulesets — are actor-blind. Which AI
+sits on the other side is an implementation detail.
 
 ## How it works
 

@@ -57,9 +57,10 @@ tool/test/hook, wire it; only what cannot be reified goes into CLAUDE.md as conv
   (base + a consumable `tsconfig.json` that always has ≥1 input, so empty-scaffold typecheck
   is green).
 - ESLint (flat, typed): `strictTypeChecked` + as **errors**: `no-explicit-any`,
-  `no-floating-promises`, `ban-ts-comment`, `complexity: 10`, `max-lines-per-function: 60`,
+  `no-floating-promises`, `ban-ts-comment`, `eqeqeq`, `switch-exhaustiveness-check`,
+  `import-x/no-cycle`, `complexity: 10`, `max-lines-per-function: 60`,
   `max-lines: 300`, `no-console` (CLI scripts in `scripts/**` exempt — console is their
-  interface — and given Node globals).
+  interface — and given Node globals). Rule rationale: `docs/RATIONALE.md`.
 - Vitest (coverage as diagnostic, no threshold; `passWithNoTests` so the empty scaffold
   verifies green — inert once the first real test lands) · Husky pre-commit (deletion-guard →
   lint-staged → verify) · `.gitignore` (deps/build/secrets + privacy block) · CI running

@@ -64,9 +64,11 @@ tool/test/hook, wire it; only what cannot be reified goes into CLAUDE.md as conv
   verifies green — inert once the first real test lands) · Husky pre-commit (deletion-guard →
   lint-staged → verify) · `.gitignore` (deps/build/secrets + privacy block) · CI running
   verify on every push + PR with the hygiene below, plus a weekly audit workflow.
+- `AGENTS.md` conventions skeleton (canonical, vendor-neutral) + `CLAUDE.md`/`GEMINI.md`
+  one-line adapters + `.claude/settings.json` permission baseline.
 - The template's claims are **enforced by `scripts/selftest.sh`** (run in this repo's CI):
   it consumes the template exactly as the README instructs and fails if empty-scaffold
-  verify, the commit #1 hook, or the deletion guard regress.
+  verify, the commit #1 hook, the deletion guard, or the adapter coherence regress.
 
 **Convention:** rely on inference internally; explicit types at public boundaries. `unknown` +
 narrowing instead of `any`. Runtime validation at trust boundaries is schema-first (**Zod**),
@@ -143,6 +145,27 @@ startup (fail fast); errors are handled paths with consistent shapes, no stack l
 | Task-named Skill (packages a heavy recurring procedure + points at checks) | chunky recurring task, ideally with a script | one-offs; project-wide prefs (→ CLAUDE.md) |
 | MCP server | agent needs real external actions (DB, browser, API) | self-contained app |
 | Subagent | isolatable/parallel work; fresh-context audit | small linear work |
+
+---
+
+## AGENT-AGNOSTICISM (the harness must not care which AI is on the other side)
+
+Layers ranked by how much they depend on the agent vendor:
+
+| Layer | Mechanism | Vendor-dependent? |
+| --- | --- | --- |
+| Force, server-side | CI + rulesets (required check, no force-push) | **No — actor-blind; the only binding guarantee** |
+| Force, local | husky, lint, tsc, deletion guard | No — fires on `git commit`, whoever invokes it |
+| Steer (conventions) | `AGENTS.md` | No — vendor-neutral standard (https://agents.md/, checked 2026-07-10) |
+| Agent permissions | `.claude/settings.json` etc. | Yes — per-vendor **adapter**, defense-in-depth only |
+
+Rules that follow:
+- **Conventions are written once, in `AGENTS.md`** (canonical). `CLAUDE.md` is a one-line
+  `@AGENTS.md` import; `GEMINI.md` a one-line pointer. Never edit an adapter.
+- **Agent-side permission files are never the last line of defense** — a foreign agent
+  (or a bypassed local hook) is always caught by CI + ruleset. Wire the server gate first.
+- The "prefer force over steer" meta-rule is what makes agnosticism cheap: the only
+  vendor-specific layer is deliberately the least load-bearing one.
 
 ---
 
@@ -225,12 +248,15 @@ startup (fail fast); errors are handled paths with consistent shapes, no stack l
    module rules, get `pnpm verify` green on the empty scaffold. Commit #1 = "chore: scaffold
    + guardrails", **including `pnpm-lock.yaml`** (CI uses `--frozen-lockfile`).
 2. **Docs skeleton:** `docs/SPEC.md` (what/why/scope in-out) · `docs/DECISIONS.md` (dated
-   one-line ADRs) · `AGENT-LOG.md` (public: where the agent helped/failed) · project
-   `CLAUDE.md` (only conventions the tooling cannot enforce — no duplication of lint rules).
+   one-line ADRs; external sources cited inline in the ADR they support, with a checked-on
+   date — never a separate SOURCES.md) · `AGENT-LOG.md` (public: where the agent
+   helped/failed) · `AGENTS.md` (canonical conventions — only what tooling cannot enforce,
+   no duplication of lint rules; the template ships a skeleton + the `CLAUDE.md`/`GEMINI.md`
+   adapters — fill the "Project specifics" section, never edit adapters).
 3. **`.gitignore` from day one** — the template ships it (deps/build/coverage, `.env*`,
    and the privacy block: `INTERVIEW-NOTES.md`, `/notes/` — personal learning stays
    private; never `git add -f` them). Extend, don't remove entries.
-4. **`.claude/settings.json` baseline:**
+4. **`.claude/settings.json` baseline — ships in the template**, adjust per project:
    - deny **read** on `.env`, `.env.*` (secrets — the agent never sees them);
    - **allow** `git commit` and `git push` to work branches — the commit/push rite is
      automatic, never asked (safe because verify gates commits, branch protection walls
@@ -238,6 +264,8 @@ startup (fail fast); errors are handled paths with consistent shapes, no stack l
    - deny `--no-verify`, force-push, and pushing/merging to the default branch
      (the agent opens PRs — the human merges);
    - file lockdown (deny **write**, keep read) only later, when a critical file stabilizes.
+   Remember this is a per-vendor **adapter** (see Agent-agnosticism): defense-in-depth,
+   never the last line of defense — the ruleset is.
 5. **CI** wired and green before the first feature (verify runs on every push/PR).
 6. **Branch protection — server-side, scripted (if the repo is on GitHub):** apply a ruleset
    via `gh api repos/{owner}/{repo}/rulesets` — require PR (0 approvals when solo — you can't

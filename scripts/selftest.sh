@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Consumes templates/ts-base EXACTLY as its README instructs, in a throwaway dir,
-# and asserts the three claims the template makes:
+# and asserts the claims the template makes:
+#   0. AGENTS.md is canonical and the vendor adapters (CLAUDE.md/GEMINI.md/.claude) cohere;
 #   1. `pnpm verify` is green on the empty scaffold;
 #   2. commit #1 passes the pre-commit hook (deletion-guard → lint-staged → verify);
 #   3. the deletion guard actually blocks a >80-line deletion.
@@ -30,6 +31,13 @@ node -e '
   );
 '
 rm package.snippet.json README.md
+
+echo "==> Claim 0: canonical AGENTS.md + adapters are present and coherent"
+test -f AGENTS.md || { echo "FAIL: AGENTS.md missing" >&2; exit 1; }
+grep -q "@AGENTS.md" CLAUDE.md || { echo "FAIL: CLAUDE.md is not an @AGENTS.md adapter" >&2; exit 1; }
+grep -q "AGENTS.md" GEMINI.md || { echo "FAIL: GEMINI.md does not point to AGENTS.md" >&2; exit 1; }
+node -e 'JSON.parse(require("node:fs").readFileSync(".claude/settings.json","utf8"))' \
+  || { echo "FAIL: .claude/settings.json is not valid JSON" >&2; exit 1; }
 
 echo "==> Step 4 (README): pnpm install + chmod hook"
 pnpm install

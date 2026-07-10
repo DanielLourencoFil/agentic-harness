@@ -17,13 +17,18 @@ below, `pnpm install`. Framework modules (Vue/React/Nest) layer **on top** (see
 - **GitHub Actions**: `verify` on **every push and every PR** (never PR-only), with
   `concurrency: cancel-in-progress`, a job timeout, dependabot skip — plus a weekly
   `pnpm audit --prod --audit-level=high` workflow.
+- **Vendor-neutral conventions**: `AGENTS.md` is canonical ([agents.md](https://agents.md/)
+  standard); `CLAUDE.md`/`GEMINI.md` are one-line adapters (never edit them);
+  `.claude/settings.json` ships the agent-permission baseline (deny `.env` reads,
+  `--no-verify`, force-push, pushing to main).
 
 ## How to consume
 
 1. **`git init` first** (or clone your empty repo). Husky's `prepare` needs `.git` and fails
    **silently** otherwise (prints ".git can't be found" but exits 0 — hooks never install).
 2. Copy every file here into the new project root (including dotfiles: `.husky/`, `.github/`,
-   `.gitignore`, `tsconfig.json`; drop this README and `package.snippet.json` after merging).
+   `.claude/`, `.gitignore`, `tsconfig.json`; drop this README and `package.snippet.json`
+   after merging). Fill the "Project specifics" section of `AGENTS.md` at kickoff.
 3. Merge `package.snippet.json` into your `package.json` (canonical copy — the selftest
    consumes it, so it cannot drift):
 

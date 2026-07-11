@@ -25,3 +25,12 @@ separate link files rot unread; see ADR 3).
 4. **2026-07-10 — Sources inline in ADRs, dated; no separate sources file.** The
    fact a source supports is the decision itself; coupling them keeps both honest,
    and the checked-on date bounds staleness when links or facts drift.
+5. **2026-07-11 — Brownfield section + provenance convention.** Trigger: the gaps a
+   practitioner article made visible (C. Taurion, "A dívida técnica invisível da IA",
+   LinkedIn, 2026-07-09, checked 2026-07-11) — legacy adoption and provenance were
+   unaddressed here. Adopted: diff-held-to-full-standard + repo ratchet (monotonic
+   violation counts), characterization-before-modification (established legacy
+   practice — M. Feathers, *Working Effectively with Legacy Code*), audit-on-touch
+   for inherited AI code, `Co-Authored-By` + PR provenance template. Rejected:
+   enterprise DORA metric suites at solo scale (theater at n=1; the meaningful
+   subset — red-CI rate, escaped defects, rework — feeds AGENT-LOG instead).

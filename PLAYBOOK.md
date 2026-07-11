@@ -280,6 +280,54 @@ Rules that follow:
 7. Skills: create none by default. Only add a **task-named** skill when a heavy recurring
    procedure with a script emerges (see Mechanism selection).
 
+## BROWNFIELD — entering an existing codebase (the kickoff's sibling)
+
+The kickoff checklist assumes an empty scaffold. An existing codebase — years old,
+many hands, increasingly AI-assisted — inverts one premise: the gate cannot demand
+retroactive perfection. The adaptation principle: **hold the diff to the full
+standard; hold the repo to a ratchet.**
+
+1. **Archaeology before any change (read-only phase).** Map the system first. Write
+   the initial story bible from observation: `AGENTS.md` with the codebase's *actual*
+   conventions (new code must look like the repo, not like the agent's training
+   data); `docs/DECISIONS.md` started now — decisions recorded as discovered, never
+   invented; a danger-zones list (money, auth, undocumented invariants).
+2. **Wire the zero-cost gates on day one** — they never touch legacy: prettier via
+   lint-staged (staged files only), deletion guard, commit conventions, secrets
+   read-block, CI running whatever is already green.
+3. **Baseline + ratchet for everything else.** Snapshot current violation counts
+   (lint errors, type errors). The gate: **counts may only fall** — CI fails on any
+   increase. Zero-warnings remains the greenfield rule; in brownfield the budget
+   exists, but only as a ratchet. As a rule's count reaches zero in a directory,
+   flip it to `error` there — permanently.
+4. **The diff is greenfield.** New and changed code meets the full standard: strict
+   rules on staged files, tests ship in the same commit, evidence gate as always.
+5. **Characterization before modification.** Untested legacy about to be touched
+   gets characterization tests first — pin what the code *does* (the provisional
+   spec is "behavior preserved"), then change. Refactor commits never mix with
+   behavior commits.
+6. **Audit-on-touch for inherited AI code.** Code of unknown provenance — including
+   other developers' AI-assisted work — is treated like any untrusted testimony: for
+   maintenance, do not differentiate by author (what matters is whether someone can
+   explain it and whether its invariants are pinned); but before building on an
+   unpinned module, run a scoped fresh-context audit and reify findings into tests.
+   Expected failure profile of AI-assisted legacy: plausible-but-subtly-wrong, plus
+   pattern drift (each developer's model imported its own conventions — the codebase
+   reflects the models' preferences unless yours are wired).
+7. **Forbid the agent's favorite brownfield move: the drive-by cleanup.** No mass
+   refactors, no repo-wide autofixes, no "improving" adjacent code inside a feature
+   commit. The deletion guard and the minimal-diff rule enforce this; the ratchet
+   channels improvement into deliberate, separate commits.
+8. **Provenance from day one, going forward.** The past's provenance is
+   unrecoverable; stop losing the future's (see Traceability below).
+
+**Traceability (all contexts, cheap):** agent-assisted commits carry the
+`Co-Authored-By` trailer naming the model; every PR fills the Provenance section of
+the template (tool, model + version, human reviewer). Honest label: this is a
+convention with a template, not a gate — assistance cannot be detected mechanically.
+Its value compounds: incident forensics ("which model/version produced this?"),
+calibration data per model, and regulated-environment audit trails.
+
 ## ROUTINE — feature loop (every feature, no exceptions)
 
 1. **Specify before implementing** — answer 4 questions, human owns the answers:

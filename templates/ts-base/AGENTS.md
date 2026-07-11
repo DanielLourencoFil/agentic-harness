@@ -22,6 +22,8 @@ output as evidence — "compiles" ≠ "works". Run `pnpm verify` before declarin
   sources are cited inline in the ADR they support, with a checked-on date.
 - Commit atomically (verify-gated) and push the work branch without asking; merging
   to the default branch is the human's act — open a PR and stop.
+- Agent-assisted commits carry a `Co-Authored-By` trailer naming the model; every PR
+  fills the Provenance section of the template (tool, model + version, reviewer).
 
 ## TypeScript
 

@@ -22,6 +22,14 @@ below, `pnpm install`. Framework modules (Vue/React/Nest) layer **on top** (see
   `.claude/settings.json` ships the agent-permission baseline (deny `.env` reads,
   `--no-verify`, force-push, pushing to main).
 
+## What it packages (steer, not force)
+
+The recurring rites ship as files, never as retyped prompts: `/feature` (spec interview,
+plan approval, negative tests first, evidence gate) and `/audit` (read-only `auditor`
+agent in a fresh context, neutral framing, reify-to-test triage) live in `.claude/skills/`
+and `.claude/agents/`. Skills steer the agent through the procedure on invocation; the
+binding gates remain the verify/CI machinery above.
+
 ## How to consume
 
 1. **`git init` first** (or clone your empty repo). Husky's `prepare` needs `.git` and fails

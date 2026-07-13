@@ -177,6 +177,16 @@ Rules that follow:
 - The "prefer force over steer" meta-rule is what makes agnosticism cheap: the only
   vendor-specific layer is deliberately the least load-bearing one.
 
+**Conventions-file layering (ADR 8).** The three config channels resolve conflicts
+differently: conventions prose **concatenates** (no arbiter — a child file refines,
+never contradicts; a contradiction is a config bug), settings resolve by **precedence**
+(specific wins), skills **shadow by name** (project over user — that is the
+specialization mechanism, not a conflict). Therefore: one `AGENTS.md` at the repo root;
+nest another only where a subtree genuinely diverges (monorepo package boundaries);
+a nested file that would repeat its parent must not exist — duplicated prose drifts,
+and drifted prose lies. Conventions are always-on and charge context in every session:
+invariants only; procedures go to skills (on-demand).
+
 ---
 
 ## PIPELINE (CI is universal; CD scales with the surface)
@@ -284,7 +294,12 @@ No scaffold, no install, no code before the human approves the spec.
      master, and force-push is denied);
    - deny `--no-verify`, force-push, and pushing/merging to the default branch
      (the agent opens PRs — the human merges);
-   - file lockdown (deny **write**, keep read) only later, when a critical file stabilizes.
+   - file lockdown (deny **write**, keep read) only later, when a critical file stabilizes;
+   - **filesystem containment, asymmetric (ADR 10):** deny **write** outside the project
+     root with a short named allowlist (agent memory dir, session scratchpad); **read**
+     outside the root asks, with hard denies on sensitive zones (`~/.ssh`, other
+     projects' `.env*`). Honest limit: settings rules and hooks bind the file tools,
+     not Bash — real Bash containment is a sandbox or a per-session worktree.
    Remember this is a per-vendor **adapter** (see Agent-agnosticism): defense-in-depth,
    never the last line of defense — the ruleset is.
 5. **CI** wired and green before the first feature (verify runs on every push/PR).
@@ -295,9 +310,14 @@ No scaffold, no install, no code before the human approves the spec.
    verify job as a **required status check**. This binds *everyone* — human, local agent,
    bots — even if local settings fail. (Free on public repos; private needs a paid plan.)
    Agent may **open** PRs; merging to the default branch is always the human's act.
-7. Skills: the template ships the two rite skills (`/feature`, `/audit` + the read-only
-   `auditor` agent); create no others by default. Only add a **task-named** skill when a
-   heavy recurring procedure with a script emerges (see Mechanism selection).
+7. Skills — three tiers (ADR 9). **Universal-personal** skills live in the user dir
+   (`~/.claude/skills/`) and are never copied into the repo. **Stack-family** rite skills
+   ship with the template (`/feature`, `/audit` + the read-only `auditor` agent) and are
+   copied at kickoff, each carrying its `source: agentic-harness@<sha>` provenance stamp.
+   **Project-specific** skills are created only when a heavy recurring procedure with a
+   script emerges (see Mechanism selection) — never speculatively at kickoff. The line
+   between user dir and repo is "who must obey": if the repo must obey (any agent, any
+   human, CI), the skill is versioned in the repo.
 
 ## BROWNFIELD — entering an existing codebase (the kickoff's sibling)
 
@@ -409,3 +429,7 @@ that never fires).
   own selftest in CI including negative gate tests
 - `react-starter`, `nest-base` → extract on first real use, not before
 - Later: push starters as GitHub template repos (`degit`)
+- **Pending wiring (ADR 9, ADR 10)** — until these land, both ADRs are conventions,
+  honestly labeled: `/kickoff` emits the `source: agentic-harness@<sha>` stamp +
+  `selftest.sh` reports skill drift against the catalog; PreToolUse containment hook +
+  negative selftest case (an attempted write outside the root must be seen blocked).

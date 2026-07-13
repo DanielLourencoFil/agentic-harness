@@ -55,3 +55,53 @@ separate link files rot unread; see ADR 3).
    produces test volume for free; behavior-gated tests + the brownfield ratchet
    stand) and explicit-types-everywhere (inference internally, explicit types at
    public boundaries stands).
+8. **2026-07-13 — Conventions prose concatenates; nest a conventions file only where
+   a subtree genuinely diverges.** Trigger: "shouldn't every folder have its own
+   conventions file with its skills?". The three config channels resolve conflicts
+   differently, and only two have an arbiter: **settings** resolve by precedence
+   (enterprise > CLI > project-local > project > user; specific wins), **skills**
+   shadow by name (project over user; shadowing is the specialization mechanism,
+   not a conflict), and **conventions prose** just concatenates (root file plus
+   subtree files, the latter loaded when the subtree is touched) with no mechanical
+   arbiter. Therefore a child file refines, never contradicts: a contradiction is a
+   config bug with undefined behavior, not a resolvable override. Corollaries: a
+   nested file that would repeat its parent must not exist (duplicated prose drifts,
+   and drifted prose lies); nesting is justified at genuine divergence boundaries
+   (monorepo packages), not per folder. Conventions are always-on and charge context
+   in every session: invariants only; procedures belong in skills (on-demand). A
+   pointer line from conventions to a skill is a steering optimization for when
+   description-matching fails to fire, not architecture.
+9. **2026-07-13 — Skills come in three tiers; stack skills are vendored at kickoff
+   with a provenance stamp; drift is detected, not blocked.** Trigger: kickoff needs
+   a rule for which skills a new project starts with. Tiers: **universal-personal**
+   (user dir `~/.claude/skills/`; never copied into repos, available everywhere by
+   nature); **stack-family** (`/feature`, `/audit`: live in the template catalog,
+   copied at kickoff according to the spec's stack); **project-specific** (created
+   only when a heavy task recurs in the project, never speculatively at kickoff;
+   YAGNI applies to skills, see the skill-per-principle anti-pattern). The dividing
+   line between user dir and repo is "who must obey": if the repo must obey (any
+   agent, any human, CI), the skill is versioned in the repo, reviewable like code;
+   personal rituals stay in the user dir. Distribution is **vendoring, not
+   reference/plugin**: a referenced catalog propagates silent behavior changes to
+   every consumer (action at a distance defeats examinability); a copy may diverge
+   deliberately. Each copied `SKILL.md` carries `source: agentic-harness@<sha>`;
+   the selftest compares copies against the catalog and **reports** divergence
+   (deliberate divergence is legitimate; ignored divergence is visible debt).
+   Wiring pending (roadmap): stamp emission in `/kickoff` + drift report in
+   `selftest.sh`. Until wired, this is a convention, honestly labeled.
+10. **2026-07-13 — Filesystem containment is asymmetric: writes outside the project
+    root are denied with a short allowlist; reads ask; Bash is contained by
+    sandbox/worktree, not by command regex.** Trigger: proposal to forbid all file
+    access outside the project root. Rejected as an absolute: a blanket ban breaks
+    designed flows (agent memory dir, session scratchpad, package stores, `gh`
+    config) and breeds prompt fatigue, where the human starts blanket-approving and
+    the gate dies socially. Adopted: **write** outside root = deny-by-default with a
+    named allowlist (agent memory, scratchpad); **read** outside root = ask, with
+    hard denies on sensitive zones (`~/.ssh`, other projects' `.env*`); the blast
+    radius lives on the write side. Mechanisms ranked by force: settings path rules
+    (template baseline) → PreToolUse hook resolving the real path of file-tool calls
+    (catches `../` and symlinks) → **Bash is the honest hole**: scanning command
+    strings with regex is wired-but-blind (the `no-cycle` lesson, AGENT-LOG); real
+    Bash containment is a sandbox or a per-session worktree, already the rule for
+    parallel sessions. Negative selftest required before this counts as wired: an
+    attempted write outside the root must be seen blocked.

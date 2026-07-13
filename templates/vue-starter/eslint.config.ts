@@ -31,6 +31,9 @@ export default defineConfigWithVueTs(
       // No ignored cases: a switch over a union must handle every member.
       "@typescript-eslint/switch-exhaustiveness-check": "error",
       complexity: ["error", 10],
+      // Shallow nesting: guard clauses over pyramids. Depth taxes both readers,
+      // the human refuter and the agent's context (see agentic-harness ADR 7).
+      "max-depth": ["error", 3],
       "max-lines-per-function": ["error", 60],
       "max-lines": ["error", 300],
       "no-console": "error",

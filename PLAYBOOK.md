@@ -42,7 +42,9 @@ tool/test/hook, wire it; only what cannot be reified goes into CLAUDE.md as conv
   assert concrete values. **No coverage % target** (diagnostic only).
 - The human owns the scenario checklist (what is always true / never possible); AI may write
   the test code but not decide alone what "tested" means.
-- Decisions → dated one-line ADRs in `docs/DECISIONS.md`, captured live.
+- Decisions → dated one-line ADRs in `docs/DECISIONS.md`, captured live; a non-obvious
+  constraint in code also gets a one-line why-comment at the site pointing to its ADR
+  (agents read the file they edit, not the docs folder).
 - Plan/checklist docs are **views over tests**, never a parallel source of truth: a
   scenario that matters becomes a named test; "done" = that test green in CI, not a
   hand-ticked checkbox (hand-ticked checklists drift and then lie). The doc keeps only
@@ -63,7 +65,7 @@ tool/test/hook, wire it; only what cannot be reified goes into CLAUDE.md as conv
   is green).
 - ESLint (flat, typed): `strictTypeChecked` + as **errors**: `no-explicit-any`,
   `no-floating-promises`, `ban-ts-comment`, `eqeqeq`, `switch-exhaustiveness-check`,
-  `import-x/no-cycle`, `complexity: 10`, `max-lines-per-function: 60`,
+  `import-x/no-cycle`, `complexity: 10`, `max-depth: 3`, `max-lines-per-function: 60`,
   `max-lines: 300`, `no-console` (CLI scripts in `scripts/**` exempt — console is their
   interface — and given Node globals). Rule rationale: `docs/RATIONALE.md`.
 - Vitest (coverage as diagnostic, no threshold; `passWithNoTests` so the empty scaffold

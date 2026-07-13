@@ -14,7 +14,7 @@ four different things, with four different mechanisms:
 | Category | Protects | Mechanism | Examples |
 | --- | --- | --- | --- |
 | **Validity rules** | the soundness of inferences the code embodies | lint / type rules (physical rejection) | `no-explicit-any` (one name, one meaning), `eqeqeq` (no coerced equality), `switch-exhaustiveness-check` (no ignored cases), import-cycle ban (no circular justification) |
-| **Examinability rules** | the *feasibility* of refutation — an artifact too large to review is shielded from criticism regardless of its correctness | size/complexity caps | `max-lines: 300`, `complexity: 10`, minimal diffs, one concern per commit, deletion guard |
+| **Examinability rules** | the *feasibility* of refutation — an artifact too large to review is shielded from criticism regardless of its correctness | size/complexity caps | `max-lines: 300`, `complexity: 10`, `max-depth: 3`, minimal diffs, one concern per commit, deletion guard |
 | **Procedure gates** | the honesty of the investigation itself | structural checks on artifacts | negative tests before code; audit findings require a reproduction; neutral audit framing (allow "none found"); pre-registered kill criteria for product bets |
 | **Content judgment** | fitness to the actual problem | human review — deliberately NOT automated | are these the right scenarios? is this the right definition? is the design right? |
 
@@ -27,7 +27,10 @@ Two consequences worth stating plainly:
   research consistently shows defect detection collapsing on large changes; an
   unreviewable diff is unfalsifiable in practice. The size caps exist to keep every
   change inside the region where human refutation actually works — which matters
-  doubly when the author is an AI that produces volume for free.
+  doubly when the author is an AI that produces volume for free. The same caps serve
+  a second reader: an agent navigates by bounded tool calls and degrades as context
+  grows, so units that fit in one read keep both the human refuter and the agent
+  effective (ADR 7).
 
 ## How rules get generated
 

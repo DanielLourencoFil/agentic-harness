@@ -34,3 +34,12 @@ separate link files rot unread; see ADR 3).
    for inherited AI code, `Co-Authored-By` + PR provenance template. Rejected:
    enterprise DORA metric suites at solo scale (theater at n=1; the meaningful
    subset — red-CI rate, escaped defects, rework — feeds AGENT-LOG instead).
+6. **2026-07-12 — Recurring rites are packaged as skills/agents; plan docs are views
+   over tests.** A prompt retyped per session is governance by memory, and it rots
+   (field lesson: a hand-ticked implementation checklist drifted until it lied).
+   Adopted: `/feature` (spec interview → plan approval → negative tests first →
+   evidence gate) and `/audit` + read-only `auditor` agent (fresh context, neutral
+   framing, reify-to-test triage) ship in `ts-base/.claude/`; `/kickoff` (idea →
+   `SPEC.md` → layer selection) lives in this repo's `.claude/skills/`. Honest label:
+   skills are steer executed on invocation, not force; the binding gates remain
+   verify/CI. The selftest asserts the files exist and the auditor stays read-only.

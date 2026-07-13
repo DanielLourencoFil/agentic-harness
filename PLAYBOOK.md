@@ -43,6 +43,11 @@ tool/test/hook, wire it; only what cannot be reified goes into CLAUDE.md as conv
 - The human owns the scenario checklist (what is always true / never possible); AI may write
   the test code but not decide alone what "tested" means.
 - Decisions → dated one-line ADRs in `docs/DECISIONS.md`, captured live.
+- Plan/checklist docs are **views over tests**, never a parallel source of truth: a
+  scenario that matters becomes a named test; "done" = that test green in CI, not a
+  hand-ticked checkbox (hand-ticked checklists drift and then lie). The doc keeps only
+  what tests cannot express (sequencing, decisions, deferrals) and is updated by the
+  feature rite, not from memory.
 - Audits run in a **fresh context**, scoped, after a complete unit. Neutral framing (allow
   "none found"); each finding needs a concrete reproduction; findings are hypotheses —
   reify real ones into failing tests.
@@ -243,6 +248,17 @@ Rules that follow:
 
 ---
 
+## SPEC INTERVIEW — from idea to plan (before the kickoff checklist)
+
+The kickoff checklist assumes a project plan exists. When there is only an idea, run
+the spec interview first (packaged as the `/kickoff` skill in this repo's
+`.claude/skills/`). Ask, one question at a time: problem / whose problem / how they
+solve it today · scope IN and explicitly OUT for v1 · riskiest assumption + the
+cheapest way to kill it (pre-registered kill criteria, dated) · the real-world success
+metric · surfaces present (selects Layer 3) · stack (selects Layer 1/2). Output:
+`docs/SPEC.md` plus a proposed harness subset with a one-line justification per layer.
+No scaffold, no install, no code before the human approves the spec.
+
 ## KICKOFF CHECKLIST (execute at project start, after layers are chosen)
 
 1. **Scaffold + harness first, features second.** `git init` **before** `pnpm install`
@@ -277,8 +293,9 @@ Rules that follow:
    verify job as a **required status check**. This binds *everyone* — human, local agent,
    bots — even if local settings fail. (Free on public repos; private needs a paid plan.)
    Agent may **open** PRs; merging to the default branch is always the human's act.
-7. Skills: create none by default. Only add a **task-named** skill when a heavy recurring
-   procedure with a script emerges (see Mechanism selection).
+7. Skills: the template ships the two rite skills (`/feature`, `/audit` + the read-only
+   `auditor` agent); create no others by default. Only add a **task-named** skill when a
+   heavy recurring procedure with a script emerges (see Mechanism selection).
 
 ## BROWNFIELD — entering an existing codebase (the kickoff's sibling)
 
@@ -341,6 +358,9 @@ calibration data per model, and regulated-environment audit trails.
    No evidence = status "IMPLEMENTED — NOT VERIFIED", with the exact command the human runs.
 5. Non-obvious choices: state the why + trade-off in one line (the human will probe).
 
+Packaged in `ts-base` as the `/feature` skill (`.claude/skills/feature/`): the rite runs
+on invocation, questions asked by the agent, instead of depending on anyone's memory.
+
 ## ROUTINE — audit (after each complete, coherent unit — feature/module, not per micro-change)
 
 - **Fresh context, always** (new session or subagent — the session that wrote the code is
@@ -355,6 +375,10 @@ calibration data per model, and regulated-environment audit trails.
 - Log outcome in `AGENT-LOG.md` (found-real / confabulated counts — this calibrates trust).
 - With a PR flow, `/code-review` (or a PR review action) replaces the manual prompt — same
   rules embedded (reproduction + verify pass).
+- Packaged in `ts-base` as the `/audit` skill + the read-only `auditor` agent
+  (`.claude/skills/audit/`, `.claude/agents/auditor.md`): fresh context, neutral framing
+  and reify-to-test triage run on invocation; the prompt is never retyped. Honest label:
+  skills are steer executed on invocation, not force; the binding gates remain verify/CI.
 
 ## Mechanism selection (when adding any new rule)
 

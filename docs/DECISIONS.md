@@ -102,6 +102,8 @@ separate link files rot unread; see ADR 3).
     (template baseline) → PreToolUse hook resolving the real path of file-tool calls
     (catches `../` and symlinks) → **Bash is the honest hole**: scanning command
     strings with regex is wired-but-blind (the `no-cycle` lesson, AGENT-LOG); real
-    Bash containment is a sandbox or a per-session worktree, already the rule for
-    parallel sessions. Negative selftest required before this counts as wired: an
-    attempted write outside the root must be seen blocked.
+    Bash containment is an OS-level sandbox. Precision: a per-session worktree
+    isolates the git index (collision protection), **not** the filesystem — it is
+    no security boundary; the process still runs with the full user's permissions.
+    Negative selftest required before this counts as wired: an attempted write
+    outside the root must be seen blocked.

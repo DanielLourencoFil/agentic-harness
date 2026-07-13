@@ -299,7 +299,8 @@ No scaffold, no install, no code before the human approves the spec.
      root with a short named allowlist (agent memory dir, session scratchpad); **read**
      outside the root asks, with hard denies on sensitive zones (`~/.ssh`, other
      projects' `.env*`). Honest limit: settings rules and hooks bind the file tools,
-     not Bash — real Bash containment is a sandbox or a per-session worktree.
+     not Bash — real Bash containment is an OS-level sandbox (a worktree isolates
+     the git index, not the filesystem; it is no security boundary).
    Remember this is a per-vendor **adapter** (see Agent-agnosticism): defense-in-depth,
    never the last line of defense — the ruleset is.
 5. **CI** wired and green before the first feature (verify runs on every push/PR).

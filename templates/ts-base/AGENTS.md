@@ -14,6 +14,11 @@ output as evidence — "compiles" ≠ "works". Run `pnpm verify` before declarin
 
 - Plan before code; minimal diff; one concern per commit (conventional messages).
 - Read a file fully before editing; reuse-scan before creating any component/util.
+- Names are grep-first: unique and searchable, no generic `handler` / `Manager` /
+  `data`. Agents (and humans) navigate by search; a generic name is noise.
+- A non-obvious constraint in code gets a one-line why-comment at the site pointing
+  to its ADR (`// why: <constraint> (ADR N)`). Agents read the file they are
+  editing, not the docs folder; the why must live where the risk is.
 - Tests ship in the same commit as the logic. A test changes only when its requirement
   changes, in a dedicated commit. Never weaken a test to pass it.
 - Isolate non-determinism (time, network, LLM, randomness) behind a fakeable seam;

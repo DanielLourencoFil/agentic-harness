@@ -10,7 +10,7 @@ below, `pnpm install`. Framework modules (Vue/React/Nest) layer **on top** (see
 - **tsconfig strict** (+ no implicit any, no unchecked index access). Ships a consumable
   `tsconfig.json` extending `tsconfig.base.json`.
 - **ESLint** with `no-explicit-any` / `no-floating-promises` / `ban-ts-comment` / `complexity` /
-  `max-lines(-per-function)` as **errors**, **zero warnings**. Node CLI scripts (`scripts/**`)
+  `max-depth` / `max-lines(-per-function)` as **errors**, **zero warnings**. Node CLI scripts (`scripts/**`)
   get Node globals and may use `console` — it's their interface.
 - **Prettier** via lint-staged.
 - **Husky pre-commit**: deletion guard → lint-staged → `verify` (typecheck + lint + test).

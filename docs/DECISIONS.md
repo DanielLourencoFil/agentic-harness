@@ -43,3 +43,15 @@ separate link files rot unread; see ADR 3).
    `SPEC.md` → layer selection) lives in this repo's `.claude/skills/`. Honest label:
    skills are steer executed on invocation, not force; the binding gates remain
    verify/CI. The selftest asserts the files exist and the auditor stays read-only.
+7. **2026-07-13 — External review absorbed through the rule generator: "Clean Code
+   for AI Agents" (F. Akita, akitaonrails.com, 2026-04-20, checked 2026-07-13).**
+   The article re-ranks Clean Code for the agent-as-reader; each claim was run
+   through this repo's generator (syntactic signature → lint; else convention).
+   Adopted: `max-depth: 3` as error + a negative selftest case (a wired rule must
+   be seen rejecting); grep-first naming and site why-comments pointing at ADRs as
+   `AGENTS.md` conventions (no syntactic signature); dual-reader rationale for the
+   size caps (agent tool-call and context limits join human review-effectiveness)
+   in RATIONALE. Rejected: coverage ≥80% as a target (gameable, and an agent
+   produces test volume for free; behavior-gated tests + the brownfield ratchet
+   stand) and explicit-types-everywhere (inference internally, explicit types at
+   public boundaries stands).

@@ -99,6 +99,19 @@ export function label(k: Kind): string {
 export function loose(x: any): boolean {
   return (x as unknown) == ("1" as unknown);
 }
+export function deep(xs: number[][][]): number {
+  let total = 0;
+  for (const grid of xs) {
+    for (const row of grid) {
+      for (const cell of row) {
+        if (cell > 0) {
+          total += cell;
+        }
+      }
+    }
+  }
+  return total;
+}
 EOF
 cat > src/lib/cycle-a.ts <<'EOF'
 import { b } from "./cycle-b";
@@ -126,7 +139,7 @@ if pnpm lint > lint.log 2>&1; then
   cat lint.log >&2
   exit 1
 fi
-for rule in "no-explicit-any" "eqeqeq" "switch-exhaustiveness-check" "import-x/no-cycle" "vue/no-v-html" "no-restricted-imports"; do
+for rule in "no-explicit-any" "eqeqeq" "switch-exhaustiveness-check" "import-x/no-cycle" "max-depth" "vue/no-v-html" "no-restricted-imports"; do
   grep -q "$rule" lint.log || {
     echo "FAIL: rule '$rule' did not fire on a deliberate violation (wired-but-blind)" >&2
     cat lint.log >&2
@@ -134,4 +147,4 @@ for rule in "no-explicit-any" "eqeqeq" "switch-exhaustiveness-check" "import-x/n
   }
 done
 
-echo "SELFTEST-VUE OK — stripped scaffold verifies green, hook fires, gate rejects all six."
+echo "SELFTEST-VUE OK — stripped scaffold verifies green, hook fires, gate rejects all seven."

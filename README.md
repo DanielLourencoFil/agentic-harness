@@ -15,10 +15,18 @@ agentic-harness/
 ├── docs/DECISIONS.md      # dated one-line ADRs, sources cited inline
 ├── docs/RATIONALE.md      # why these rules exist (the four-category taxonomy)
 ├── scripts/selftest*.sh   # consume the templates as documented; run by CI on every push
-└── templates/
+├── home/                  # the MACHINE layer: constitution, secret-hygiene hooks,
+│                          #   conversation rituals — symlinked once per machine (bootstrap.sh)
+└── templates/             # the PROJECT layer: stamped into each new repo at kickoff
     ├── ts-base/           # the TypeScript quality cage — copy, don't rebuild
     └── vue-starter/       # Layer 2 overlay on create-vue, extracted from real use
 ```
+
+The method has **two delivery targets**. Projects get *copies* (`templates/`, via
+kickoff): gates and rites versioned with each project's git, so every project
+carries its own law. The machine gets *symlinks* (`home/`, via bootstrap): the
+rules that must hold in every session — including guest sessions in third-party
+repos, where nothing may touch the host's git and the user layer is all there is.
 
 The harness is **agent-agnostic by construction**: conventions live in the vendor-neutral
 `AGENTS.md` (with `CLAUDE.md`/`GEMINI.md` as one-line adapters), and the layers that

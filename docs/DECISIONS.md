@@ -107,3 +107,16 @@ separate link files rot unread; see ADR 3).
     no security boundary; the process still runs with the full user's permissions.
     Negative selftest required before this counts as wired: an attempted write
     outside the root must be seen blocked.
+11. **2026-07-15 — agentic-home folds into this repo as `home/` (the machine layer:
+    constitution, secret-hygiene hooks, conversation rituals, bootstrap); 3 repos
+    become 2 (method public, data private in the organizer repo).** Trigger: the
+    3-repo split exceeded the owner's explanation budget (sessions of re-derivation,
+    2026-07-15) and mislabeled method as private — nothing in the coding practices
+    is secret; the real private boundary is the data. Adopted: `home/` as the
+    reference implementation of the machine layer, delivered by symlink once per
+    machine (vs. project stamps, copied per repo — content and delivery are
+    different questions: the secret hooks must fire in sessions that have no
+    project); career rituals (`/teach`) migrate to the data repo with the data;
+    agentic-home archived, not deleted. Rejected: status quo (confusion tax recurs
+    per session) and two public repos (keeps "why separate?" permanently open with
+    no compensating gain).

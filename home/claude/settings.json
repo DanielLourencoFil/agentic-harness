@@ -1,0 +1,56 @@
+{
+  "effortLevel": "high",
+  "switchModelsOnFlag": true,
+  "permissions": {
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
+    ],
+    "deny": [
+      "Bash(git commit --no-verify*)",
+      "Bash(git push --force*)",
+      "Read(**/.env)",
+      "Read(**/.env.local)",
+      "Read(**/.env.*.local)"
+    ]
+  },
+  "model": "opus",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{ echo \"== BACKLOG (~/Dev/BACKLOG.md): fonte de verdade das pendencias cross-project. Consulte antes de propor rumo; todo novo 'depois' entra la antes da sessao acabar. ==\"; cat \"$HOME/Dev/BACKLOG.md\"; } 2>/dev/null || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/secret-scan.py\"",
+            "timeout": 10,
+            "statusMessage": "secret-hygiene: scanning prompt"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/env-dump-guard.py\"",
+            "timeout": 10,
+            "statusMessage": "secret-hygiene: checking command"
+          }
+        ]
+      }
+    ]
+  }
+}

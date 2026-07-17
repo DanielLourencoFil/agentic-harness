@@ -424,6 +424,14 @@ must be impossible → **hook / lint / CI gate** · new capability → **MCP** �
 Most agentic-setup mistakes are a rule in the wrong mechanism (e.g. an invariant in a Skill
 that never fires).
 
+**Skill-writing doctrine (ADR 14):** every skill instruction must demand a **verifiable
+artifact** in its output — a file written, a table whose claims carry paths, a command
+output shown. An open question without an anchor ("did you consider edge cases?") is
+decoration: the session answers it to itself and moves on. Anti-rationalization is
+written as alibi → short declarative reply, never as a question. The mechanical half
+is the form gate in `scripts/selftest-skills.sh` (one-line description, body cap,
+mandatory "Verifiable output" section); the semantic half stays steer, honestly labeled.
+
 ## Anti-patterns (never do)
 
 - Documented-but-not-wired governance (guardian scripts, constitutions, manual checklists) —
@@ -431,6 +439,8 @@ that never fires).
 - Persona/tone prompting as a quality lever ("act like a senior engineer").
 - Coverage % as a target · warning budgets in fresh projects.
 - A Skill per design principle (`principle_D`) — wrong mechanism, never fires.
+- Skill instructions that ask open questions instead of demanding artifacts —
+  decoration, not governance (ADR 14).
 - Claiming tooling "forces SOLID" — it forces proxies; design review stays human.
 - Trusting audit findings without reproduction — "find bugs" manufactures bugs.
 - Offloading 100% to tooling — linters catch classes of errors, never "right design /
@@ -452,3 +462,7 @@ that never fires).
   instruction executed on invocation, no mechanical check yet). The drift report in
   `selftest.sh` — the force half — stays deferred while the catalog has a single
   skill consumer (ADR 12); wire it when a second consumer exists.
+- Behavioral eval of skills (roadmap, ADR 14): a fixture repo with a planted bug,
+  driven via `claude -p`, weekly CI job, assertions strictly mechanical (files the
+  rite must produce, strings the report must contain). Honest label: this checks
+  form plus one case, never quality — the human review of rite output stays.

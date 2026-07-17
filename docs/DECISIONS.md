@@ -201,6 +201,13 @@ separate link files rot unread; see ADR 3).
     rot honestly, like ADR checked-on dates); `/absorb` requires the appended
     rows in its verifiable output; the selftest enforces id uniqueness and the
     closed verdict set, both seen rejecting a planted violation. Backfilled
-    C-001..C-031 (the ADR 14 package + sweep lot 1). Rejected: per-lot snapshot
-    docs only (durable but not queryable across lots) and PR-body-only records
-    (not greppable; fails on zero-adoption lots).
+    C-001..C-031 (the ADR 14 package + sweep lot 1). **Adopted rows carry their
+    enforcement degree, honestly labeled — force / half-force / steer (force
+    preferred, PLAYBOOK meta-rule; a bare "adopted" is rejected by the
+    selftest):** an adoption must name how obedience is forced or at least
+    where its violation becomes visible; unenforceable, unobservable obedience
+    is decoration and gets rejected instead of adopted. Rejected: per-lot
+    snapshot docs only (durable but not queryable across lots), PR-body-only
+    records (not greppable; fails on zero-adoption lots), and adoption
+    restricted to wirable-only claims (would exclude the load-bearing steer
+    core — layer A's minimal-diff and no-gutting are steer by honest label).

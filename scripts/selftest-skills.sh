@@ -74,9 +74,9 @@ check_ledger() { # $1 = ledger path; prints reasons; non-zero exit on violation
     echo "  duplicate claim ids: $dups"; ok=1
   fi
   bad="$(awk -F'|' '/^\| C-/ {v=$6; sub(/^ +/,"",v);
-    if (v !~ /^(adopted|rejected|already have|deferred)/) print $2}' "$f")"
+    if (v !~ /^(adopted \((force|half-force|steer)|rejected|already have|deferred)/) print $2}' "$f")"
   if [ -n "$bad" ]; then
-    echo "  verdict outside the closed set on:$bad"; ok=1
+    echo "  verdict outside the closed set (adopted needs its force degree) on:$bad"; ok=1
   fi
   return "$ok"
 }
@@ -94,7 +94,7 @@ cat > "$TMP/ledger.md" <<'EOF'
 | C-001 | 2026-07-17 | src | claim two | maybe later | somewhere |
 EOF
 if check_ledger "$TMP/ledger.md" >/dev/null; then
-  echo "FAIL: the ledger check accepted duplicate ids and a rogue verdict" >&2
+  echo "FAIL: the ledger check accepted duplicate ids, a rogue verdict, and a degree-less adopted" >&2
   exit 1
 fi
 

@@ -16,17 +16,24 @@ Rules:
 - IDs are stable and sequential (`C-NNN`); the selftest rejects duplicates.
 - Verdict is one of: **adopted** · **rejected** (with the value it loses to) ·
   **already have** · **deferred** (with its trigger in BACKLOG).
+- **Every adopted row carries its enforcement degree, honestly labeled**
+  (prefer force over steer — PLAYBOOK meta-rule): `(force)` wired as
+  hook/lint/CI gate · `(half-force)` mechanical half wired, semantic half
+  convention · `(steer)` rite text or convention, admitted only when the rule
+  cannot be reified AND is load-bearing. A claim whose obedience cannot be
+  forced at any degree, nor even be seen violated in review or audit, is
+  decoration and is rejected. The selftest rejects a bare `adopted`.
 
 | ID | Date | Source | Claim | Verdict | Where |
 | --- | --- | --- | --- | --- | --- |
-| C-001 | 2026-07-17 | agent-skills/code-review-and-quality | Severity ladder Critical/Required/Nit/FYI on findings | adopted | `templates/ts-base/.claude/agents/auditor.md` (ADR 14) |
-| C-002 | 2026-07-17 | agent-skills/code-review-and-quality | Order findings by leverage; never bury structural under nits | adopted | `auditor.md` (ADR 14) |
-| C-003 | 2026-07-17 | agent-skills/code-review-and-quality | Quantify findings — counts, not qualifiers | adopted | `auditor.md` (ADR 14) |
-| C-004 | 2026-07-17 | agent-skills/code-review-and-quality | Security and performance as review axes | adopted | `auditor.md` (ADR 14) |
-| C-005 | 2026-07-17 | agent-skills/test-driven-development | Rationalization table: alibi → short declarative reply | adopted | `feature`/`audit`/`absorb` SKILL.md (ADR 14) |
-| C-006 | 2026-07-17 | agent-skills review discussion (2026-07-15) | Dependency discipline: 1 dep/PR, changelog before upgrade, stdlib-first, lockfile never by hand | adopted | `templates/ts-base/AGENTS.md` (ADR 14) |
-| C-007 | 2026-07-17 | agent-skills review discussion (2026-07-15) | Skill instructions demand verifiable artifacts; open questions are decoration | adopted | PLAYBOOK Mechanism selection + `scripts/selftest-skills.sh` (ADR 14) |
-| C-008 | 2026-07-17 | agent-skills review discussion (2026-07-15) | Form limits on skills: 1-line description, body cap, mandatory output section | adopted | `scripts/selftest-skills.sh` (ADR 14) |
+| C-001 | 2026-07-17 | agent-skills/code-review-and-quality | Severity ladder Critical/Required/Nit/FYI on findings | adopted (steer) | `templates/ts-base/.claude/agents/auditor.md` (ADR 14) |
+| C-002 | 2026-07-17 | agent-skills/code-review-and-quality | Order findings by leverage; never bury structural under nits | adopted (steer) | `auditor.md` (ADR 14) |
+| C-003 | 2026-07-17 | agent-skills/code-review-and-quality | Quantify findings — counts, not qualifiers | adopted (steer) | `auditor.md` (ADR 14) |
+| C-004 | 2026-07-17 | agent-skills/code-review-and-quality | Security and performance as review axes | adopted (steer) | `auditor.md` (ADR 14) |
+| C-005 | 2026-07-17 | agent-skills/test-driven-development | Rationalization table: alibi → short declarative reply | adopted (steer) | `feature`/`audit`/`absorb` SKILL.md (ADR 14) |
+| C-006 | 2026-07-17 | agent-skills review discussion (2026-07-15) | Dependency discipline: 1 dep/PR, changelog before upgrade, stdlib-first, lockfile never by hand | adopted (steer; wired half = weekly pnpm audit in CI) | `templates/ts-base/AGENTS.md` (ADR 14) |
+| C-007 | 2026-07-17 | agent-skills review discussion (2026-07-15) | Skill instructions demand verifiable artifacts; open questions are decoration | adopted (half-force) | PLAYBOOK Mechanism selection + `scripts/selftest-skills.sh` (ADR 14) |
+| C-008 | 2026-07-17 | agent-skills review discussion (2026-07-15) | Form limits on skills: 1-line description, body cap, mandatory output section | adopted (force) | `scripts/selftest-skills.sh` (ADR 14) |
 | C-009 | 2026-07-17 | agent-skills (catalog) | Install the catalog / router skill | rejected: ADR 9 silent propagation + context saturation | ADR 14 |
 | C-010 | 2026-07-17 | agent-skills/code-review-and-quality | Review-speed SLAs, multi-round reviewer process | rejected: team ceremony at n=1 | ADR 14 |
 | C-011 | 2026-07-17 | agent-skills/code-review-and-quality | Named structural remedies in reviews (propose the move, not just the problem) | deferred: sweep lot 2 | BACKLOG (harness) |
@@ -35,12 +42,12 @@ Rules:
 | C-014 | 2026-07-17 | agent-skills/doubt-driven-development | Fresh-context review before non-trivial output stands | already have | `templates/ts-base/.claude/skills/audit/SKILL.md:8`; PLAYBOOK routine audit (ADR 15) |
 | C-015 | 2026-07-17 | agent-skills/doubt-driven-development | Adversarial reviewer framing ("find what is wrong") | rejected: neutral-prompt anti-confabulation; reify-to-test is the arbiter | ADR 15 |
 | C-016 | 2026-07-17 | agent-skills/doubt-driven-development | Reviewer gets artifact + contract, never the author's claim or reasoning | already have | `audit/SKILL.md:9-10`; `auditor.md:7-9` |
-| C-017 | 2026-07-17 | agent-skills/doubt-driven-development | Non-trivial decision definition (branching / boundary / type-unverifiable / irreversible) | adopted | `home/skills/decide/SKILL.md` (ADR 15) |
+| C-017 | 2026-07-17 | agent-skills/doubt-driven-development | Non-trivial decision definition (branching / boundary / type-unverifiable / irreversible) | adopted (steer) | `home/skills/decide/SKILL.md` (ADR 15) |
 | C-018 | 2026-07-17 | agent-skills/doubt-driven-development | Bounded doubt loop (3 cycles) + doubt-theater flag | rejected: single-pass audit + AGENT-LOG real/confabulated ratio covers calibration | ADR 15 |
 | C-019 | 2026-07-17 | agent-skills/doubt-driven-development | Cross-model second opinion (read-only sandbox, stdin piping) | deferred: trigger = audit miss from shared blind spot, or a 2nd model CLI present | BACKLOG (harness) |
-| C-020 | 2026-07-17 | agent-skills/test-driven-development | Prove-it: a bug fix starts with a failing reproduction test | adopted | `templates/ts-base/AGENTS.md` + PLAYBOOK Layer 0 (ADR 15) |
-| C-021 | 2026-07-17 | agent-skills/test-driven-development | Assert outcomes/state, never internal call sequences | adopted | `templates/ts-base/AGENTS.md` + PLAYBOOK Layer 0 (ADR 15) |
-| C-022 | 2026-07-17 | agent-skills/test-driven-development | DAMP over DRY in test code | adopted | `templates/ts-base/AGENTS.md` (ADR 15) |
+| C-020 | 2026-07-17 | agent-skills/test-driven-development | Prove-it: a bug fix starts with a failing reproduction test | adopted (steer) | `templates/ts-base/AGENTS.md` + PLAYBOOK Layer 0 (ADR 15) |
+| C-021 | 2026-07-17 | agent-skills/test-driven-development | Assert outcomes/state, never internal call sequences | adopted (steer) | `templates/ts-base/AGENTS.md` + PLAYBOOK Layer 0 (ADR 15) |
+| C-022 | 2026-07-17 | agent-skills/test-driven-development | DAMP over DRY in test code | adopted (steer) | `templates/ts-base/AGENTS.md` (ADR 15) |
 | C-023 | 2026-07-17 | agent-skills/test-driven-development | Double ladder: real > fake > stub > mock | already have | `templates/ts-base/AGENTS.md:24-25` fakeable seam; PLAYBOOK.md:39-40 |
 | C-024 | 2026-07-17 | agent-skills/test-driven-development | Test pyramid percentages + small/medium/large taxonomy | rejected: quota-shaped; "lowest level that can catch the bug" does the work | ADR 15 |
 | C-025 | 2026-07-17 | agent-skills/test-driven-development | Beyonce rule: behavior you rely on carries a test | already have | PLAYBOOK.md:41-44 human-owned checklist + tests ship with logic |

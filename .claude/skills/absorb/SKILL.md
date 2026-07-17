@@ -28,10 +28,13 @@ One row per claim:
   "partial" MUST carry a verified path (`file:line` or a command run now,
   output shown). An unanchored "yes" is a lie waiting to be found; write
   "hypothesis / not verified" if the anchor is missing (anchoring law).
-- **Action** is one of: **adopt** (name the target file and the mechanism per
-  the PLAYBOOK's Mechanism selection — force over steer) · **reject** (one
-  line naming the value or ADR it loses to) · **already have** (the anchor
-  says where) · **defer** (goes to BACKLOG with its pre-registered trigger).
+- **Action** is one of: **adopt** (name the target file, the mechanism per
+  the PLAYBOOK's Mechanism selection, and the enforcement degree the ledger
+  records — force / half-force / steer, force preferred; a steer adoption
+  states why it cannot be reified, and obedience that cannot be forced at any
+  degree nor seen violated is decoration → reject) · **reject** (one line
+  naming the value or ADR it loses to) · **already have** (the anchor says
+  where) · **defer** (goes to BACKLOG with its pre-registered trigger).
 
 ## 3. Close with artifacts, not opinions
 

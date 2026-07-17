@@ -447,7 +447,8 @@ that never fires).
   (`home/bin/write-containment.py`), negative cases in `scripts/selftest-home.sh` in CI
   (plain, `../` and symlink escapes each seen blocked). Bash remains the honest hole
   (OS sandbox territory); the read side stays settings-level per project.
-- **Pending wiring (ADR 9)** — until it lands, the ADR is a convention, honestly
-  labeled: `/kickoff` emits the `source: agentic-harness@<sha>` stamp; the skill drift
-  report in `selftest.sh` is deferred while the catalog has a single skill consumer
-  (ADR 12).
+- Provenance stamp ✅ (ADR 9, 2026-07-17) — `/kickoff` step 3 emits
+  `source: agentic-harness@<sha>` into each copied skill. Honest label: steer (an
+  instruction executed on invocation, no mechanical check yet). The drift report in
+  `selftest.sh` — the force half — stays deferred while the catalog has a single
+  skill consumer (ADR 12); wire it when a second consumer exists.

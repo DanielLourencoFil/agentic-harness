@@ -9,6 +9,27 @@ The full engineering system lives in `~/Dev/agentic-harness/PLAYBOOK.md`.
 **At any new project kickoff, read it and assemble the harness (layers + kickoff checklist)
 before writing feature code.** Templates: `~/Dev/agentic-harness/templates/`.
 
+## Layer A — anti-destruction (every repo, including as a guest)
+
+The portable discipline for AI-written code anywhere: own project, legacy, or a
+third-party repo where the cage (layer B) cannot be installed. Travels with the
+machine, not the repo (ADR 12; list closed 2026-07-17).
+
+- **Minimal diff:** only the lines the task requires; nothing out of scope.
+- **Read before edit:** never edit a file not read in this session.
+- **No drive-by cleanup:** formatting, renames, "while I'm here" refactors are
+  proposals, never diffs.
+- **No gutting:** existing behavior is a contract; never rewrite or delete working
+  code to "simplify" — in legacy, characterization tests first.
+- **Shown evidence:** an "it works" claim carries the command output that proves it;
+  without output it is a hypothesis.
+- **Anchoring law:** every claim about a repo carries a verified path or command;
+  otherwise it is labeled "hypothesis / not verified".
+
+Honest labels: write containment outside the project root is force (PreToolUse hook,
+ADR 10/13); read-before-edit is half-force (the harness requires a prior Read); the
+rest is steer — the gate is the human's replica.
+
 ## Session scoping
 
 One project, one session, one cwd: engineering work on a project happens in a session

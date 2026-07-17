@@ -18,3 +18,20 @@ description: Fresh-context audit of a completed unit with reify-to-test triage. 
      list them separately, do not act on them.
 3. Log the outcome in `AGENT-LOG.md`: N findings, N real, N confabulated.
    This ratio calibrates how much to trust future audits.
+
+## Rationalizations this rite refuses
+
+Replies are statements, never open questions: a session answers an open
+question to itself silently and moves on.
+
+| Alibi | Reply |
+| --- | --- |
+| "This finding is obviously real; skip the test" | Obvious findings are the cheapest to reify. A finding that will not become a red test is not a bug. |
+| "I wrote this code; I can audit it in this session" | The writing session defends its own choices. The auditor runs in a fresh context (step 1), always. |
+| "Zero findings looks lazy; report something" | "None found" is a valid, welcome result. An invented finding costs a confabulation entry in the log. |
+
+## Verifiable output
+
+- The auditor's report: per-finding severity, confidence, and concrete reproduction.
+- One test per triaged finding, shown red (real) or discarded as confabulated.
+- The `AGENT-LOG.md` line with the found-real / confabulated counts.

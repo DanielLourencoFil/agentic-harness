@@ -32,3 +32,10 @@ project's /feature rite covers it. This skill exists for the world outside the r
 - More than ~12 items emerging is a smell: propose splitting the goal instead of
   shipping a wall.
 - No em dashes in anything written to files.
+
+## Verifiable output
+
+- The checklist: verb-first action, observable completion criterion, owner, and
+  dependency per item; follow-up dates on every third-party item.
+- The BACKLOG.md registration (or the explicit offer of it), so the list survives
+  the session.

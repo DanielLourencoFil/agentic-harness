@@ -43,3 +43,22 @@ the exact command the human should run. If the project keeps a plan or
 execution doc, update its matching entry now (the doc is a view over the
 tests, never a parallel source of truth). Remind the human that a completed
 unit gets `/audit` in a fresh context.
+
+## Rationalizations this rite refuses
+
+Replies are statements, never open questions: a session answers an open
+question to itself silently and moves on.
+
+| Alibi | Reply |
+| --- | --- |
+| "Too small for the full rite" | A rite skipped when small stops firing when large. The steps shrink with the task; they are not optional. |
+| "I'll add the tests right after the code" | After-the-fact tests describe the implementation, not the behavior. Negative tests come first (step 3). |
+| "Verify is green, so it works" | Verify gates regressions; "works" requires the feature exercised with output shown (step 5). |
+| "The plan is obvious; the human would approve" | Approval is an event, not an inference. No production code before it happens (step 2). |
+
+## Verifiable output
+
+- `docs/SPEC.md` updated with the scenario checklist (human's answers recorded).
+- Negative tests shown failing before implementation, then green.
+- `verify` output pasted; the feature exercised with its output shown.
+- Commits pushed per the repo conventions (SHAs in the closeout).

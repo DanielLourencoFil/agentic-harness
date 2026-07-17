@@ -451,6 +451,11 @@ mandatory "Verifiable output" section); the semantic half stays steer, honestly 
 
 ## Roadmap (assets to extract as stacks get used)
 
+**Growth queue (ADR 18):** the harness grows only from `harness-candidate:` lines
+logged in a product's `AGENT-LOG.md` or `~/Dev/BACKLOG.md` at the moment a real
+feature hurt — never from completing the map. A candidate becomes a round only if
+it ends wired + selftested (ADR 12); the CLAIMS ledger records the verdict either way.
+
 - `ts-base` ✅ (selftest in CI)
 - `vue-starter` ✅ — extracted from OrgLab Fase 0 (2026-07-10); overlay on `create-vue`,
   own selftest in CI including negative gate tests

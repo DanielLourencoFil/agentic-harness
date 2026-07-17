@@ -188,3 +188,78 @@ separate link files rot unread; see ADR 3).
     (quota-shaped — "lowest level that can catch the bug" does the work);
     bounded 3-cycle doubt loops (single-pass audit + reify + human PR review at
     n=1). Lot adoption count: 3 (≥2) — the sweep continues to lot 2.
+16. **2026-07-17 — Absorbed claims are registered in a cumulative append-only
+    ledger (`docs/ABSORB/LEDGER.md`), one dated row per claim with a stable
+    `C-NNN` id, source, verdict and anchor.** Trigger: the lot-1 tables lived
+    only in the session log — no way to audit which claim an adoption addressed,
+    trace which source it came from, or answer "do we already have a mechanism
+    for this?" without re-deriving; the sweep's purpose was precisely to build
+    this reference. The ledger is the entry point of the improvement pipeline:
+    any incoming source is grepped against it first, and each claim resolves to
+    already-addressed / new / better-than-ours (supersede by appending a row
+    citing the old id) / principle-we-lacked. Rows are dated snapshots (anchors
+    rot honestly, like ADR checked-on dates); `/absorb` requires the appended
+    rows in its verifiable output; the selftest enforces id uniqueness and the
+    closed verdict set, both seen rejecting a planted violation. Backfilled
+    C-001..C-031 (the ADR 14 package + sweep lot 1). **Adopted rows carry their
+    enforcement degree, honestly labeled — force / half-force / steer (force
+    preferred, PLAYBOOK meta-rule; a bare "adopted" is rejected by the
+    selftest):** an adoption must name how obedience is forced or at least
+    where its violation becomes visible; unenforceable, unobservable obedience
+    is decoration and gets rejected instead of adopted. Rejected: per-lot
+    snapshot docs only (durable but not queryable across lots), PR-body-only
+    records (not greppable; fails on zero-adoption lots), and adoption
+    restricted to wirable-only claims (would exclude the load-bearing steer
+    core — layer A's minimal-diff and no-gutting are steer by honest label).
+17. **2026-07-17 — The ledger generalizes into `docs/CLAIMS.md`, the single
+    source of truth for every claim the harness holds: internal guarantees and
+    external evaluations, one format, one ID space.** Trigger: "what does the
+    harness assure?" had no single place to ask — the answer was scattered
+    across four selftest scripts, the PLAYBOOK and the ADRs, each in a
+    different format, and re-derived per session. Adopted: internal guarantees
+    backfilled as C-032..C-050 (source: harness, each citing its ADR and its
+    executor); the enforcement mix (force / half-force / steer counts) printed
+    by the selftest on every run — the measured guard against drifting into a
+    prompt-and-pray skills repo; two new CI checks, both seen rejecting planted
+    violations: coverage (every `scripts/selftest*.sh` gate must be indexed in
+    the ledger) and executors (a force/half-force row must cite an existing
+    executor file). Honest limit: existence checks, not semantic match — the
+    prose-to-gate correspondence stays human (ADR 1). Rejected: two registries
+    (internal vs absorbed — same question, two places to ask, formats drift
+    apart) and a stored metrics section in the file (a written count drifts;
+    the selftest computes it fresh each run).
+18. **2026-07-17 — The strategy brief (docs/STRATEGY-BRIEF-2026-07-17.md, written
+    by another AI session, evaluated via /absorb as untrusted testimony) yields
+    one adoption: the `harness-candidate:` growth queue — the harness grows only
+    from lines logged when a real product feature hurt, never from
+    map-completion.** Ledger rows C-051..C-059. Its strongest content is the
+    brake, which agrees with the standing BACKLOG ordering (dogfood OrgLab
+    first; sweep behind product work). Deferred with triggers: evidence-as-force
+    stop hook (first real evidence-gap incident), wired lib↛UI boundary (first
+    consumer with a src/lib), LLM-in-product surface pack (next AI-in-product
+    feature); kill/continue 90-day rule awaits the owner's explicit signature —
+    governance is not the agent's to adopt. Already had: gitleaks pack (BACKLOG
+    2026-07-13), characterization scaffold (brownfield item), the §5 force/steer
+    map (superseded by docs/CLAIMS.md, which carries degrees plus CI checks).
+    Rejected: worktree helper script (tooling for the map). Honest note: the
+    brief predates ADRs 14-17 and PR #11's merge; its repo-state claims were
+    re-verified before use.
+19. **2026-07-17 — Report-before-implement becomes layer A item 7, with a wired
+    half: the deliberation-nudge chain.** Trigger: owner feedback ("quero que
+    avalie e reporte antes de implementar... tenho problemas em conter a força
+    criativa dos modelos") after an /absorb run implemented in the same turn as
+    the evaluation it was asked for. Adopted: constitution rule (an evaluation
+    request ends in a report; the go is explicit); `home/bin/
+    deliberation-nudge.py` — a UserPromptSubmit hook that injects the reminder
+    when the prompt carries deliberation markers ("e se", "considerando", "faz
+    sentido"…; nudge, never block — false positives must cost nothing, and the
+    marker list grows only from real misses); plan mode as the jail, with
+    `defaultMode: plan` in this repo's `.claude/settings.json` (deliberation
+    dominates the meta-repo; product repos untouched); `/absorb` amended
+    (propose diffs, implement after the go). Honest chain: the reminder fires
+    mechanically (force) and plan mode physically blocks edits until approval
+    (force), but a hook cannot switch the session's permission mode — the
+    middle link (agent entering plan mode) stays steer, re-armed per firing.
+    Rejected: blocking the prompt until a mode is confirmed (prompt fatigue
+    kills gates socially, ADR 10) and machine-global plan default (taxes every
+    product turn where the automatic commit rite is deliberate).

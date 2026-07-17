@@ -9,11 +9,13 @@ Systematic absorption of one external source per run. The source is a quarry,
 never a package: nothing is installed or vendored from it (WATCH stance); what
 survives the table below enters the harness as our own diff, on our terms.
 
-## 1. Read the source, extract claims
+## 1. Grep the ledger, then read the source
 
-Read the named source in full. Extract each discrete, actionable claim
-(a practice, a rule, a format, a gate). Ignore prose that carries no
-instruction. Number the claims.
+`docs/CLAIMS.md` is the registry of every claim ever evaluated. Search
+it for the source and its claims FIRST: a previously evaluated claim cites its
+`C-NNN` row instead of being re-deliberated. Then read the source in full and
+extract each discrete, actionable claim (a practice, a rule, a format, a
+gate). Ignore prose that carries no instruction. Number the claims.
 
 ## 2. The anchored table (the output contract)
 
@@ -26,16 +28,24 @@ One row per claim:
   "partial" MUST carry a verified path (`file:line` or a command run now,
   output shown). An unanchored "yes" is a lie waiting to be found; write
   "hypothesis / not verified" if the anchor is missing (anchoring law).
-- **Action** is one of: **adopt** (name the target file and the mechanism per
-  the PLAYBOOK's Mechanism selection — force over steer) · **reject** (one
-  line naming the value or ADR it loses to) · **already have** (the anchor
-  says where) · **defer** (goes to BACKLOG with its pre-registered trigger).
+- **Action** is one of: **adopt** (name the target file, the mechanism per
+  the PLAYBOOK's Mechanism selection, and the enforcement degree the ledger
+  records — force / half-force / steer, force preferred; a steer adoption
+  states why it cannot be reified, and obedience that cannot be forced at any
+  degree nor seen violated is decoration → reject) · **reject** (one line
+  naming the value or ADR it loses to) · **already have** (the anchor says
+  where) · **defer** (goes to BACKLOG with its pre-registered trigger).
 
 ## 3. Close with artifacts, not opinions
 
-- Adoptions that fit this session: implement now, minimal diff, gate first
-  where a gate exists (the form gate must stay green).
+- Adoptions that fit this session: PROPOSE the diffs in the report and wait
+  for the human's explicit go (ADR 19); then implement minimal-diff, gate
+  first where a gate exists (the form gate must stay green).
 - Adoptions that do not fit: one BACKLOG entry each, with trigger.
+- **Append one ledger row per claim** to `docs/CLAIMS.md` (next free
+  `C-NNN` id, dated; verdict from the closed set; anchor in the Where column).
+  The table above is the working view; the ledger is what survives and what
+  the next run greps.
 - One dated ADR line for the source (adopted/rejected summary, source cited
   inline with a checked-on date), ready to paste into `docs/DECISIONS.md`.
 - If a sweep is running, state the lot's adoption count against the
@@ -55,6 +65,7 @@ Replies are statements, never open questions.
 
 - The claim table, every "yes"/"partial" row carrying a verified path or
   shown command output.
+- The ledger rows appended to `docs/CLAIMS.md` (one `C-NNN` per claim).
 - The diffs of same-session adoptions (or BACKLOG entries with triggers for
   deferred ones).
 - The paste-ready dated ADR line citing the source.

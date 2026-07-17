@@ -35,6 +35,12 @@
             "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/secret-scan.py\"",
             "timeout": 10,
             "statusMessage": "secret-hygiene: scanning prompt"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/deliberation-nudge.py\"",
+            "timeout": 10,
+            "statusMessage": "deliberation-nudge: checking prompt"
           }
         ]
       }

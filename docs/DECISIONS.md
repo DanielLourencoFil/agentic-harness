@@ -228,3 +228,19 @@ separate link files rot unread; see ADR 3).
     (internal vs absorbed — same question, two places to ask, formats drift
     apart) and a stored metrics section in the file (a written count drifts;
     the selftest computes it fresh each run).
+18. **2026-07-17 — The strategy brief (docs/STRATEGY-BRIEF-2026-07-17.md, written
+    by another AI session, evaluated via /absorb as untrusted testimony) yields
+    one adoption: the `harness-candidate:` growth queue — the harness grows only
+    from lines logged when a real product feature hurt, never from
+    map-completion.** Ledger rows C-051..C-059. Its strongest content is the
+    brake, which agrees with the standing BACKLOG ordering (dogfood OrgLab
+    first; sweep behind product work). Deferred with triggers: evidence-as-force
+    stop hook (first real evidence-gap incident), wired lib↛UI boundary (first
+    consumer with a src/lib), LLM-in-product surface pack (next AI-in-product
+    feature); kill/continue 90-day rule awaits the owner's explicit signature —
+    governance is not the agent's to adopt. Already had: gitleaks pack (BACKLOG
+    2026-07-13), characterization scaffold (brownfield item), the §5 force/steer
+    map (superseded by docs/CLAIMS.md, which carries degrees plus CI checks).
+    Rejected: worktree helper script (tooling for the map). Honest note: the
+    brief predates ADRs 14-17 and PR #11's merge; its repo-state claims were
+    re-verified before use.

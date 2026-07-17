@@ -296,7 +296,8 @@ No scaffold, no install, no code before the human approves the spec.
      (the agent opens PRs — the human merges);
    - file lockdown (deny **write**, keep read) only later, when a critical file stabilizes;
    - **filesystem containment, asymmetric (ADR 10):** deny **write** outside the project
-     root with a short named allowlist (agent memory dir, session scratchpad); **read**
+     root with a short named allowlist (agent memory dir, session scratchpad, the
+     cross-project data repo — ADR 13); **read**
      outside the root asks, with hard denies on sensitive zones (`~/.ssh`, other
      projects' `.env*`). The write side is wired at the machine layer — a PreToolUse
      hook resolving the real target path (`home/bin/write-containment.py`, escapes via

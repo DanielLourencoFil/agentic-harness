@@ -134,3 +134,13 @@ separate link files rot unread; see ADR 3).
     Rejected: brownfield overlay now (its consumer is still hypothetical; flips the
     moment a real one exists), both fronts in one round (the 2026-07-15
     circular-session lesson), ADR 9 drift wiring (a single skill consumer so far).
+13. **2026-07-17: The cross-project data repo (`~/Dev/organizer/`) joins the
+    containment allowlist.** Trigger: minutes after the ADR 10 hook went live it
+    blocked the backlog rite itself — the agent writing "do later" items to
+    `~/Dev/BACKLOG.md` (realpath: organizer) from a project session. Two decided
+    rules collided; the human resolved it the way ADR 10's own rationale dictates:
+    the allowlist exists precisely for designed flows a blanket ban would break
+    (agent memory, scratchpad), and the backlog rite is the same category. Wired:
+    the hook's named allowlist plus a positive selftest case. Rejected:
+    propose-a-line rite (returns backlog keeping to governance by memory) and
+    human-only edits (same cost, without recording why).

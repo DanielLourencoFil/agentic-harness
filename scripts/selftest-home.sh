@@ -17,7 +17,8 @@ trap 'rm -rf "$TMP"' EXIT
 
 ROOT="$TMP/proj"
 FAKEHOME="$TMP/home"
-mkdir -p "$ROOT" "$TMP/outside" "$FAKEHOME/.claude/projects/some-proj/memory"
+mkdir -p "$ROOT" "$TMP/outside" "$FAKEHOME/.claude/projects/some-proj/memory" \
+  "$FAKEHOME/Dev/organizer"
 ln -s "$TMP/outside" "$ROOT/escape-link"
 
 containment() { # $1 = payload json; stdout = hook output
@@ -49,6 +50,8 @@ expect_allow "write to agent memory (named allowlist)" \
   "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"'"$FAKEHOME"'/.claude/projects/some-proj/memory/note.md"}}')"
 expect_allow "write to session scratchpad (named allowlist)" \
   "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"/tmp/claude-selftest/scratchpad/tmp.txt"}}')"
+expect_allow "write to the cross-project data repo (backlog rite, ADR 13)" \
+  "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"'"$FAKEHOME"'/Dev/organizer/BACKLOG.md"}}')"
 
 echo "==> secret-scan: secret-shaped prompts must be blocked, benign ones must pass"
 fake_key="sk-AAAAAAAAAAAAAAAAAAAA" # fixture, not a credential

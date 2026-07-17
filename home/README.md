@@ -22,7 +22,8 @@ hooks below must fire in sessions that have no project to carry them.)
   adversarial defense; see `bin/`), and the write-containment gate on every file
   edit (ADR 10: a file-tool write whose real path — symlinks and `../` resolved —
   lands outside the project root is denied; named allowlist: agent memory,
-  session scratchpad. Honest limit: binds the file tools, not Bash).
+  session scratchpad, the cross-project data repo (ADR 13). Honest limit: binds
+  the file tools, not Bash).
 - `bin/`: the hook scripts. Pipe-testable in isolation, no Claude required;
   `scripts/selftest-home.sh` does exactly that in CI, negative cases included.
 - `skills/`: the conversation rituals — formats only the conversation obeys, so

@@ -1,13 +1,22 @@
-# ABSORB LEDGER — every externally sourced claim, its verdict, and where it landed
+# CLAIMS LEDGER — the single source of truth for what the harness claims
 
-The entry point of the improvement pipeline (ADR 16): when any external source
-arrives — the skill of the week, an article, a demo — this file answers in one
-grep which of four cases each claim is: **already addressed** (cite the row) ·
-**new solution** (evaluate) · **better solution than ours** (re-evaluate;
-supersede by appending a new row that cites the old ID) · **principle we did
-not have in mind yet** (adopt). One row per claim per evaluation, appended by
-the `/absorb` rite, never edited: a row is a **dated snapshot** — its anchor
-was verified on that date and may rot honestly, like an ADR's checked-on date.
+Every claim lives here, in one format and one ID space (ADR 16/17): the
+guarantees the harness itself asserts (source: harness) and every externally
+sourced claim ever evaluated (source: the external doc). This file answers
+both standing questions in one grep:
+
+- **"What does the harness assure, and at what degree?"** — the adopted rows,
+  each carrying its enforcement degree. The degree mix (force / half-force /
+  steer) is the measured guard against becoming one more prompt-and-pray
+  skills repo; the selftest prints the mix on every run.
+- **"Has this claim been evaluated before?"** — the entry point of the
+  improvement pipeline: any incoming source resolves per claim to already
+  addressed (cite the row) · new (evaluate) · better than ours (supersede by
+  appending a row citing the old ID) · principle we lacked (adopt).
+
+One row per claim per evaluation, appended, never edited: a row is a **dated
+snapshot** — its anchor was verified on that date and may rot honestly, like
+an ADR's checked-on date.
 
 Rules:
 - **Grep here first.** Every `/absorb` run starts by searching this file for the
@@ -23,6 +32,11 @@ Rules:
   cannot be reified AND is load-bearing. A claim whose obedience cannot be
   forced at any degree, nor even be seen violated in review or audit, is
   decoration and is rejected. The selftest rejects a bare `adopted`.
+- **Force rows cite their executor** (the selftest case, hook, or workflow
+  that proves them), and every `scripts/selftest*.sh` gate must be indexed
+  here — a new gate without a ledger row fails CI (coverage check). Honest
+  limit: the checks verify existence and reference, not semantic match; the
+  prose-to-gate correspondence stays human (ADR 1).
 
 | ID | Date | Source | Claim | Verdict | Where |
 | --- | --- | --- | --- | --- | --- |
@@ -57,3 +71,22 @@ Rules:
 | C-029 | 2026-07-17 | agent-skills/planning-and-task-breakdown | Standing tasks/plan.md + tasks/todo.md checklists | rejected: ADR 6 — plan docs are views over tests; hand-ticked checklists lie | ADR 15 |
 | C-030 | 2026-07-17 | agent-skills/planning-and-task-breakdown | Vertical slicing, task sizing ("and" in title = two tasks), checkpoint cadence, contract-first parallelization | deferred: folded into the /plan rite item | BACKLOG (harness) |
 | C-031 | 2026-07-17 | agent-skills/planning-and-task-breakdown | Highest-risk task first (fail fast) | already have | `.claude/skills/kickoff/SKILL.md:15-16` riskiest assumption |
+| C-032 | 2026-07-17 | harness (ADR 1) | ts-base is consumed exactly as its README instructs; `verify` is green on the empty scaffold | adopted (force) | selftest.sh Claim 1, in CI on every push |
+| C-033 | 2026-07-17 | harness (ADR 2) | AGENTS.md is canonical; CLAUDE.md/GEMINI.md are one-line adapters; settings.json valid | adopted (force) | selftest.sh Claim 0 |
+| C-034 | 2026-07-17 | harness (ADR 6) | /feature + /audit rites and the auditor ship in the template; the auditor stays read-only | adopted (half-force) | presence + read-only tools line: selftest.sh Claim 0b; execution of the rites: steer on invocation |
+| C-035 | 2026-07-17 | harness (ADR 1) | Commit #1 passes the pre-commit chain deletion-guard → lint-staged → verify | adopted (force) | selftest.sh Claim 2 |
+| C-036 | 2026-07-17 | harness (ADR 1) | The deletion guard blocks a >80-line deletion unless explicitly overridden | adopted (force) | selftest.sh Claim 3 |
+| C-037 | 2026-07-17 | harness (ADR 7) | The lint gate REJECTS violating code — any, eqeqeq, switch-exhaustiveness, no-cycle, max-depth each seen firing (no wired-but-blind rules) | adopted (force) | selftest.sh Claim 4 |
+| C-038 | 2026-07-17 | harness (roadmap 2026-07-10) | vue-starter is consumed per its README; the gate rejects validity, vue and pure-core violations | adopted (force) | selftest-vue.sh |
+| C-039 | 2026-07-17 | harness (ADR 10/13) | Writes outside the project root are denied — plain, `../` and symlink escapes — with a named allowlist (memory, scratchpad, data repo) | adopted (force) | write-containment.py + selftest-home.sh |
+| C-040 | 2026-07-17 | harness (secret-hygiene 2026-07-13) | Secret-shaped prompts are blocked before leaving the machine | adopted (force) | secret-scan.py + selftest-home.sh |
+| C-041 | 2026-07-17 | harness (secret-hygiene 2026-07-13) | Env-dumping commands (printenv, cat .env) are denied; the sanctioned substitution flow passes | adopted (force) | env-dump-guard.py + selftest-home.sh |
+| C-042 | 2026-07-17 | harness (ADR 10) | Every home hook is wired in settings.json and executable — an unreferenced hook fails the selftest | adopted (force) | selftest-home.sh wiring section |
+| C-043 | 2026-07-17 | harness (ADR 16) | Ledger contract: unique ids, closed verdict set, adopted rows carry a degree | adopted (force) | scripts/selftest-skills.sh ledger checks |
+| C-044 | 2026-07-17 | harness (pipeline doctrine) | CI runs the selftests on every push AND every pull_request, never PR-only | adopted (force) | .github/workflows/selftest.yml `on:` block |
+| C-045 | 2026-07-17 | harness (ADR 3) | Branch protection ruleset at kickoff: PR required, no force-push, required status check — binds every actor server-side | adopted (steer; force in the consumer repo once the ruleset is applied) | PLAYBOOK kickoff step 6 |
+| C-046 | 2026-07-17 | harness (ADR 9) | Copied skills carry `source: agentic-harness@<sha>` provenance | adopted (steer; drift report deferred per ADR 12) | `.claude/skills/kickoff/SKILL.md` step 3 |
+| C-047 | 2026-07-17 | harness (ADR 12) | Layer A anti-destruction: minimal diff, read before edit, no drive-by cleanup, no gutting, shown evidence, anchoring law | adopted (steer; read-before-edit is half-force via the harness, write containment is force) | `home/claude/CLAUDE.md` Layer A section |
+| C-048 | 2026-07-17 | harness (ADR 6) | Plan/checklist docs are views over tests, never a parallel source of truth | adopted (steer) | PLAYBOOK Layer 0 + /feature closeout |
+| C-049 | 2026-07-17 | harness (ADR 6) | Audits run fresh-context, neutrally framed, findings reified into tests | adopted (steer; auditor read-only is force per C-034) | `templates/ts-base/.claude/skills/audit/SKILL.md` + PLAYBOOK routine |
+| C-050 | 2026-07-17 | harness (pipeline doctrine) | Commit/push of work branches is automatic; merge to default is always the human's act | adopted (steer; force once the consumer ruleset walls the default branch) | PLAYBOOK pipeline section |

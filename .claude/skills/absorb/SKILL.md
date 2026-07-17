@@ -11,7 +11,7 @@ survives the table below enters the harness as our own diff, on our terms.
 
 ## 1. Grep the ledger, then read the source
 
-`docs/ABSORB/LEDGER.md` is the registry of every claim ever evaluated. Search
+`docs/CLAIMS.md` is the registry of every claim ever evaluated. Search
 it for the source and its claims FIRST: a previously evaluated claim cites its
 `C-NNN` row instead of being re-deliberated. Then read the source in full and
 extract each discrete, actionable claim (a practice, a rule, a format, a
@@ -41,7 +41,7 @@ One row per claim:
 - Adoptions that fit this session: implement now, minimal diff, gate first
   where a gate exists (the form gate must stay green).
 - Adoptions that do not fit: one BACKLOG entry each, with trigger.
-- **Append one ledger row per claim** to `docs/ABSORB/LEDGER.md` (next free
+- **Append one ledger row per claim** to `docs/CLAIMS.md` (next free
   `C-NNN` id, dated; verdict from the closed set; anchor in the Where column).
   The table above is the working view; the ledger is what survives and what
   the next run greps.
@@ -64,7 +64,7 @@ Replies are statements, never open questions.
 
 - The claim table, every "yes"/"partial" row carrying a verified path or
   shown command output.
-- The ledger rows appended to `docs/ABSORB/LEDGER.md` (one `C-NNN` per claim).
+- The ledger rows appended to `docs/CLAIMS.md` (one `C-NNN` per claim).
 - The diffs of same-session adoptions (or BACKLOG entries with triggers for
   deferred ones).
 - The paste-ready dated ADR line citing the source.

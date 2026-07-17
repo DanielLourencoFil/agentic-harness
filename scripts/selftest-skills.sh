@@ -82,8 +82,8 @@ check_ledger() { # $1 = ledger path; prints reasons; non-zero exit on violation
 }
 
 echo "==> Absorb ledger: ids unique, verdicts from the closed set (ADR 16)"
-LEDGER="$HARNESS_DIR/docs/ABSORB/LEDGER.md"
-test -f "$LEDGER" || { echo "FAIL: docs/ABSORB/LEDGER.md missing" >&2; exit 1; }
+LEDGER="$HARNESS_DIR/docs/CLAIMS.md"
+test -f "$LEDGER" || { echo "FAIL: docs/CLAIMS.md missing" >&2; exit 1; }
 if ! out="$(check_ledger "$LEDGER")"; then
   echo "FAIL: ledger violates its contract" >&2; echo "$out" >&2; exit 1
 fi
@@ -98,4 +98,57 @@ if check_ledger "$TMP/ledger.md" >/dev/null; then
   exit 1
 fi
 
-echo "SELFTEST-SKILLS OK — form gate green, ledger contract holds, both gates seen rejecting planted violations."
+check_coverage() { # $1 = ledger; $2 = scripts dir — every selftest gate must be indexed
+  local f="$1" dir="$2" ok=0 s base
+  for s in "$dir"/selftest*.sh; do
+    base="$(basename "$s")"
+    grep -q "$base" "$f" || { echo "  gate not indexed in the claims ledger: $base"; ok=1; }
+  done
+  return "$ok"
+}
+
+check_executors() { # $1 = ledger — force/half-force rows must cite an existing executor
+  local f="$1" ok=0 line id refs r
+  while IFS= read -r line; do
+    id="$(awk -F'|' '{gsub(/ /,"",$2); print $2}' <<<"$line")"
+    refs="$(grep -oE '[A-Za-z0-9._/-]+\.(sh|py|yml)' <<<"$line" || true)"
+    if [ -z "$refs" ]; then
+      echo "  force-degree row $id cites no executor file"; ok=1; continue
+    fi
+    while IFS= read -r r; do
+      if [ -z "$(find "$HARNESS_DIR/scripts" "$HARNESS_DIR/home/bin" "$HARNESS_DIR/.github" \
+            -name "$(basename "$r")" 2>/dev/null | head -1)" ]; then
+        echo "  row $id cites a ghost executor: $r"; ok=1
+      fi
+    done <<<"$refs"
+  done < <(grep -E '^\| C-[0-9]+ .*\| *adopted \((force|half-force)' "$f")
+  return "$ok"
+}
+
+echo "==> Claims coverage: every selftest gate indexed; force rows cite real executors (ADR 17)"
+if ! out="$(check_coverage "$LEDGER" "$HARNESS_DIR/scripts")"; then
+  echo "FAIL: unindexed gate — a guarantee the ledger does not know about" >&2; echo "$out" >&2; exit 1
+fi
+if ! out="$(check_executors "$LEDGER")"; then
+  echo "FAIL: force-degree claim without a living executor (prompt-and-pray)" >&2; echo "$out" >&2; exit 1
+fi
+
+echo "==> Negative cases: uncovered gate and ghost executor must be seen rejected"
+mkdir -p "$TMP/scripts"
+: > "$TMP/scripts/selftest-ghost.sh"
+if check_coverage "$LEDGER" "$TMP/scripts" >/dev/null; then
+  echo "FAIL: coverage check accepted an unindexed gate" >&2; exit 1
+fi
+printf '| C-900 | 2026-07-17 | src | fake gate | adopted (force) | ghost-gate.sh |\n' > "$TMP/ghost.md"
+if check_executors "$TMP/ghost.md" >/dev/null; then
+  echo "FAIL: executor check accepted a ghost executor" >&2; exit 1
+fi
+
+echo "==> Enforcement mix (adopted claims)"
+awk -F'|' '/^\| C-/ {v=$6; sub(/^ +/,"",v);
+  if (v ~ /^adopted \(force/) f++;
+  else if (v ~ /^adopted \(half-force/) h++;
+  else if (v ~ /^adopted \(steer/) s++}
+  END {printf "    force: %d · half-force: %d · steer: %d\n", f+0, h+0, s+0}' "$LEDGER"
+
+echo "SELFTEST-SKILLS OK — form gate green, ledger contract + coverage + executors hold, every gate seen rejecting a planted violation."

@@ -13,6 +13,8 @@ agentic-harness/
 ├── PLAYBOOK.md            # the assembly spec an AI reads at project kickoff
 ├── docs/TOUR.md           # see the harness bite, in ten minutes
 ├── docs/DECISIONS.md      # dated one-line ADRs, sources cited inline
+├── docs/CLAIMS.md         # the claims ledger: every guarantee the harness holds,
+│                          #   with its enforcement degree (force / half-force / steer)
 ├── docs/RATIONALE.md      # why these rules exist (the four-category taxonomy)
 ├── scripts/selftest*.sh   # consume the templates as documented; run by CI on every push
 ├── home/                  # the MACHINE layer: constitution, secret-hygiene hooks,

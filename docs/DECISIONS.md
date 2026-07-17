@@ -211,3 +211,20 @@ separate link files rot unread; see ADR 3).
     records (not greppable; fails on zero-adoption lots), and adoption
     restricted to wirable-only claims (would exclude the load-bearing steer
     core — layer A's minimal-diff and no-gutting are steer by honest label).
+17. **2026-07-17 — The ledger generalizes into `docs/CLAIMS.md`, the single
+    source of truth for every claim the harness holds: internal guarantees and
+    external evaluations, one format, one ID space.** Trigger: "what does the
+    harness assure?" had no single place to ask — the answer was scattered
+    across four selftest scripts, the PLAYBOOK and the ADRs, each in a
+    different format, and re-derived per session. Adopted: internal guarantees
+    backfilled as C-032..C-050 (source: harness, each citing its ADR and its
+    executor); the enforcement mix (force / half-force / steer counts) printed
+    by the selftest on every run — the measured guard against drifting into a
+    prompt-and-pray skills repo; two new CI checks, both seen rejecting planted
+    violations: coverage (every `scripts/selftest*.sh` gate must be indexed in
+    the ledger) and executors (a force/half-force row must cite an existing
+    executor file). Honest limit: existence checks, not semantic match — the
+    prose-to-gate correspondence stays human (ADR 1). Rejected: two registries
+    (internal vs absorbed — same question, two places to ask, formats drift
+    apart) and a stored metrics section in the file (a written count drifts;
+    the selftest computes it fresh each run).

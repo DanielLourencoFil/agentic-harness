@@ -34,3 +34,10 @@ jobs:
         with:
           node-version: 22
       - run: bash scripts/selftest-vue.sh
+  selftest-home:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/selftest-home.sh

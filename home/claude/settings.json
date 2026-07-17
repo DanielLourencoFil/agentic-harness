@@ -50,6 +50,17 @@
             "statusMessage": "secret-hygiene: checking command"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/write-containment.py\"",
+            "timeout": 10,
+            "statusMessage": "containment: checking write target"
+          }
+        ]
       }
     ]
   }

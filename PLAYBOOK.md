@@ -298,7 +298,11 @@ No scaffold, no install, no code before the human approves the spec.
    - **filesystem containment, asymmetric (ADR 10):** deny **write** outside the project
      root with a short named allowlist (agent memory dir, session scratchpad); **read**
      outside the root asks, with hard denies on sensitive zones (`~/.ssh`, other
-     projects' `.env*`). Honest limit: settings rules and hooks bind the file tools,
+     projects' `.env*`). The write side is wired at the machine layer — a PreToolUse
+     hook resolving the real target path (`home/bin/write-containment.py`, escapes via
+     `../` and symlinks seen blocked by `scripts/selftest-home.sh` in CI) — so it
+     travels to every session, including guest repos that carry no project settings.
+     Honest limit: settings rules and hooks bind the file tools,
      not Bash — real Bash containment is an OS-level sandbox (a worktree isolates
      the git index, not the filesystem; it is no security boundary).
    Remember this is a per-vendor **adapter** (see Agent-agnosticism): defense-in-depth,
@@ -430,7 +434,11 @@ that never fires).
   own selftest in CI including negative gate tests
 - `react-starter`, `nest-base` → extract on first real use, not before
 - Later: push starters as GitHub template repos (`degit`)
-- **Pending wiring (ADR 9, ADR 10)** — until these land, both ADRs are conventions,
-  honestly labeled: `/kickoff` emits the `source: agentic-harness@<sha>` stamp +
-  `selftest.sh` reports skill drift against the catalog; PreToolUse containment hook +
-  negative selftest case (an attempted write outside the root must be seen blocked).
+- Write containment ✅ (ADR 10, 2026-07-17) — PreToolUse hook at the machine layer
+  (`home/bin/write-containment.py`), negative cases in `scripts/selftest-home.sh` in CI
+  (plain, `../` and symlink escapes each seen blocked). Bash remains the honest hole
+  (OS sandbox territory); the read side stays settings-level per project.
+- **Pending wiring (ADR 9)** — until it lands, the ADR is a convention, honestly
+  labeled: `/kickoff` emits the `source: agentic-harness@<sha>` stamp; the skill drift
+  report in `selftest.sh` is deferred while the catalog has a single skill consumer
+  (ADR 12).

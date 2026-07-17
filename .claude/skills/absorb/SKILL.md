@@ -38,8 +38,9 @@ One row per claim:
 
 ## 3. Close with artifacts, not opinions
 
-- Adoptions that fit this session: implement now, minimal diff, gate first
-  where a gate exists (the form gate must stay green).
+- Adoptions that fit this session: PROPOSE the diffs in the report and wait
+  for the human's explicit go (ADR 19); then implement minimal-diff, gate
+  first where a gate exists (the form gate must stay green).
 - Adoptions that do not fit: one BACKLOG entry each, with trigger.
 - **Append one ledger row per claim** to `docs/CLAIMS.md` (next free
   `C-NNN` id, dated; verdict from the closed set; anchor in the Where column).

@@ -6,7 +6,9 @@
 #   1. write-containment denies writes whose REAL path escapes the project root
 #      (plain outside, `../`, symlink) and allows root/memory/scratchpad;
 #   2. secret-scan blocks prompts carrying secret-shaped values;
-#   3. env-dump-guard denies commands that would dump secrets into context.
+#   3. env-dump-guard denies commands that would dump secrets into context;
+#   4. deliberation-nudge reminds on deliberation markers (nudge, never block)
+#      and stays silent on plain work prompts (ADR 19).
 set -euo pipefail
 
 HARNESS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -72,14 +74,24 @@ test -z "$out" || { echo "FAIL: railway --set (the sanctioned flow) was denied" 
 out="$(printf '{"tool_input":{"command":"echo hello"}}' | python3 "$BIN/env-dump-guard.py")"
 test -z "$out" || { echo "FAIL: harmless command was denied" >&2; exit 1; }
 
+echo "==> deliberation-nudge: markers must nudge, plain work prompts must pass silent"
+out="$(printf '{"prompt":"considerando o ledger, isso faz sentido?"}' | python3 "$BIN/deliberation-nudge.py")"
+grep -q "deliberation-nudge" <<<"$out" || { echo "FAIL: deliberation marker did not nudge" >&2; exit 1; }
+out="$(printf '{"prompt":"e se movermos o gate para o CI?"}' | python3 "$BIN/deliberation-nudge.py")"
+grep -q "deliberation-nudge" <<<"$out" || { echo "FAIL: 'e se' marker did not nudge" >&2; exit 1; }
+out="$(printf '{"prompt":"implementa o item 3 do plano aprovado"}' | python3 "$BIN/deliberation-nudge.py")"
+test -z "$out" || { echo "FAIL: explicit go prompt was nudged" >&2; exit 1; }
+out="$(printf '{"prompt":"corrige o teste vermelho no CI e faz push"}' | python3 "$BIN/deliberation-nudge.py")"
+test -z "$out" || { echo "FAIL: plain work prompt was nudged" >&2; exit 1; }
+
 echo "==> wiring: settings.json must be valid and reference every hook script"
 python3 -c 'import json; json.load(open("'"$SETTINGS"'"))' \
   || { echo "FAIL: home/claude/settings.json is not valid JSON" >&2; exit 1; }
-for script in secret-scan.py env-dump-guard.py write-containment.py; do
+for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py; do
   grep -q "$script" "$SETTINGS" || { echo "FAIL: $script not wired in settings.json" >&2; exit 1; }
   test -x "$BIN/$script" || { echo "FAIL: $BIN/$script missing or not executable" >&2; exit 1; }
 done
 grep -q '"Write|Edit|MultiEdit|NotebookEdit"' "$SETTINGS" \
   || { echo "FAIL: containment matcher must cover Write/Edit/NotebookEdit" >&2; exit 1; }
 
-echo "SELFTEST-HOME OK — containment blocks escapes (plain, ../, symlink), allowlist holds, secret gates fire, wiring intact."
+echo "SELFTEST-HOME OK — containment blocks escapes (plain, ../, symlink), allowlist holds, secret gates fire, nudge fires and stays silent correctly, wiring intact."

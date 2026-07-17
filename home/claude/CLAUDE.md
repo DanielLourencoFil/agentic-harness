@@ -13,7 +13,8 @@ before writing feature code.** Templates: `~/Dev/agentic-harness/templates/`.
 
 The portable discipline for AI-written code anywhere: own project, legacy, or a
 third-party repo where the cage (layer B) cannot be installed. Travels with the
-machine, not the repo (ADR 12; list closed 2026-07-17).
+machine, not the repo (ADR 12; list closed 2026-07-17; item 7 added the same
+day by the owner's signature — ADR 19).
 
 - **Minimal diff:** only the lines the task requires; nothing out of scope.
 - **Read before edit:** never edit a file not read in this session.
@@ -25,10 +26,16 @@ machine, not the repo (ADR 12; list closed 2026-07-17).
   without output it is a hypothesis.
 - **Anchoring law:** every claim about a repo carries a verified path or command;
   otherwise it is labeled "hypothesis / not verified".
+- **Report before implement:** an evaluation request ("faz sentido?", "o que
+  achas?", a doc or source to review) ends in a REPORT — assessment, options,
+  recommendation — never a same-turn diff. Implementation starts only on the
+  explicit go; enter plan mode for the evaluation.
 
 Honest labels: write containment outside the project root is force (PreToolUse hook,
-ADR 10/13); read-before-edit is half-force (the harness requires a prior Read); the
-rest is steer — the gate is the human's replica.
+ADR 10/13); read-before-edit is half-force (the harness requires a prior Read);
+report-before-implement is half-force (the deliberation-nudge hook injects the
+reminder mechanically and plan mode physically blocks edits; the enter-plan-mode
+link stays steer — ADR 19); the rest is steer — the gate is the human's replica.
 
 ## Session scoping
 

@@ -244,3 +244,22 @@ separate link files rot unread; see ADR 3).
     Rejected: worktree helper script (tooling for the map). Honest note: the
     brief predates ADRs 14-17 and PR #11's merge; its repo-state claims were
     re-verified before use.
+19. **2026-07-17 — Report-before-implement becomes layer A item 7, with a wired
+    half: the deliberation-nudge chain.** Trigger: owner feedback ("quero que
+    avalie e reporte antes de implementar... tenho problemas em conter a força
+    criativa dos modelos") after an /absorb run implemented in the same turn as
+    the evaluation it was asked for. Adopted: constitution rule (an evaluation
+    request ends in a report; the go is explicit); `home/bin/
+    deliberation-nudge.py` — a UserPromptSubmit hook that injects the reminder
+    when the prompt carries deliberation markers ("e se", "considerando", "faz
+    sentido"…; nudge, never block — false positives must cost nothing, and the
+    marker list grows only from real misses); plan mode as the jail, with
+    `defaultMode: plan` in this repo's `.claude/settings.json` (deliberation
+    dominates the meta-repo; product repos untouched); `/absorb` amended
+    (propose diffs, implement after the go). Honest chain: the reminder fires
+    mechanically (force) and plan mode physically blocks edits until approval
+    (force), but a hook cannot switch the session's permission mode — the
+    middle link (agent entering plan mode) stays steer, re-armed per firing.
+    Rejected: blocking the prompt until a mode is confirmed (prompt fatigue
+    kills gates socially, ADR 10) and machine-global plan default (taxes every
+    product turn where the automatic commit rite is deliberate).

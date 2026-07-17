@@ -39,3 +39,10 @@ Then stamp provenance (ADR 9): in each skill copied from the catalog
 where `<sha>` = `git -C ~/Dev/agentic-harness rev-parse --short HEAD`. The stamp
 is what a future drift report compares against; a copy may diverge deliberately —
 the stamp keeps the divergence visible instead of silent.
+
+## Verifiable output
+
+- `docs/SPEC.md` written: what / why / scope in-out / kill criteria / metric.
+- The proposed harness subset, one justification line per layer.
+- Empty-scaffold `pnpm verify` output shown green before any feature code.
+- Every copied skill carrying its `source: agentic-harness@<sha>` stamp.

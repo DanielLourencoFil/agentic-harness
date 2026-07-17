@@ -32,3 +32,9 @@ admitted before being asked. "The choice is a decision, not a default."
   is missing and the cheapest way to get it (logs, docs, a spike). Never guess to keep
   the format moving.
 - No em dashes in anything written to files.
+
+## Verifiable output
+
+- The five-step write-up itself: problem, real alternatives with costs, trade-offs
+  against the values, recommendation with its when-NOT conditions.
+- The closing dated ADR line, ready to paste into the project's docs/DECISIONS.md.

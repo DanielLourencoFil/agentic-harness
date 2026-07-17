@@ -41,3 +41,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: bash scripts/selftest-home.sh
+  selftest-skills:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/selftest-skills.sh

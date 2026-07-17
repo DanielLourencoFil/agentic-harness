@@ -120,3 +120,17 @@ separate link files rot unread; see ADR 3).
     agentic-home archived, not deleted. Rejected: status quo (confusion tax recurs
     per session) and two public repos (keeps "why separate?" permanently open with
     no compensating gain).
+12. **2026-07-17: Next round targets layer A, the portable anti-destruction
+    discipline for the user's AI in any repo, including third-party.** Deliberated
+    via /decide in the desk session. Order inside the round: (1) wire the mechanical
+    core first: the ADR 10 write-containment hook plus a negative selftest case (a
+    write outside the project root must be seen blocked); (2) close the short
+    layer-A rule list (minimal diff, read before edit, no drive-by cleanup, shown
+    evidence, claims anchored in repo paths); (3) package it in `home/`
+    (constitution plus rite), labeled force vs steer honestly. Trigger: the harness
+    only covers greenfield solo TS, the rarest real scenario; guest and legacy work
+    is the actual year ahead (handoff 2026-07-15). Adopted: wirable-core-first (a
+    round must end with something wired and selftested, never prose alone).
+    Rejected: brownfield overlay now (its consumer is still hypothetical; flips the
+    moment a real one exists), both fronts in one round (the 2026-07-15
+    circular-session lesson), ADR 9 drift wiring (a single skill consumer so far).

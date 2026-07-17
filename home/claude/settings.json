@@ -1,5 +1,5 @@
 {
-  "effortLevel": "high",
+  "effortLevel": "xhigh",
   "switchModelsOnFlag": true,
   "permissions": {
     "ask": [
@@ -14,7 +14,7 @@
       "Read(**/.env.*.local)"
     ]
   },
-  "model": "opus",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -48,6 +48,17 @@
             "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/env-dump-guard.py\"",
             "timeout": 10,
             "statusMessage": "secret-hygiene: checking command"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/write-containment.py\"",
+            "timeout": 10,
+            "statusMessage": "containment: checking write target"
           }
         ]
       }

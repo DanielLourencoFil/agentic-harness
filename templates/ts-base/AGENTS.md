@@ -23,6 +23,11 @@ output as evidence — "compiles" ≠ "works". Run `pnpm verify` before declarin
   changes, in a dedicated commit. Never weaken a test to pass it.
 - Isolate non-determinism (time, network, LLM, randomness) behind a fakeable seam;
   keep load-bearing logic pure and test it without mocks.
+- A bug fix starts with a reproduction test shown failing, then turned green by the
+  fix in the same commit — a fix without the red-first test is a hypothesis.
+- Tests assert outcomes, never internal call sequences (interaction tests break on
+  refactor while behavior holds). In test code, readable duplication beats clever
+  shared helpers: each test reads as a spec on its own.
 - Decisions → dated one-line ADRs in `docs/DECISIONS.md`, captured live. External
   sources are cited inline in the ADR they support, with a checked-on date.
 - Commit atomically (verify-gated) and push the work branch without asking; merging

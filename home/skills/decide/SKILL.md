@@ -9,6 +9,11 @@ Format for any architecture or implementation decision. The standard to match is
 Redis-lock write-up: alternatives named, what each layer buys stated, failure modes
 admitted before being asked. "The choice is a decision, not a default."
 
+A decision is non-trivial, and triggers this rite even unprompted, when it introduces
+branching logic, crosses a module or service boundary, asserts a property the type
+system cannot verify (thread safety, idempotence, ordering), or has an irreversible
+blast radius (data migration, public API change, production deploy).
+
 ## The five steps, in order
 
 1. **Problem, no jargon (Portuguese).** What is being decided, which constraint or

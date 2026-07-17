@@ -40,6 +40,9 @@ tool/test/hook, wire it; only what cannot be reified goes into CLAUDE.md as conv
   behind a fakeable seam; keep load-bearing logic **pure** and test it hard without mocks.
 - Test at the lowest level that can catch the bug. Every test must fail if the logic breaks;
   assert concrete values. **No coverage % target** (diagnostic only).
+- A bug fix starts with a reproduction test shown failing, turned green by the fix in
+  the same commit (prove-it; ADR 15). Tests assert outcomes, never internal call
+  sequences; in test code, readable duplication beats clever shared helpers.
 - The human owns the scenario checklist (what is always true / never possible); AI may write
   the test code but not decide alone what "tested" means.
 - Decisions → dated one-line ADRs in `docs/DECISIONS.md`, captured live; a non-obvious

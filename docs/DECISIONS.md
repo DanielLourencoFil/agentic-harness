@@ -166,3 +166,25 @@ separate link files rot unread; see ADR 3).
     Roadmap: behavioral eval of skills (fixture with a planted bug via
     `claude -p`, weekly job, mechanical assertions only — honest label: form
     plus one case, not quality).
+15. **2026-07-17 — agent-skills sweep, lot 1 (doubt-driven-development,
+    test-driven-development, planning-and-task-breakdown; source:
+    https://github.com/addyosmani/agent-skills, checked 2026-07-17; run via
+    `/absorb`).** Adopted (3): bug fixes start with a reproduction test shown
+    failing, green in the same commit (prove-it → `AGENTS.md` + PLAYBOOK Layer 0);
+    tests assert outcomes never internal call sequences, and in test code readable
+    duplication beats clever shared helpers (state-not-interactions + DAMP → same
+    files); the non-trivial-decision trigger (branching / module boundary /
+    type-unverifiable property / irreversible blast radius) enters `/decide` as its
+    unprompted-use rule. Deferred (2, in BACKLOG with triggers): cross-model
+    second-opinion review (trigger: first audit miss traced to a shared-model blind
+    spot; read-only sandbox + stdin piping are load-bearing if it ever runs);
+    planning material (vertical slicing, task sizing with the "and-in-the-title =
+    two tasks" test, checkpoint cadence) folded into the pending `/plan` rite item.
+    Rejected: adversarial reviewer framing (loses to the neutral-prompt
+    anti-confabulation doctrine — reify-to-test is our arbiter, not
+    finding-classification); `tasks/plan.md`+`tasks/todo.md` standing checklists
+    (lose to ADR 6: plan docs are views over tests; hand-ticked checklists drift
+    and lie); test-pyramid percentage quotas and small/medium/large size taxonomy
+    (quota-shaped — "lowest level that can catch the bug" does the work);
+    bounded 3-cycle doubt loops (single-pass audit + reify + human PR review at
+    n=1). Lot adoption count: 3 (≥2) — the sweep continues to lot 2.

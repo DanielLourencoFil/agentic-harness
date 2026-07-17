@@ -144,3 +144,25 @@ separate link files rot unread; see ADR 3).
     the hook's named allowlist plus a positive selftest case. Rejected:
     propose-a-line rite (returns backlog keeping to governance by memory) and
     human-only edits (same cost, without recording why).
+14. **2026-07-17 — Skill infrastructure round: instructions demand verifiable
+    artifacts; external material enters only through `/absorb`'s anchored claim
+    table.** Trigger: reviewing A. Osmani's agent-skills catalog
+    (https://github.com/addyosmani/agent-skills, checked 2026-07-17) — 24
+    all-steer skills plus a router made the saturation risk concrete, while
+    individual rows were worth stealing. Adopted: severity ladder
+    (Critical/Required/Nit/FYI) + leverage ordering + quantified findings +
+    security/performance axes in `auditor.md` (source: its code-review skill);
+    alibi → short-declarative-reply tables in `/feature` and `/audit` (format
+    from its TDD skill; open questions without anchors are decoration);
+    dependency discipline in the template's `AGENTS.md` (one dep per PR,
+    changelog before upgrade, stdlib-first, lockfile never by hand); the
+    skill-writing doctrine in the PLAYBOOK with its mechanical half wired as
+    `scripts/selftest-skills.sh` in CI (one-line description, body cap,
+    mandatory "Verifiable output" section, negative fixture seen rejected);
+    `/absorb` as the sweep tool (WATCH stance: steal rows, never install
+    repos). Rejected: installing or vendoring the catalog (a referenced catalog
+    propagates silent changes, ADR 9; 24 steer skills saturate context);
+    review-speed SLAs and multi-reviewer process (team-scale ceremony at n=1).
+    Roadmap: behavioral eval of skills (fixture with a planted bug via
+    `claude -p`, weekly job, mechanical assertions only — honest label: form
+    plus one case, not quality).

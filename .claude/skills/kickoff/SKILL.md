@@ -30,3 +30,12 @@ is correct; applying everything everywhere is the failure mode.
 
 Execute the KICKOFF CHECKLIST in `PLAYBOOK.md`: git init, copy the template,
 empty-scaffold verify green, CI, ruleset.
+
+Then stamp provenance (ADR 9): in each skill copied from the catalog
+(`.claude/skills/*/SKILL.md`), add one frontmatter line
+
+    source: agentic-harness@<sha>
+
+where `<sha>` = `git -C ~/Dev/agentic-harness rev-parse --short HEAD`. The stamp
+is what a future drift report compares against; a copy may diverge deliberately —
+the stamp keeps the divergence visible instead of silent.

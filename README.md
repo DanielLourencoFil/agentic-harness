@@ -22,11 +22,32 @@ agentic-harness/
     └── vue-starter/       # Layer 2 overlay on create-vue, extracted from real use
 ```
 
-The method has **two delivery targets**. Projects get *copies* (`templates/`, via
-kickoff): gates and rites versioned with each project's git, so every project
-carries its own law. The machine gets *symlinks* (`home/`, via bootstrap): the
-rules that must hold in every session — including guest sessions in third-party
-repos, where nothing may touch the host's git and the user layer is all there is.
+## Three consumption modes
+
+The harness is consumed in exactly three ways — which one applies is decided by
+**whose git it is**, never by preference:
+
+1. **My project → stamp.** `/kickoff` *copies* the template into the new repo
+   (`templates/`, dotfiles included). The project becomes self-sufficient and
+   carries its own law, versioned with its own git; the catalog is never
+   referenced at coding time (vendoring beats reference — a referenced catalog
+   propagates silent behavior changes to every consumer; see ADR 9).
+2. **My machine → bootstrap, once.** `home/bootstrap.sh` *symlinks* the machine
+   layer into `~/.claude`: constitution (incl. the portable layer-A rules),
+   secret-hygiene and write-containment hooks, conversation rituals. These must
+   hold in sessions that have no project at all, so they cannot live in stamps.
+3. **Someone else's repo → envelope folder, nothing installed.** One folder per
+   engagement — `~/Dev/<engagement>/` (not a git repo, or a private notes repo)
+   holding a `CLAUDE.md` with the engagement's rules plus `app/` = their clone,
+   untouched. Conventions prose is inherited from ancestor directories, so the
+   envelope's `CLAUDE.md` reaches every session inside `app/` — only conventions
+   inherit this way; skills and settings do not. Their ESLint/CI/hooks stay
+   theirs: discipline in this mode is the machine layer (mode 2) + the diff you
+   produce, never files in their tree.
+
+   ⚠️ Never nest a third-party clone inside the working tree of a repo you own:
+   one distracted `git add -A` publishes an employer's code. The envelope is the
+   containment.
 
 The harness is **agent-agnostic by construction**: conventions live in the vendor-neutral
 `AGENTS.md` (with `CLAUDE.md`/`GEMINI.md` as one-line adapters), and the layers that

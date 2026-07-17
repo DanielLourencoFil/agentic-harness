@@ -30,6 +30,16 @@ output as evidence — "compiles" ≠ "works". Run `pnpm verify` before declarin
 - Agent-assisted commits carry a `Co-Authored-By` trailer naming the model; every PR
   fills the Provenance section of the template (tool, model + version, reviewer).
 
+## Dependencies
+
+- Stdlib-first: prefer the platform, the standard library, and deps already in
+  `package.json` over adding a new one. A new dependency is a decision, not a reflex.
+- One new dependency per PR, in its own commit, with a one-line why (and the
+  alternative it beat) in the commit body; load-bearing picks get an ADR.
+- Upgrades read the changelog first — never bump on version number alone.
+- The lockfile is machine-written: never edit `pnpm-lock.yaml` by hand; it ships
+  in the same commit as the `package.json` change that caused it.
+
 ## TypeScript
 
 - Rely on inference internally; explicit types at public boundaries.

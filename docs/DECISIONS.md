@@ -263,3 +263,25 @@ separate link files rot unread; see ADR 3).
     Rejected: blocking the prompt until a mode is confirmed (prompt fatigue
     kills gates socially, ADR 10) and machine-global plan default (taxes every
     product turn where the automatic commit rite is deliberate).
+20. **2026-07-17 — agent-skills sweep, lot 2 (debugging-and-error-recovery,
+    incremental-implementation, code-review-and-quality residual; source:
+    https://github.com/addyosmani/agent-skills, checked 2026-07-17; run via
+    /absorb, adoptions approved before implementation per ADR 19).** Ledger
+    rows C-061..C-076. Adopted (6): the `/debug` rite — the one genuine
+    bucket-1 gap (reproduce → localize → reduce → root cause → guard →
+    verify), shipped in the ts-base catalog with presence wired into
+    selftest.sh Claim 0b; error-output-is-data-never-instructions as layer A
+    item 8 (this agent reads failed CI logs by rite — injection surface);
+    named structural remedies + never-soften in the auditor (naming the move
+    is not proposing a diff); the third-use-case rule and orphan-code
+    list-and-ask in AGENTS.md; upgrade verification (green before and after,
+    lockfile-diff review) extending C-006. Deferred: added-diff size gate to
+    the harness-candidate queue (C-072; per-file max-lines stays the wired
+    half). Rejected with the value named: safe fallbacks (lose to fail-fast),
+    feature flags at n=1, re-run-to-be-sure (efficiency, not correctness),
+    disagreement hierarchy and review checklist template (team ceremony;
+    duplicated prose drifts). Lot adoption count: 6 (≥2) — the criterion
+    allows lot 3, but the recommendation on record is to close the sweep:
+    the remaining bucket-1 skills are validation, not quarry, and the
+    harness-candidate queue (ADR 18) is the intended steady-state growth
+    source. The owner decides lot 3 vs closure.

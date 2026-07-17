@@ -188,3 +188,19 @@ separate link files rot unread; see ADR 3).
     (quota-shaped — "lowest level that can catch the bug" does the work);
     bounded 3-cycle doubt loops (single-pass audit + reify + human PR review at
     n=1). Lot adoption count: 3 (≥2) — the sweep continues to lot 2.
+16. **2026-07-17 — Absorbed claims are registered in a cumulative append-only
+    ledger (`docs/ABSORB/LEDGER.md`), one dated row per claim with a stable
+    `C-NNN` id, source, verdict and anchor.** Trigger: the lot-1 tables lived
+    only in the session log — no way to audit which claim an adoption addressed,
+    trace which source it came from, or answer "do we already have a mechanism
+    for this?" without re-deriving; the sweep's purpose was precisely to build
+    this reference. The ledger is the entry point of the improvement pipeline:
+    any incoming source is grepped against it first, and each claim resolves to
+    already-addressed / new / better-than-ours (supersede by appending a row
+    citing the old id) / principle-we-lacked. Rows are dated snapshots (anchors
+    rot honestly, like ADR checked-on dates); `/absorb` requires the appended
+    rows in its verifiable output; the selftest enforces id uniqueness and the
+    closed verdict set, both seen rejecting a planted violation. Backfilled
+    C-001..C-031 (the ADR 14 package + sweep lot 1). Rejected: per-lot snapshot
+    docs only (durable but not queryable across lots) and PR-body-only records
+    (not greppable; fails on zero-adoption lots).

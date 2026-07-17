@@ -9,11 +9,13 @@ Systematic absorption of one external source per run. The source is a quarry,
 never a package: nothing is installed or vendored from it (WATCH stance); what
 survives the table below enters the harness as our own diff, on our terms.
 
-## 1. Read the source, extract claims
+## 1. Grep the ledger, then read the source
 
-Read the named source in full. Extract each discrete, actionable claim
-(a practice, a rule, a format, a gate). Ignore prose that carries no
-instruction. Number the claims.
+`docs/ABSORB/LEDGER.md` is the registry of every claim ever evaluated. Search
+it for the source and its claims FIRST: a previously evaluated claim cites its
+`C-NNN` row instead of being re-deliberated. Then read the source in full and
+extract each discrete, actionable claim (a practice, a rule, a format, a
+gate). Ignore prose that carries no instruction. Number the claims.
 
 ## 2. The anchored table (the output contract)
 
@@ -36,6 +38,10 @@ One row per claim:
 - Adoptions that fit this session: implement now, minimal diff, gate first
   where a gate exists (the form gate must stay green).
 - Adoptions that do not fit: one BACKLOG entry each, with trigger.
+- **Append one ledger row per claim** to `docs/ABSORB/LEDGER.md` (next free
+  `C-NNN` id, dated; verdict from the closed set; anchor in the Where column).
+  The table above is the working view; the ledger is what survives and what
+  the next run greps.
 - One dated ADR line for the source (adopted/rejected summary, source cited
   inline with a checked-on date), ready to paste into `docs/DECISIONS.md`.
 - If a sweep is running, state the lot's adoption count against the
@@ -55,6 +61,7 @@ Replies are statements, never open questions.
 
 - The claim table, every "yes"/"partial" row carrying a verified path or
   shown command output.
+- The ledger rows appended to `docs/ABSORB/LEDGER.md` (one `C-NNN` per claim).
 - The diffs of same-session adoptions (or BACKLOG entries with triggers for
   deferred ones).
 - The paste-ready dated ADR line citing the source.

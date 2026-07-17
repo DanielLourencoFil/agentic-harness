@@ -67,4 +67,35 @@ fi
 grep -q "no frontmatter" "$TMP/reasons.log" \
   || { echo "FAIL: rejection reasons not reported" >&2; cat "$TMP/reasons.log" >&2; exit 1; }
 
-echo "SELFTEST-SKILLS OK — all repo skills pass the form gate; the gate rejects a planted violation."
+check_ledger() { # $1 = ledger path; prints reasons; non-zero exit on violation
+  local f="$1" ok=0 dups bad
+  dups="$(awk -F'|' '/^\| C-/ {gsub(/ /,"",$2); print $2}' "$f" | sort | uniq -d)"
+  if [ -n "$dups" ]; then
+    echo "  duplicate claim ids: $dups"; ok=1
+  fi
+  bad="$(awk -F'|' '/^\| C-/ {v=$6; sub(/^ +/,"",v);
+    if (v !~ /^(adopted|rejected|already have|deferred)/) print $2}' "$f")"
+  if [ -n "$bad" ]; then
+    echo "  verdict outside the closed set on:$bad"; ok=1
+  fi
+  return "$ok"
+}
+
+echo "==> Absorb ledger: ids unique, verdicts from the closed set (ADR 16)"
+LEDGER="$HARNESS_DIR/docs/ABSORB/LEDGER.md"
+test -f "$LEDGER" || { echo "FAIL: docs/ABSORB/LEDGER.md missing" >&2; exit 1; }
+if ! out="$(check_ledger "$LEDGER")"; then
+  echo "FAIL: ledger violates its contract" >&2; echo "$out" >&2; exit 1
+fi
+
+echo "==> Negative case: a corrupt ledger must be seen rejected"
+cat > "$TMP/ledger.md" <<'EOF'
+| C-001 | 2026-07-17 | src | claim one | adopted | somewhere |
+| C-001 | 2026-07-17 | src | claim two | maybe later | somewhere |
+EOF
+if check_ledger "$TMP/ledger.md" >/dev/null; then
+  echo "FAIL: the ledger check accepted duplicate ids and a rogue verdict" >&2
+  exit 1
+fi
+
+echo "SELFTEST-SKILLS OK — form gate green, ledger contract holds, both gates seen rejecting planted violations."

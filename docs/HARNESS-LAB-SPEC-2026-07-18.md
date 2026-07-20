@@ -1,6 +1,7 @@
 # Harness Lab — decided spec (2026-07-18)
 
-**Status:** decided design, pre-kickoff. Supersedes the exploratory
+**Status:** Phase 0 closed (owner-signed 2026-07-20) — kickoff pending the
+interview-funnel week. Supersedes the exploratory
 `docs/HARNESS-LAB-BRIEF-2026-07-17.md` (kept as the idea's origin) with the
 decisions from the 2026-07-17/18 evaluation session. Every decision below
 carries its why and what was rejected, so the owner can audit the reasoning.
@@ -105,15 +106,27 @@ layer A claims to prevent.
 quality; without these tasks that hypothesis is unmeasurable and a null
 result on pass-rate would be misread as "the cage is useless".
 
-### D6 — Runner drives the real agent CLI headless
+### D6 — Runner drives the real agent CLI headless, on the owner's fixed plan
 
-`claude -p` / Agent SDK per trial (usage metrics from its JSON output), clean
-workspace per trial, caps on turns/tokens/wall-clock, prompt-caching policy
-equalized across setups. Force-cage is an **outer loop of the runner**: agent
-finishes → grader runs verify → red and turns remain → re-invoke with the log.
+`claude -p` per trial run under the owner's **fixed subscription plan
+(Pro/Max), never metered API**. Clean workspace per trial, caps on
+turns/tokens/wall-clock, prompt-caching policy equalized across setups.
+Force-cage is an **outer loop of the runner**: agent finishes → grader runs
+verify → red and turns remain → re-invoke with the log.
 **Why:** a hand-built API loop measures a toy, not the harness anyone
-actually uses, and building it is the bulk of the project's cost.
-**Rejected:** custom agent loop; multi-model in MVP.
+actually uses, and building it is the bulk of the project's cost. The
+efficiency metric the lab needs is **tokens**, and the CLI reports `usage`
+tokens in its JSON regardless of billing — so the fixed plan measures exactly
+what metered API would, at zero marginal cost. This is a personal-use +
+showcase project; paying per-token API for it would be waste (D4's
+tokens-not-dollars stance made concrete; `cost_usd` stays cut, §2).
+**The honest constraint is plan rate limits, not dollars:** a ~120-trial
+batch may hit usage limits and must run phased (smoke first, then batched,
+off-peak if needed) — the kill-dates (§6) protect against that becoming an
+open-ended stall.
+**Rejected:** metered API billing (proibitive for a self-use showcase; carried
+in from the external brief by inertia, corrected on owner review 2026-07-20);
+custom agent loop; multi-model in MVP.
 
 ### D7 — Pre-registered decision table (what each result changes)
 
@@ -218,10 +231,13 @@ worth zero. A small lab with published FINDINGS is the whole value.
 | 2 — MVP | ~20 tasks × 4 × 3, temptation tasks in, FINDINGS v1 | FINDINGS published |
 | 3 — Extensions | placebo skill, formulation ablation (canonical vs paraphrase), TS mini-suite, second model, toolization | Only if reused after v1 |
 
-**Kill criteria (owner sets the dates):** no running Suite Zero by
-`____-__-__`, or no FINDINGS v1 by `____-__-__` → project parks (option C)
-automatically, spec preserved. Lab work never displaces the career funnel or
-product work — it is the 3rd priority by standing order.
+**Kill criteria (owner-signed 2026-07-20):** no running Suite Zero by
+**2026-08-10**, or no FINDINGS v1 by **2026-09-15** → project parks (option C)
+automatically, spec preserved. A kill-date is a pre-registered circuit breaker,
+not a delivery target: if the milestone has not happened by the date, the
+project freezes without renegotiation — the decision to stop was made now,
+clear-headed, not later under sunk-cost pressure. Lab work never displaces the
+career funnel or product work — it is the 3rd priority by standing order.
 
 ## 7. Relationship to agentic-harness (summary)
 
@@ -232,9 +248,11 @@ product work — it is the 3rd priority by standing order.
 | Grows only via harness-candidate queue (ADR 18) | Findings feed the queue and the ledger, never auto-expand the catalog |
 | Gates the lab's instrument code (D8) | Never gates the trial workspaces (D8) |
 
-## 8. Open for the owner
+## 8. Phase 0 — closed 2026-07-20
 
-1. Approve this spec (or mark deltas) — Phase 0 gate.
-2. Set the two kill dates in §6.
-3. API budget ceiling for Suite Zero + MVP (estimate: tens of USD; smoke ≪).
-4. Kickoff timing (standing order: after the current interview-funnel week).
+1. ✅ Spec approved (this document).
+2. ✅ Kill dates set (§6): Suite Zero by 2026-08-10, FINDINGS v1 by 2026-09-15.
+3. ✅ No dollar budget — runner is the owner's fixed plan (D6); the only cost
+   constraint is plan rate limits, mitigated by phased runs.
+4. Kickoff timing: after the current interview-funnel week (Ingentis 20-24.07),
+   in a fresh session opened in `~/Dev/harness-lab` (session scoping, D8).

@@ -38,6 +38,7 @@ those two; anything serving neither was cut.
 | Temptation tasks (D5) | Measures layer A's actual claim (destruction avoided) — unique signal | **Supporting, high value** — in MVP, not Suite Zero |
 | Placebo skill | Separates length from content — sharpens (a) | **Supporting** — Phase 3 only |
 | Formulation ablation (canonical terms vs paraphrase, same content) | Tests the retrieval-cue hypothesis: canonical terminology activates the model's learned clusters, paraphrase is noise — turns skill-writing style from taste into data. Design rule: manipulate INSTRUCTION CONTENT terms only, never identity labels — the identity axis is already empirically dead (persona prompts don't improve objective performance: Zheng, Pei et al., Findings of EMNLP 2024, checked 2026-07-19) | **Supporting** — Phase 3 only |
+| Graph/crew setup vs force-cage | Turns the loops-vs-graphs fashion into data: does an explicit execution graph (hierarchical crew) beat a single loop + force gate on real tasks and cost? Gives C-085's n=1-theater rejection an empirical test — the harness's measure-don't-evangelize stance applied to graph engineering | **Supporting** — Phase 3 only |
 | Blind human sample | Secondary sanity check on "maintainability" | Optional — only if FINDINGS v1 ships |
 | Explore/edit time proxies (brief §6.4) | Curiosity; serves neither (a) nor (b) directly | **Cut from MVP** |
 | cost_usd column | Pricing drift; tokens already carry the signal | **Cut** |
@@ -72,6 +73,17 @@ steer, and the core thesis (force > steer) stays untested.
 **Phase 2 addition — placebo skill:** same length as `long-skill`, generic
 content-free advice. Separates the cost of *length* from the effect of
 *content* — if long-placebo ≈ long-skill, wide nets are length, not wisdom.
+**Phase 3 addition — graph/crew setup:** an explicit execution graph (a
+LangGraph/CrewAI-style hierarchical crew: planner → coder → tester + manager)
+measured against `force-cage` (single loop + mechanical gate) on the same
+tasks and cost. This is the empirical test of the loops-vs-graphs discourse
+(the "harness → skills → graphs" evolution narrative) and of C-085 — the
+hierarchical crew was rejected as n=1 theater on doctrine + field evidence
+(same-model costumes, handoff context loss); the lab measures whether that
+holds. Legitimate multi-agent (isolation-as-feature / parallelism /
+cross-model, C-019) is a distinct axis, not this setup. Our stance stays
+"neither evangelize nor reject graphs — measure": if a graph beats loop+cage
+on real tasks, a row supersedes C-085 in the ledger.
 
 ### D3 — Identical success predicate across ALL setups (fix of brief §6.1)
 
@@ -229,7 +241,7 @@ worth zero. A small lab with published FINDINGS is the whole value.
 | 0 — Spec lock | This document + owner approval | Owner signs |
 | 1 — Suite Zero | 5 tasks × 4 setups × 2 runs, full pipe, FINDINGS draft | Pipe produces a real table |
 | 2 — MVP | ~20 tasks × 4 × 3, temptation tasks in, FINDINGS v1 | FINDINGS published |
-| 3 — Extensions | placebo skill, formulation ablation (canonical vs paraphrase), TS mini-suite, second model, toolization | Only if reused after v1 |
+| 3 — Extensions | placebo skill, formulation ablation (canonical vs paraphrase), graph/crew setup vs force-cage, TS mini-suite, second model, toolization | Only if reused after v1 |
 
 **Kill criteria (owner-signed 2026-07-20):** no running Suite Zero by
 **2026-08-10**, or no FINDINGS v1 by **2026-09-15** → project parks (option C)

@@ -36,6 +36,7 @@ those two; anything serving neither was cut.
 | Suite Zero first (D10) | Attacks the dominant risk (never finishing) | **Essential** |
 | Temptation tasks (D5) | Measures layer A's actual claim (destruction avoided) — unique signal | **Supporting, high value** — in MVP, not Suite Zero |
 | Placebo skill | Separates length from content — sharpens (a) | **Supporting** — Phase 3 only |
+| Formulation ablation (canonical terms vs paraphrase, same content) | Tests the retrieval-cue hypothesis: canonical terminology activates the model's learned clusters, paraphrase is noise — turns skill-writing style from taste into data | **Supporting** — Phase 3 only |
 | Blind human sample | Secondary sanity check on "maintainability" | Optional — only if FINDINGS v1 ships |
 | Explore/edit time proxies (brief §6.4) | Curiosity; serves neither (a) nor (b) directly | **Cut from MVP** |
 | cost_usd column | Pricing drift; tokens already carry the signal | **Cut** |
@@ -212,7 +213,7 @@ worth zero. A small lab with published FINDINGS is the whole value.
 | 0 — Spec lock | This document + owner approval | Owner signs |
 | 1 — Suite Zero | 5 tasks × 4 setups × 2 runs, full pipe, FINDINGS draft | Pipe produces a real table |
 | 2 — MVP | ~20 tasks × 4 × 3, temptation tasks in, FINDINGS v1 | FINDINGS published |
-| 3 — Extensions | placebo skill, TS mini-suite, second model, toolization | Only if reused after v1 |
+| 3 — Extensions | placebo skill, formulation ablation (canonical vs paraphrase), TS mini-suite, second model, toolization | Only if reused after v1 |
 
 **Kill criteria (owner sets the dates):** no running Suite Zero by
 `____-__-__`, or no FINDINGS v1 by `____-__-__` → project parks (option C)

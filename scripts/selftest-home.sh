@@ -79,6 +79,8 @@ out="$(printf '{"prompt":"considerando o ledger, isso faz sentido?"}' | python3 
 grep -q "deliberation-nudge" <<<"$out" || { echo "FAIL: deliberation marker did not nudge" >&2; exit 1; }
 out="$(printf '{"prompt":"e se movermos o gate para o CI?"}' | python3 "$BIN/deliberation-nudge.py")"
 grep -q "deliberation-nudge" <<<"$out" || { echo "FAIL: 'e se' marker did not nudge" >&2; exit 1; }
+out="$(printf '{"prompt":"quero que analise essa repo"}' | python3 "$BIN/deliberation-nudge.py")"
+grep -q "deliberation-nudge" <<<"$out" || { echo "FAIL: 'analise' marker did not nudge (the 2026-07-19 real miss)" >&2; exit 1; }
 out="$(printf '{"prompt":"implementa o item 3 do plano aprovado"}' | python3 "$BIN/deliberation-nudge.py")"
 test -z "$out" || { echo "FAIL: explicit go prompt was nudged" >&2; exit 1; }
 out="$(printf '{"prompt":"corrige o teste vermelho no CI e faz push"}' | python3 "$BIN/deliberation-nudge.py")"

@@ -17,10 +17,11 @@ MARKERS = [
     r"\be se\b", r"\bconsiderando\b", r"\bimagin[ae]\b", r"\bno caso\b",
     r"\bn[aã]o entendi\b", r"\bestou perdid[oa]\b", r"\bfaz sentido\b",
     r"\bfaria sentido\b", r"\bser[aá] que\b", r"\bo que\s+(voc[eê]\s+)?ach",
-    r"\bavali[ae]\b", r"\breporte antes\b",
+    r"\bavali[ae]\b", r"\breporte antes\b", r"\ban[aá]lis[ae]\b",
     r"\bwhat if\b", r"\bconsidering\b", r"\bimagine\b",
     r"\bdoes (it|this) make sense\b", r"\bwhat do you think\b",
-    r"\bevaluate\b", r"\bi'?m lost\b", r"\bi don'?t understand\b",
+    r"\bevaluate\b", r"\banaly[sz]e\b", r"\bi'?m lost\b",
+    r"\bi don'?t understand\b",
 ]
 
 NUDGE = (

@@ -97,7 +97,11 @@ session ends; agent memory only points at it. When closing an item, mark it done
   hard. Every test must fail if the logic breaks; no coverage % targets.
 - The human owns the scenario checklist; negative tests before production code.
 - Audits: fresh context, scoped, neutral framing (allow "none found"); every finding needs
-  a concrete reproduction; a finding that won't become a red test isn't a bug.
+  a concrete reproduction; a finding that won't become a red test isn't a bug. The audit
+  must not depend on memory (Principle 2): a PreToolUse hook fires on `gh pr create` and
+  offers the rite at the completed-unit boundary — run as the read-only `auditor` subagent
+  (fresh context, free on a fixed plan). Honest label: the reminder is mechanical
+  (half-force); acting on it stays steer (ADR 24).
 
 ## Avoid
 

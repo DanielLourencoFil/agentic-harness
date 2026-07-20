@@ -86,14 +86,26 @@ test -z "$out" || { echo "FAIL: explicit go prompt was nudged" >&2; exit 1; }
 out="$(printf '{"prompt":"corrige o teste vermelho no CI e faz push"}' | python3 "$BIN/deliberation-nudge.py")"
 test -z "$out" || { echo "FAIL: plain work prompt was nudged" >&2; exit 1; }
 
+echo "==> audit-reminder: a real gh pr create must nudge, everything else silent"
+out="$(printf '{"tool_input":{"command":"gh pr create --title x --body y"}}' | python3 "$BIN/audit-reminder.py")"
+grep -q "audit-reminder" <<<"$out" || { echo "FAIL: gh pr create did not nudge" >&2; exit 1; }
+out="$(printf '{"tool_input":{"command":"git push && gh pr create --title x"}}' | python3 "$BIN/audit-reminder.py")"
+grep -q "audit-reminder" <<<"$out" || { echo "FAIL: push && gh pr create did not nudge" >&2; exit 1; }
+out="$(printf '{"tool_input":{"command":"gh pr view 12"}}' | python3 "$BIN/audit-reminder.py")"
+test -z "$out" || { echo "FAIL: gh pr view was nudged (over-fire)" >&2; exit 1; }
+out="$(printf '{"tool_input":{"command":"git commit -m wip"}}' | python3 "$BIN/audit-reminder.py")"
+test -z "$out" || { echo "FAIL: git commit was nudged (over-fire on the wrong boundary)" >&2; exit 1; }
+out="$(printf '{"tool_input":{"command":"echo mentioning gh pr create in prose"}}' | python3 "$BIN/audit-reminder.py")"
+test -z "$out" || { echo "FAIL: 'gh pr create' as command DATA was nudged (the 2026-07-20 false positive)" >&2; exit 1; }
+
 echo "==> wiring: settings.json must be valid and reference every hook script"
 python3 -c 'import json; json.load(open("'"$SETTINGS"'"))' \
   || { echo "FAIL: home/claude/settings.json is not valid JSON" >&2; exit 1; }
-for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py; do
+for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py; do
   grep -q "$script" "$SETTINGS" || { echo "FAIL: $script not wired in settings.json" >&2; exit 1; }
   test -x "$BIN/$script" || { echo "FAIL: $BIN/$script missing or not executable" >&2; exit 1; }
 done
 grep -q '"Write|Edit|MultiEdit|NotebookEdit"' "$SETTINGS" \
   || { echo "FAIL: containment matcher must cover Write/Edit/NotebookEdit" >&2; exit 1; }
 
-echo "SELFTEST-HOME OK — containment blocks escapes (plain, ../, symlink), allowlist holds, secret gates fire, nudge fires and stays silent correctly, wiring intact."
+echo "SELFTEST-HOME OK — containment blocks escapes (plain, ../, symlink), allowlist holds, secret gates fire, deliberation + audit nudges fire and stay silent correctly, wiring intact."

@@ -152,7 +152,7 @@ startup (fail fast); errors are handled paths with consistent shapes, no stack l
 | Coverage-ratchet on core folder | want to force test presence without a gameable % | tiny app |
 | **File lockdown** (deny-write in `.claude/settings.json` + PreToolUse hook + git gate on path; keep read allowed) | a critical file has **stabilized** and must never change silently | greenfield still in flux |
 | Custom ESLint AST rule for a semantic anti-pattern | it recurs across a large team codebase | small app (CLAUDE.md rule + review suffice) |
-| Auto code-review on PR (fresh context) | PR flow exists | solo → run scoped review manually per completed unit |
+| Auto code-review on PR (fresh context) | PR flow exists **and** a metered-API credit budget is approved (the CI action runs `claude -p` = paid API, not the fixed plan) | solo on a fixed plan → the `gh pr create` audit-reminder hook + the in-session `auditor` subagent cover it free (ADR 24) |
 | E2E smoke (Playwright) | one critical happy path worth a wiring test | keep to ≤1 — E2E tests wiring, not logic |
 | Component tests | component has real interaction/logic | presentational only |
 | Task-named Skill (packages a heavy recurring procedure + points at checks) | chunky recurring task, ideally with a script | one-offs; project-wide prefs (→ CLAUDE.md) |

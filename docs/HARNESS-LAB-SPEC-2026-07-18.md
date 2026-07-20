@@ -70,6 +70,26 @@ as a later out-of-scope demo, never as data).
 
 **Why force-cage in Phase 1:** without it the lab only compares steer with
 steer, and the core thesis (force > steer) stays untested.
+
+**Methodological guard — the cage's pass-rate is partly tautological.** The
+force-cage re-invokes until verify is green (or the cap), so a higher
+pass-rate than one-shot `bare` is close to true by construction; reporting it
+raw would be a finding a reviewer demolishes in one sentence ("of course, it
+had retries"). The honest comparisons are therefore:
+- **equal budget** — `bare` and `force-cage` capped at the same turns/tokens,
+  so the cage never wins merely by being allowed more attempts;
+- **cost conditional on success** — among tasks where both passed, what each
+  spent (the §4 metric);
+- **`cap_hit` reported per setup** — how often the cage failed to converge.
+
+And the non-obvious hypothesis this setup actually tests: the cage puts the
+agent under **pressure to go green**, which is precisely the condition that
+tempts corner-cutting — weakening a test, widening scope. `tests_locked` and
+`scope_ok` (D3) catch exactly that. **A live possibility is that the cage
+worsens restraint** — that iterating-until-green causes more cheating than
+`bare`, which simply fails honestly. That result would contradict our own
+thesis, which is what makes this a measurement rather than a ceremony.
+
 **Phase 2 addition — placebo skill:** same length as `long-skill`, generic
 content-free advice. Separates the cost of *length* from the effect of
 *content* — if long-placebo ≈ long-skill, wide nets are length, not wisdom.
@@ -219,6 +239,14 @@ worth zero. A small lab with published FINDINGS is the whole value.
 - **Explicitly not primary:** LLM-judge "simplicity" scores (circular),
   transcript self-reports, human vibes. Small blind human sample only as a
   labeled secondary.
+- **Always sliced by task type — never only the aggregate.** Report pass-rate
+  and cost separately for trivial / hard / temptation tasks. The aggregate
+  hides the story and can invert it: on easy tasks the cage is pure overhead,
+  and if that dilutes the temptation-task result the table will read "the
+  harness costs more for nothing" while the opposite is true where it matters.
+  The likeliest real finding is shaped like *"on easy tasks the cage is
+  overhead; on trapped tasks it is the only thing preventing destruction"* —
+  and only the sliced view can say it.
 
 ## 5. Task suite rules
 
@@ -268,3 +296,35 @@ career funnel or product work — it is the 3rd priority by standing order.
    constraint is plan rate limits, mitigated by phased runs.
 4. Kickoff timing: after the current interview-funnel week (Ingentis 20-24.07),
    in a fresh session opened in `~/Dev/harness-lab` (session scoping, D8).
+
+## 9. What the lab cannot measure (declared limits)
+
+These belong in FINDINGS v1 verbatim. The lab's credibility comes from
+marking where its authority ends, not from claiming more than it measured.
+
+1. **Cross-sectional, while the harness's strongest claim is longitudinal.**
+   Every trial is one isolated task. The harness's biggest assertion — that it
+   stops a codebase from rotting over months of AI-assisted work — is about
+   *accumulation*, and no single-task measurement can reach it. This is the
+   most serious limit: the lab can support "the cage prevents this class of
+   damage per task", never "the cage keeps a codebase healthy for a year".
+2. **Headless, with no human in the loop.** The harness puts human judgment at
+   the root by design ("100% of the work automated, 100% of the decision
+   human"). The lab runs the agent alone, unattended. So it measures **the
+   mechanical half, in a setting that is not how the harness is actually
+   used**. FINDINGS must say "we measured the force cage without a human",
+   never "we measured the harness".
+3. **Design quality is out of reach, deliberately.** Correctness (tests) and
+   restraint (tests_locked, scope_ok, out_of_scope_files, diff size) are
+   measurable; "well-designed, readable, appropriately abstracted" is not —
+   and faking it with an LLM judge is the circularity §4 rejects. Content
+   judgment stays human (RATIONALE's fourth category).
+4. **Narrow domain, perishable numbers.** Deterministic tasks (parsers,
+   validators, scoring rules) say nothing about UI, distributed systems or
+   exploratory work; and every number expires when the model changes. What
+   survives a model release is the **protocol and the instrument**, not the
+   table.
+5. **Resolution floor.** At ~20 tasks, effects under roughly 10-15 percentage
+   points are indistinguishable from noise (D9). "No detectable difference" is
+   a pre-registered, publishable outcome — not a reason to grow the suite
+   until an effect appears.

@@ -320,3 +320,32 @@ separate link files rot unread; see ADR 3).
     is measured dead); the paper's weak-but-directional mechanism results
     (term frequency ↑, prompt-question similarity ↑, perplexity ↓) are the
     citable prior for the owner's retrieval-cue hypothesis.
+23. **2026-07-20 — AI-generated input is testimony, not a draft: layer A item
+    9, with `/absorb` widened to fire before building anything from a foreign
+    AI document.** Trigger: a live incident. The owner used Grok for a
+    brainstorm, it produced the Harness Lab brief, and the brief was used as
+    raw material to *write* the lab spec — so its unflagged assumption (metered
+    API billing, standard eval practice) was inherited into spec D6 as a
+    premise, never surfaced as "the brief's choice, is it yours?". Caught only
+    by the owner's cost question (2026-07-20), not by any rite. Root cause:
+    the strategy brief WAS run through `/absorb` (provenance preserved,
+    C-051..C-059), but the lab brief was treated as a scaffold to build on, and
+    scaffolds launder assumptions. Adopted: the distinction is testimony
+    (etiquetada, evaluated claim-by-claim, authority zero until verified —
+    good, the value of cross-model diversity, cf. C-019) vs. laundered premise
+    (source tag lost, opinion washed into fact — bad); the rule is preserve
+    provenance and epistemic status across the model boundary, not reject
+    foreign input. Mechanism: extend the anchoring-law / audit-as-testimony /
+    error-output-is-data family (C-063) to AI-generated decision input; the
+    `/absorb` table is the friction that fluency removed (fact, opinion and
+    assumption otherwise read with equal authority). Honest label: **steer with
+    no wirable half** — the paste / IDE-selection channel has no gate and no
+    hook can distinguish a foreign AI doc from the human's own words (same hole
+    as secret-hygiene's IDE channel); the rite is the only mitigation, and
+    routing through it is not forced. Freeze-exemption noted: this is layer-A
+    provenance/safety steer, not quality steer, so it is admissible even under
+    the proposed steer freeze (the load-bearing-steer exception, as with
+    minimal-diff and no-gutting). The mix ticks to 26 steer — the honest cost,
+    and exactly what the ledger exists to make visible. Rejected: a mechanical
+    detector (no syntactic signature — content judgment, RATIONALE); rejecting
+    cross-model input wholesale (loses the diversity value C-019 preserves).

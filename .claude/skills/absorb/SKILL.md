@@ -1,6 +1,6 @@
 ---
 name: absorb
-description: Absorb an external source (article, repo, skill) into the harness via an anchored claim table - every "have it" carries a verified path, every adoption lands as a diff, ADR line and BACKLOG entry are the closing artifacts. Use when reviewing external engineering material against this repo.
+description: Absorb an external source (article, repo, skill, or ANY AI-generated artifact used to inform a decision - a brief, a spec draft, a review) into the harness via an anchored claim table - every "have it" carries a verified path, every adoption lands as a diff, ADR line and BACKLOG entry are the closing artifacts. Use when reviewing external engineering material, AND before building anything from a foreign AI document (ADR 23).
 ---
 
 # /absorb <source: URL, file, or repo path>
@@ -8,6 +8,12 @@ description: Absorb an external source (article, repo, skill) into the harness v
 Systematic absorption of one external source per run. The source is a quarry,
 never a package: nothing is installed or vendored from it (WATCH stance); what
 survives the table below enters the harness as our own diff, on our terms.
+
+This rite also fires on **any AI-generated artifact used to inform a decision**
+(a brief, a spec draft, a review from another model or session), including when
+it will serve as a draft to build on (ADR 23). Building an artifact *from* a
+foreign AI doc without this pass launders its unflagged assumptions into your
+premises: the doc is testimony to evaluate, never a scaffold to inherit.
 
 ## 1. Grep the ledger, then read the source
 

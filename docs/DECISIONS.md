@@ -285,3 +285,38 @@ separate link files rot unread; see ADR 3).
     the remaining bucket-1 skills are validation, not quarry, and the
     harness-candidate queue (ADR 18) is the intended steady-state growth
     source. The owner decides lot 3 vs closure.
+21. **2026-07-19 — build-code-harness (patchy631/ai-engineering-hub, A. Pachaar,
+    checked 2026-07-19; educational CrewAI+E2B rebuild of a coding-agent
+    harness; companion X thread unreadable, HTTP 402 — treated as presentation
+    of the same content, hypothesis) evaluated via /absorb: zero catalog
+    adoptions.** Ledger rows C-077..C-087. The source operates one layer below
+    this repo — it builds the runtime we deliberately consume as Claude Code
+    (lab spec D6 already rejected custom loops as measuring toys); its gates
+    and agent rules re-derive ours at weaker degree (before_tool_call ≈
+    PreToolUse force C-039; backstory rules ≈ layer A as prompt), an
+    independent convergence data point for the harness map. Yields, both for
+    the Harness Lab: the planted-bug workspace as first candidate external
+    seed task (authorship-bias guard, spec §5, C-086) and E2B as trial-sandbox
+    option if local isolation proves insufficient (C-079). Rejected with the
+    value named: rebuilding the harness (D6), hierarchical planner/coder/tester
+    crew (same-model costumes, handoff context loss; legitimate multi-agent =
+    isolation-as-feature / parallelism / cross-model), embeddings memory
+    (stdlib-first; file memory + native resume).
+22. **2026-07-19 — The persona rejection gains its empirical anchor: Zheng,
+    Pei, Logeswaran, Lee & Jurgens, "When 'A Helpful Assistant' Is Not Really
+    Helpful: Personas in System Prompts Do Not Improve Performances of Large
+    Language Models", Findings of EMNLP 2024 (checked 2026-07-19).** 162
+    personas × 9 open models × 2410 MMLU questions: no persona statistically
+    beats the no-persona control, several hurt, the effect does not improve
+    with scale, and automatic best-role selection performs ≈ random. This
+    turns the oldest Avoid line ("persona/tone theater", constitution +
+    PLAYBOOK anti-patterns, README thesis) from doctrine-plus-field-anecdote
+    into a cited, externally measured claim — ledger row C-088, the first row
+    whose rejection carries external measurement rather than our judgment.
+    Declared limits: MMLU factual QA, open-weight ≤72B, not agentic coding —
+    the mechanism argument (force over steer) remains the primary ground.
+    Design consequence for the Harness Lab formulation ablation: manipulate
+    instruction-content terms only, never identity labels (the identity axis
+    is measured dead); the paper's weak-but-directional mechanism results
+    (term frequency ↑, prompt-question similarity ↑, perplexity ↓) are the
+    citable prior for the owner's retrieval-cue hypothesis.

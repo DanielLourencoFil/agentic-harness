@@ -384,3 +384,30 @@ separate link files rot unread; see ADR 3).
     steer, so admissible under the proposed steer freeze. Rejected: an "ask"
     permission-prompt on every `gh pr create` (over-fires on docs PRs → fatigue);
     firing on `git commit` (wrong granularity — many commits per unit).
+25. **2026-07-20 — Owner governance signatures: the agent-skills sweep is
+    closed, the steer freeze is active, and the 90-day kill/continue rule is
+    armed.** All three signed by the owner on 2026-07-20 (governance is the
+    owner's act, not the agent's). (1) **Sweep closed:** no lot 3 — the
+    remaining bucket-1 skills were validation, not quarry (ADR 20); the
+    `harness-candidate` queue (ADR 18) is now the SOLE growth source, fed only
+    by real product pain. (2) **Steer freeze active:** no new quality-doctrine
+    steer enters the harness until the Harness Lab produces measured FINDINGS v1
+    (spec kill-date 2026-09-15) — the current steer mix is the frozen baseline
+    the lab will measure down. Still admissible: force and half-force always,
+    plus layer-A / provenance / safety / process-rite steer (the load-bearing
+    core — how ADR 23 item 9 and ADR 24's /plan + audit-reminder entered).
+    Honest label: the freeze is convention, not force — "quality-doctrine vs
+    safety steer" is a semantic judgment, not mechanically detectable; the
+    visibility is the selftest's per-run mix printout, and `/absorb` now defers
+    non-exempt steer to a post-lab queue. Future reification noted, not built: a
+    steer-count ceiling in the selftest (ratchet — adopted-steer may not rise
+    above the baseline without an explicit exemption marker). Note the honest
+    optic: recording these two governance rows ticks the mix to 29 steer — they
+    ARE conventions (steer), self-exempt like layer-A; the freeze targets
+    doctrine steer, not its own governance record. (3) **Kill/continue armed
+    (supersedes C-058's deferral):** by ~2026-10-17, if the harness has not
+    measurably reduced review cost or "IMPLEMENTED — NOT VERIFIED" incidents on
+    a real product, the meta-repo freezes and harness work is capped as a tax on
+    shipping (~≤20% of eng time). Rejected: continuing the sweep (diminishing
+    returns, ADR 20); leaving the freeze and kill-rule as unrecorded steer that
+    grows silently (the ledger rows make both greppable at the next /absorb).

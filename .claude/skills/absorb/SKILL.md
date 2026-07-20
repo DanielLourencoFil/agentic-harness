@@ -41,6 +41,11 @@ One row per claim:
   degree nor seen violated is decoration → reject) · **reject** (one line
   naming the value or ADR it loses to) · **already have** (the anchor says
   where) · **defer** (goes to BACKLOG with its pre-registered trigger).
+- **Steer freeze (ADR 25, active until the Harness Lab's FINDINGS v1):** a new
+  *quality-doctrine* steer adoption is **deferred to the post-lab queue**, not
+  adopted now. Force and half-force enter as always; so does layer-A /
+  provenance / safety / process-rite steer (the load-bearing core). The lab
+  measures which of the frozen-baseline steer lines survive before any grow.
 
 ## 3. Close with artifacts, not opinions
 

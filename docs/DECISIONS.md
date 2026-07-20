@@ -349,3 +349,38 @@ separate link files rot unread; see ADR 3).
     and exactly what the ledger exists to make visible. Rejected: a mechanical
     detector (no syntactic signature — content judgment, RATIONALE); rejecting
     cross-model input wholesale (loses the diversity value C-019 preserves).
+24. **2026-07-20 — Closing the externalized-memory gap for audit and planning:
+    the `/audit` reminder is wired, a minimum `/plan` rite ships, and CI
+    auto-review is deferred with a cost flag.** Trigger: the owner named the
+    contradiction — the harness's Principle 2 is "no check depends on me
+    remembering to ask", yet `/audit` was steer executed on invocation, and the
+    AI forgets as readily as the human, so "the AI will offer it" was
+    insufficient. Adopted: (1) `home/bin/audit-reminder.py`, a PreToolUse(Bash)
+    nudge on `gh pr create` — the natural completed-unit boundary — injecting a
+    reminder to offer a fresh-context `/audit` before merge; nudge never block,
+    and the agent applies judgment (offer for logic units, "N/A" for
+    docs/ledger-only) so it does not over-fire (the ADR 10 social-death lesson);
+    the audit runs as the read-only `auditor` subagent = fresh context AND zero
+    marginal cost on a fixed plan. Honest label: **the reminder is mechanical
+    (half-force); acting on it stays steer** — ± cases in `selftest-home.sh`.
+    Dogfood: the hook fired live on its own ADR-writing command (which contained
+    the literal string) — confirming the `additionalContext` surfaces AND
+    exposing a data-vs-invocation false positive, fixed by anchoring the match
+    to a command boundary, the miss reified as a negative selftest case.
+    (2) A minimum `/plan` rite (`home/skills/plan/`, personal tier like
+    `/decide`), the planning layer between `/kickoff` and `/feature`: one-sentence
+    objective, anchored inventory, vertical slices sized to one session, live
+    decided/rejected/open log, stop with decisions. v0 — the owner's reasoned
+    case updated the prior "wait for pain" stance (ADR 9): planning is a
+    documented process, the rite is already specced, and it has an imminent
+    consumer (the lab kickoff), so building it minimal-and-provisional to be
+    *used* there beats ad-hoc planning; the lab kickoff is its field test.
+    Deferred: (3) CI auto-review on PR — it runs `claude -p` in Actions = metered
+    API, which contradicts the fixed-plan decision (lab spec D6); trigger = the
+    in-session audit proves insufficient AND a credit budget is approved. This
+    is a closed, documented decision (not a loose end); wiring it now would pay
+    API to review docs — theater. Freeze note: (1) and (2) are process/rite
+    mechanisms (externalized-memory / layer-A family), not quality-doctrine
+    steer, so admissible under the proposed steer freeze. Rejected: an "ask"
+    permission-prompt on every `gh pr create` (over-fires on docs PRs → fatigue);
+    firing on `git commit` (wrong granularity — many commits per unit).

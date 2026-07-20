@@ -14,7 +14,7 @@
       "Read(**/.env.*.local)"
     ]
   },
-  "model": "claude-fable-5[1m]",
+  "model": "opus",
   "hooks": {
     "SessionStart": [
       {
@@ -54,6 +54,12 @@
             "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/env-dump-guard.py\"",
             "timeout": 10,
             "statusMessage": "secret-hygiene: checking command"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/audit-reminder.py\"",
+            "timeout": 10,
+            "statusMessage": "audit-reminder: checking for a completed unit"
           }
         ]
       },

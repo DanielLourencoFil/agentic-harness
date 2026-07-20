@@ -14,6 +14,10 @@ output as evidence — "compiles" ≠ "works". Run `pnpm verify` before declarin
 
 - Plan before code; minimal diff; one concern per commit (conventional messages).
 - Read a file fully before editing; reuse-scan before creating any component/util.
+- Three similar lines beat a premature abstraction: generalize at the third
+  use case, never before.
+- After a change, list now-orphaned code explicitly and ask before removing
+  it — never silently delete, never silently leave.
 - Names are grep-first: unique and searchable, no generic `handler` / `Manager` /
   `data`. Agents (and humans) navigate by search; a generic name is noise.
 - A non-obvious constraint in code gets a one-line why-comment at the site pointing
@@ -42,6 +46,9 @@ output as evidence — "compiles" ≠ "works". Run `pnpm verify` before declarin
 - One new dependency per PR, in its own commit, with a one-line why (and the
   alternative it beat) in the commit body; load-bearing picks get an ADR.
 - Upgrades read the changelog first — never bump on version number alone.
+- An upgrade is verified by a green suite before AND after the bump — "it
+  installed" proves nothing; review the lockfile diff too (one direct bump
+  can move dozens of transitive packages).
 - The lockfile is machine-written: never edit `pnpm-lock.yaml` by hand; it ships
   in the same commit as the `package.json` change that caused it.
 

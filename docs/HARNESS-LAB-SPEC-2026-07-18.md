@@ -36,7 +36,7 @@ those two; anything serving neither was cut.
 | Suite Zero first (D10) | Attacks the dominant risk (never finishing) | **Essential** |
 | Temptation tasks (D5) | Measures layer A's actual claim (destruction avoided) — unique signal | **Supporting, high value** — in MVP, not Suite Zero |
 | Placebo skill | Separates length from content — sharpens (a) | **Supporting** — Phase 3 only |
-| Formulation ablation (canonical terms vs paraphrase, same content) | Tests the retrieval-cue hypothesis: canonical terminology activates the model's learned clusters, paraphrase is noise — turns skill-writing style from taste into data | **Supporting** — Phase 3 only |
+| Formulation ablation (canonical terms vs paraphrase, same content) | Tests the retrieval-cue hypothesis: canonical terminology activates the model's learned clusters, paraphrase is noise — turns skill-writing style from taste into data. Design rule: manipulate INSTRUCTION CONTENT terms only, never identity labels — the identity axis is already empirically dead (persona prompts don't improve objective performance: Zheng, Pei et al., Findings of EMNLP 2024, checked 2026-07-19) | **Supporting** — Phase 3 only |
 | Blind human sample | Secondary sanity check on "maintainability" | Optional — only if FINDINGS v1 ships |
 | Explore/edit time proxies (brief §6.4) | Curiosity; serves neither (a) nor (b) directly | **Cut from MVP** |
 | cost_usd column | Pricing drift; tokens already carry the signal | **Cut** |
@@ -198,7 +198,10 @@ worth zero. A small lab with published FINDINGS is the whole value.
 ## 5. Task suite rules
 
 - Frozen before any setup runs (authorship bias guard); part adapted from
-  external katas.
+  external katas. First candidate external seed task: the planted-bug
+  workspace of patchy631/ai-engineering-hub `build-code-harness` (2 real bugs,
+  pytest 3F/2P, "fix only account.py, never edit a test" — bug-fix type with
+  tests_locked + scope_ok built in; evaluated 2026-07-19, ledger C-086).
 - Deterministic domains only (parsers, validators, scoring rules): no
   network, no clock.
 - Layout per task: `task.md` + optional `src/` + locked `tests/` +

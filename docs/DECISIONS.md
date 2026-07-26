@@ -411,3 +411,27 @@ separate link files rot unread; see ADR 3).
     shipping (~≤20% of eng time). Rejected: continuing the sweep (diminishing
     returns, ADR 20); leaving the freeze and kill-rule as unrecorded steer that
     grows silently (the ledger rows make both greppable at the next /absorb).
+26. **2026-07-26 — The plan-mode draft dir (`~/.claude/plans/`) joins the
+    containment allowlist, so plan approval stops happening blind.** Trigger:
+    plan mode writes its draft to `~/.claude/plans/<name>.md`, which the ADR 10
+    hook denied from every project session — observed 2026-07-20 at the
+    harness-lab kickoff and again in calendar-app, where the agent had to paste
+    the plan into the chat and note the block in the file's own header. Reported
+    consequence, not independently verified: `ExitPlanMode` renders that file,
+    so with no file the approval screen has nothing to show and the human
+    approves an artifact he does not have in front of him. This is ADR 13's
+    shape exactly: a fixed dir of agent-written drafts, not project data — the
+    same category as the agent memory dir already on the list, and the allowlist
+    exists precisely for designed flows a blanket ban would break. Wired: the
+    hook's named allowlist (plus its docstring and denial message, which
+    enumerate the list in prose and would otherwise lie) and a positive
+    `selftest-home.sh` case — without the assertion the new entry has no gate
+    and breaks silently at the next edit. Freeze note: this is force (ADR 25
+    admits force always), not quality-doctrine steer. Honest cost, the owner's
+    to sign: it is the 4th entry in a list the owner closed on 2026-07-17, and
+    each exception makes the next one easier to argue — the defense is that the
+    list stays named, short and selftested, never a pattern. Rejected: leaving
+    it blocked (durable plans do go to `docs/PLANS/` per the human's own rule,
+    but the approval screen would stay empty forever — a harness feature
+    degraded by another gate); routing the write around the hook via Bash (that
+    uses ADR 10's honest hole to escape ADR 10).

@@ -3,10 +3,11 @@
 
 Denies file-tool writes whose REAL path (symlinks and `../` resolved) lands
 outside the project root, with a short named allowlist: the agent memory dir
-(~/.claude/projects/), the session scratchpad (/tmp/claude-*) and the
-cross-project data repo (~/Dev/organizer/ — the backlog rite writes there from
-any session; ADR 13). Honest limit: binds the file tools only — Bash is
-contained by an OS sandbox, not by this.
+(~/.claude/projects/), the plan-mode draft dir (~/.claude/plans/ — the file
+ExitPlanMode renders for approval; ADR 26), the session scratchpad
+(/tmp/claude-*) and the cross-project data repo (~/Dev/organizer/ — the backlog
+rite writes there from any session; ADR 13). Honest limit: binds the file tools
+only — Bash is contained by an OS sandbox, not by this.
 """
 import json
 import os
@@ -34,10 +35,12 @@ def under(path: str, prefix: str) -> bool:
 
 home = os.path.expanduser("~")
 memory_dir = os.path.realpath(os.path.join(home, ".claude", "projects"))
+plans_dir = os.path.realpath(os.path.join(home, ".claude", "plans"))
 organizer = os.path.realpath(os.path.join(home, "Dev", "organizer"))
 allowed = (
     under(real, real_root)
     or under(real, memory_dir)
+    or under(real, plans_dir)
     or under(real, organizer)
     # scratchpad; /private/tmp is macOS's realpath of /tmp
     or real.startswith(("/tmp/claude-", "/private/tmp/claude-"))
@@ -51,7 +54,8 @@ if not allowed:
                 "Contenção de escrita (ADR 10): o alvo real " + real
                 + " está fora da raiz do projeto (" + real_root + ")."
                 " Permitidos fora da raiz: memória do agente (~/.claude/projects/),"
-                " scratchpad da sessão (/tmp/claude-*) e o repo de dados"
+                " rascunho do plan mode (~/.claude/plans/), scratchpad da sessão"
+                " (/tmp/claude-*) e o repo de dados"
                 " cross-project (~/Dev/organizer/). Se a escrita é mesmo"
                 " intencional, faz o Daniel executá-la, ou abre a sessão na pasta"
                 " do projeto certo."

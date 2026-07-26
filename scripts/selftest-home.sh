@@ -4,7 +4,7 @@
 # unreferenced is decoration (same lesson as the template selftest: a gate must
 # be seen saying "no"). Covers, per ADR 10 and the secret-hygiene pack:
 #   1. write-containment denies writes whose REAL path escapes the project root
-#      (plain outside, `../`, symlink) and allows root/memory/scratchpad;
+#      (plain outside, `../`, symlink) and allows root/memory/plans/scratchpad;
 #   2. secret-scan blocks prompts carrying secret-shaped values;
 #   3. env-dump-guard denies commands that would dump secrets into context;
 #   4. deliberation-nudge reminds on deliberation markers (nudge, never block)
@@ -20,7 +20,7 @@ trap 'rm -rf "$TMP"' EXIT
 ROOT="$TMP/proj"
 FAKEHOME="$TMP/home"
 mkdir -p "$ROOT" "$TMP/outside" "$FAKEHOME/.claude/projects/some-proj/memory" \
-  "$FAKEHOME/Dev/organizer"
+  "$FAKEHOME/.claude/plans" "$FAKEHOME/Dev/organizer"
 ln -s "$TMP/outside" "$ROOT/escape-link"
 
 containment() { # $1 = payload json; stdout = hook output
@@ -50,6 +50,8 @@ expect_allow "write inside root" \
   "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"'"$ROOT"'/src/ok.ts"}}')"
 expect_allow "write to agent memory (named allowlist)" \
   "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"'"$FAKEHOME"'/.claude/projects/some-proj/memory/note.md"}}')"
+expect_allow "write to the plan-mode draft dir (ADR 26)" \
+  "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"'"$FAKEHOME"'/.claude/plans/draft.md"}}')"
 expect_allow "write to session scratchpad (named allowlist)" \
   "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"/tmp/claude-selftest/scratchpad/tmp.txt"}}')"
 expect_allow "write to the cross-project data repo (backlog rite, ADR 13)" \

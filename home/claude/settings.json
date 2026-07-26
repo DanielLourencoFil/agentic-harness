@@ -1,17 +1,15 @@
 {
-  "effortLevel": "xhigh",
-  "switchModelsOnFlag": true,
   "permissions": {
-    "ask": [
-      "Bash(git commit:*)",
-      "Bash(git push:*)"
-    ],
     "deny": [
       "Bash(git commit --no-verify*)",
       "Bash(git push --force*)",
       "Read(**/.env)",
       "Read(**/.env.local)",
       "Read(**/.env.*.local)"
+    ],
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   },
   "model": "opus",
@@ -75,5 +73,7 @@
         ]
       }
     ]
-  }
+  },
+  "switchModelsOnFlag": true,
+  "effortLevel": "max"
 }

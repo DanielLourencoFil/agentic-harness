@@ -435,3 +435,39 @@ separate link files rot unread; see ADR 3).
     but the approval screen would stay empty forever — a harness feature
     degraded by another gate); routing the write around the hook via Bash (that
     uses ADR 10's honest hole to escape ADR 10).
+27. **2026-07-29 — The claims ledger's completeness becomes a gate in both
+    directions, and the containment allowlist can no longer outlive its own
+    prose.** Source: the calendar-app session's two governance gates (commit
+    `28926b0b`, `scripts/clone-budget-check.js` and
+    `apps/web/src/lib/components-registry.test.ts`, checked 2026-07-29), absorbed
+    per ADR 23 — foreign-session output is testimony, so it entered through
+    `/absorb` and not as a scaffold. Their transplantable insight is not either
+    script: it is that **a registry covering part of its territory is worse than
+    no registry**, because whoever greps it searches, finds nothing, and
+    concludes the thing is absent — a failed search is not proof of absence.
+    Their instance: `docs/COMPONENTS.md` mapped 7 of 45 shelf files. Applying
+    the same test here found the harness had built half the pattern already
+    (`check_coverage` = artefact→row, `check_executors` = row→reality, ADR 17)
+    with a map that only covered `scripts/selftest*.sh` — so
+    `home/skills/checklist/SKILL.md`, a rite shipped since ADR 9, had no ledger
+    row and no `/absorb` run would ever have found it. Wired (C-096/C-097):
+    coverage widened to hooks, personal rites, repo rites, template rites and
+    template scripts; executor refs now read the Where column only and verify
+    path-carrying refs as exact paths (basename matching kept passing after a
+    move); the containment allowlist's count is pinned at 4 and both prose copies
+    — docstring and denial message — must name all four entries, which is ADR
+    26's own worry ("would otherwise lie") turned into a gate; four new negative
+    cases, and direction 1 was seen rejecting real content (the `/checklist`
+    row), not only a planted fixture. Freeze note: all of this is force, which
+    ADR 25 admits always; the doctrine that came with it travels in the
+    artefacts' header comments, not as new PLAYBOOK steer. Honest limit: the
+    stem fallback in `check_coverage` accepts a compound name mentioned in prose
+    (C-036 anchors `deletion-guard.mjs` to the gate that proves it, not to its
+    own path), so coverage proves an artefact is *mentioned*, not that its row is
+    good. Deferred, not built: the copy-paste budget as a `ts-base` gate (its own
+    branch, C-100+) and the creation-moment hook (C-099 — no instance exists
+    anywhere yet; `/decide` before any code). Rejected: extending the
+    ghost-executor check to steer and rejected rows — the ledger's own contract
+    says a row is a dated snapshot that "may rot honestly", and only a live
+    force/half-force guarantee needs a live executor; a single-word stem
+    fallback (`verify` appears everywhere and would prove nothing).

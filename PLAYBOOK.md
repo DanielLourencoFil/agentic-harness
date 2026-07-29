@@ -23,10 +23,14 @@ tool/test/hook, wire it; only what cannot be reified goes into CLAUDE.md as conv
 ## Layer 0 — UNIVERSAL (every project, no exceptions)
 
 **Enforced (wire these, they must physically block):**
-- `verify` = typecheck + lint + test — on **pre-commit** (Husky) and re-run in **CI**
+- `verify` = typecheck + lint + clones + test — on **pre-commit** (Husky) and re-run in **CI**
   (local hooks can be bypassed; CI cannot). Green verify on empty scaffold before feature code.
 - **Zero-warning lint.** No warning budgets (that's legacy-debt management, not a fresh project).
 - **Deletion guard** on pre-commit (>80 deleted lines blocked unless `ALLOW_BIG_DELETE=1`).
+- **Copy-paste budget** in `verify` (ships at 0): an 8-significant-line block appearing twice
+  is a clone and the count may only fall. This is the wired half of the reuse-scan convention
+  below — not a warning budget: nothing is grandfathered in a fresh scaffold, and deliberate
+  duplication is raised in the same commit where a reviewer sees the reason (ADR 27).
 - Formatting via Prettier + lint-staged (mechanical, never discussed).
 
 **Convention (CLAUDE.md of the project):**
@@ -73,13 +77,15 @@ tool/test/hook, wire it; only what cannot be reified goes into CLAUDE.md as conv
   interface — and given Node globals). Rule rationale: `docs/RATIONALE.md`.
 - Vitest (coverage as diagnostic, no threshold; `passWithNoTests` so the empty scaffold
   verifies green — inert once the first real test lands) · Husky pre-commit (deletion-guard →
-  lint-staged → verify) · `.gitignore` (deps/build/secrets + privacy block) · CI running
+  lint-staged → verify) · `.clonebudget.json` at 0 (the copy-paste budget above, inside
+  `verify`) · `.gitignore` (deps/build/secrets + privacy block) · CI running
   verify on every push + PR with the hygiene below, plus a weekly audit workflow.
 - `AGENTS.md` conventions skeleton (canonical, vendor-neutral) + `CLAUDE.md`/`GEMINI.md`
   one-line adapters + `.claude/settings.json` permission baseline.
 - The template's claims are **enforced by `scripts/selftest.sh`** (run in this repo's CI):
   it consumes the template exactly as the README instructs and fails if empty-scaffold
-  verify, the commit #1 hook, the deletion guard, or the adapter coherence regress.
+  verify, the commit #1 hook, the deletion guard, the copy-paste budget (both directions:
+  a paste blocked, a shrink allowed) or the adapter coherence regress.
 
 **Convention:** rely on inference internally; explicit types at public boundaries. `unknown` +
 narrowing instead of `any`. Runtime validation at trust boundaries is schema-first (**Zod**),

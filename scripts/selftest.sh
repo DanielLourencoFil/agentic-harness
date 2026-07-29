@@ -6,7 +6,9 @@
 #   2. commit #1 passes the pre-commit hook (deletion-guard → lint-staged → verify);
 #   3. the deletion guard actually blocks a >80-line deletion;
 #   4. the gate REJECTS violating code — a rule never seen saying "no" is decoration
-#      (lesson of 2026-07-10: import-x/no-cycle shipped wired-but-blind; see AGENT-LOG).
+#      (lesson of 2026-07-10: import-x/no-cycle shipped wired-but-blind; see AGENT-LOG);
+#   5. the copy-paste budget blocks a verbatim paste, names the file the author just
+#      wrote, and PASSES when the count falls (the asymmetry is the point, ADR 27).
 # Wired into this repo's CI: the claims are gates, not prose.
 set -euo pipefail
 
@@ -121,4 +123,38 @@ for rule in "no-explicit-any" "eqeqeq" "switch-exhaustiveness-check" "import-x/n
   }
 done
 
-echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects."
+echo "==> Claim 5: the copy-paste budget must block a pasted block and pass when it shrinks"
+rm -f src/violations.ts src/cycle-a.ts src/cycle-b.ts
+mkdir -p src
+# Eight significant lines, which is the window: shorter and the gate is blind by
+# design, so a fixture under it would prove nothing.
+for name in first second; do
+  cat > "src/clone-$name.ts" <<'EOF'
+export function summarize(rows: readonly number[]): string {
+  const total = rows.reduce((sum, n) => sum + n, 0);
+  const count = rows.length;
+  const mean = count === 0 ? 0 : total / count;
+  const max = rows.reduce((hi, n) => (n > hi ? n : hi), 0);
+  const min = rows.reduce((lo, n) => (n < lo ? n : lo), 0);
+  const spread = max - min;
+  return `${String(count)} rows, mean ${mean.toFixed(2)}, spread ${String(spread)}`;
+}
+EOF
+done
+if pnpm clones > clones.log 2>&1; then
+  echo "FAIL: the copy-paste budget accepted a verbatim paste (wired-but-blind)" >&2
+  cat clones.log >&2
+  exit 1
+fi
+grep -q "Copy-paste budget exceeded" clones.log || { cat clones.log >&2; exit 1; }
+grep -q "clone-first.ts" clones.log || {
+  echo "FAIL: the failure did not name the cloned file the author just wrote" >&2
+  cat clones.log >&2
+  exit 1
+}
+# Asymmetry: removing the paste must PASS, not fail for being under budget.
+rm src/clone-second.ts
+pnpm clones || { echo "FAIL: under-budget must pass, never fail" >&2; exit 1; }
+rm -f src/clone-first.ts
+
+echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone budget holds both directions."

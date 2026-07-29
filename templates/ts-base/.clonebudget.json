@@ -1,0 +1,6 @@
+{
+  "maxDuplicateBlocks": 0,
+  "windowLines": 8,
+  "updatedAt": "2026-07-29",
+  "note": "Copies beyond the original, counted by scripts/clone-budget-check.mjs. This number may go down, never up. A fresh scaffold starts at 0: nothing is grandfathered, because there is nothing yet."
+}

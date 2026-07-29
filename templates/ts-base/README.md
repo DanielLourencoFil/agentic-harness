@@ -13,7 +13,11 @@ below, `pnpm install`. Framework modules (Vue/React/Nest) layer **on top** (see
   `max-depth` / `max-lines(-per-function)` as **errors**, **zero warnings**. Node CLI scripts (`scripts/**`)
   get Node globals and may use `console` — it's their interface.
 - **Prettier** via lint-staged.
-- **Husky pre-commit**: deletion guard → lint-staged → `verify` (typecheck + lint + test).
+- **Copy-paste budget** (`.clonebudget.json`, ships at 0) inside `verify`: an 8-significant-line
+  block appearing twice is a clone, and the count may only fall. Deliberate duplication stays
+  allowed — raise the budget in the same commit, where a reviewer sees the reason next to the
+  copy. This is the wired half of AGENTS.md's reuse-scan rule, not a warning budget.
+- **Husky pre-commit**: deletion guard → lint-staged → `verify` (typecheck + lint + clones + test).
 - **GitHub Actions**: `verify` on **every push and every PR** (never PR-only), with
   `concurrency: cancel-in-progress`, a job timeout, dependabot skip — plus a weekly
   `pnpm audit --prod --audit-level=high` workflow.
@@ -47,7 +51,8 @@ binding gates remain the verify/CI machinery above.
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test",
+    "clones": "node scripts/clone-budget-check.mjs",
+    "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm test",
     "prepare": "husky"
   },
   "lint-staged": { "*.{ts,tsx,json,md,css}": "prettier --write" },

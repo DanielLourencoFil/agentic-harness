@@ -5,6 +5,9 @@
 # be seen saying "no"). Covers, per ADR 10 and the secret-hygiene pack:
 #   1. write-containment denies writes whose REAL path escapes the project root
 #      (plain outside, `../`, symlink) and allows root/memory/plans/scratchpad;
+#   1b. that allowlist stays 4 entries long and both prose copies (docstring,
+#      denial message) still name all four — an exemption may not outlive the
+#      sentence that justifies it, and the list may not grow quietly (ADR 13/26);
 #   2. secret-scan blocks prompts carrying secret-shaped values;
 #   3. env-dump-guard denies commands that would dump secrets into context;
 #   4. deliberation-nudge reminds on deliberation markers (nudge, never block)
@@ -56,6 +59,47 @@ expect_allow "write to session scratchpad (named allowlist)" \
   "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"/tmp/claude-selftest/scratchpad/tmp.txt"}}')"
 expect_allow "write to the cross-project data repo (backlog rite, ADR 13)" \
   "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"'"$FAKEHOME"'/Dev/organizer/BACKLOG.md"}}')"
+
+check_allowlist() { # $1 = write-containment.py — the named list must stay named and short
+  local f="$1" ok=0 n docstring reason entry
+  # The allowlist lives three times in that file: the code that builds it, the
+  # module docstring, and the denial message the human reads. ADR 26 added the
+  # 4th entry and had to hand-fix both prose copies, which "would otherwise
+  # lie". A list kept in three places rots in two of them.
+  n="$(grep -cE '^ +or (under\(real, |real\.startswith\()' "$f" || true)"
+  if [ "$n" -ne 4 ]; then
+    echo "  the allowlist has $n exemptions, expected 4"
+    echo "  (the owner closed this list on 2026-07-17; ADR 13/26. Adding one is his"
+    echo "   signed act: bump this count, both prose copies, and add an allow-case.)"
+    ok=1
+  fi
+  docstring="$(awk '/"""/{n++; if(n==2) exit} n' "$f")"
+  reason="$(awk '/permissionDecisionReason/{p=1} p' "$f")"
+  for entry in '~/.claude/projects/' '~/.claude/plans/' '/tmp/claude-*' '~/Dev/organizer/'; do
+    grep -qF -- "$entry" <<<"$docstring" \
+      || { echo "  docstring does not name the allowlist entry $entry"; ok=1; }
+    grep -qF -- "$entry" <<<"$reason" \
+      || { echo "  the denial message does not name the allowlist entry $entry"; ok=1; }
+  done
+  return "$ok"
+}
+
+echo "==> write-containment: the allowlist stays short and both prose copies name it (ADR 13/26)"
+if ! out="$(check_allowlist "$BIN/write-containment.py")"; then
+  echo "FAIL: the containment allowlist and its prose disagree" >&2; echo "$out" >&2; exit 1
+fi
+
+echo "==> Negative cases: a silent 5th exemption and a lying prose copy must be seen rejected"
+sed 's|^    or under(real, organizer)$|    or under(real, organizer)\n    or under(real, anywhere)|' \
+  "$BIN/write-containment.py" > "$TMP/grown.py"
+out="$(check_allowlist "$TMP/grown.py" || true)"
+grep -q "expected 4" <<<"$out" \
+  || { echo "FAIL: a 5th exemption landed without the gate saying no" >&2; exit 1; }
+sed 's|rascunho do plan mode (~/.claude/plans/)|rascunho do plan mode|' \
+  "$BIN/write-containment.py" > "$TMP/lying.py"
+out="$(check_allowlist "$TMP/lying.py" || true)"
+grep -q "denial message does not name" <<<"$out" \
+  || { echo "FAIL: the denial message dropped an entry and the gate did not notice" >&2; exit 1; }
 
 echo "==> secret-scan: secret-shaped prompts must be blocked, benign ones must pass"
 fake_key="sk-AAAAAAAAAAAAAAAAAAAA" # fixture, not a credential

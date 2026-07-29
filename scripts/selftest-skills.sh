@@ -133,19 +133,26 @@ coverage_needle() { # $1 = artefact path → the string some ledger row must car
 }
 
 check_coverage() { # $1 = ledger; $2 = repo root — every shipped artefact indexed
-  local f="$1" root="$2" ok=0 glob a needle stem
+  local f="$1" root="$2" ok=0 glob a needle stem index
+  # Only the claim ($5) and Where ($7) columns count as an index. The Source
+  # column ($3) names external material — C-098 cites the calendar-app's own
+  # `clone-budget-check.js` — and letting provenance stand in for a claim marks
+  # our artefact indexed because someone else's file has a similar name. That is
+  # not hypothetical: it is the first thing this gate got wrong, on 2026-07-29,
+  # and it passed green while blind, which is the failure mode it exists to stop.
+  index="$(awk -F'|' '/^\| C-/ {print $5 "|" $7}' "$f")"
   for glob in "${ARTEFACT_GLOBS[@]}"; do
     for a in "$root"/$glob; do
       [ -e "$a" ] || continue
       needle="$(coverage_needle "$a")"
-      grep -q -- "$needle" "$f" && continue
+      grep -q -- "$needle" <<<"$index" && continue
       # Fallback: a row may legitimately anchor an artefact to the gate that
       # proves it instead of to its own path — C-036 does that for
       # deletion-guard.mjs. Only a compound (hyphenated) stem counts as
       # evidence; a single word like "verify" appears everywhere and proves
       # nothing.
       stem="${needle%.*}"
-      if [[ "$stem" == *-* ]] && grep -q -- "$stem" "$f"; then continue; fi
+      if [[ "$stem" == *-* ]] && grep -q -- "$stem" <<<"$index"; then continue; fi
       echo "  artefact not indexed in the claims ledger: ${a#"$root"/}"; ok=1
     done
   done
@@ -199,6 +206,16 @@ grep -q "selftest-ghost.sh" <<<"$out" \
   || { echo "FAIL: coverage check accepted an unindexed gate" >&2; exit 1; }
 grep -q "ghost-rite" <<<"$out" \
   || { echo "FAIL: coverage check accepted an unindexed rite — the family it was blind to until 2026-07-29" >&2; exit 1; }
+# An artefact named ONLY in a row's Source column is not indexed: provenance of
+# somebody else's file is not a claim about ours. This case exists because the
+# gate got it wrong on 2026-07-29 and passed green while blind.
+mkdir -p "$TMP/root-src/templates/x/scripts"
+: > "$TMP/root-src/templates/x/scripts/borrowed-tool.mjs"
+printf '| C-902 | 2026-07-29 | external repo `scripts/borrowed-tool.mjs` (checked today) | a claim we did not adopt | rejected: n/a | ADR n |\n' \
+  > "$TMP/source-only.md"
+out="$(check_coverage "$TMP/source-only.md" "$TMP/root-src" || true)"
+grep -q "borrowed-tool.mjs" <<<"$out" \
+  || { echo "FAIL: a Source-column mention passed as an index (provenance is not a claim)" >&2; exit 1; }
 printf '| C-900 | 2026-07-17 | src | fake gate | adopted (force) | ghost-gate.sh |\n' > "$TMP/ghost.md"
 if check_executors "$TMP/ghost.md" >/dev/null; then
   echo "FAIL: executor check accepted a ghost executor" >&2; exit 1

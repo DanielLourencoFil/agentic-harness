@@ -464,10 +464,36 @@ separate link files rot unread; see ADR 3).
     stem fallback in `check_coverage` accepts a compound name mentioned in prose
     (C-036 anchors `deletion-guard.mjs` to the gate that proves it, not to its
     own path), so coverage proves an artefact is *mentioned*, not that its row is
-    good. Deferred, not built: the copy-paste budget as a `ts-base` gate (its own
-    branch, C-100+) and the creation-moment hook (C-099 — no instance exists
-    anywhere yet; `/decide` before any code). Rejected: extending the
-    ghost-executor check to steer and rejected rows — the ledger's own contract
-    says a row is a dated snapshot that "may rot honestly", and only a live
-    force/half-force guarantee needs a live executor; a single-word stem
-    fallback (`verify` appears everywhere and would prove nothing).
+    good. **The gate's own first defect, worth recording because it is the exact
+    failure it exists to prevent:** as first written, coverage grepped the whole
+    ledger line, so the brand-new `templates/ts-base/scripts/clone-budget-check.mjs`
+    counted as indexed — the name appears in C-098's *Source* column, describing
+    the calendar-app's file. It passed green while blind. Fixed by restricting
+    the index to the claim and Where columns ($5, $7): provenance of someone
+    else's file is not a claim about ours, and there is now a negative case
+    pinning it. Rejected: extending the ghost-executor check to steer and
+    rejected rows — the ledger's own contract says a row is a dated snapshot that
+    "may rot honestly", and only a live force/half-force guarantee needs a live
+    executor; a single-word stem fallback (`verify` appears everywhere and would
+    prove nothing).
+    **Second half, same absorb (C-100…C-104): the copy-paste budget ships in
+    `ts-base`.** `scripts/clone-budget-check.mjs` + `.clonebudget.json` at 0,
+    wired inside `verify` (so CI enforces it, not only the local hook) and
+    asserted by `scripts/selftest.sh` Claim 5 in both directions — a verbatim
+    8-line paste blocked and named, and a shrink allowed to pass. It converts
+    AGENTS.md's existing reuse-scan convention into force rather than adding
+    doctrine, which is why it is freeze-clean; at 0 in a fresh scaffold it is the
+    zero-warnings rule with a named escape hatch, not the warning budget the
+    PLAYBOOK forbids in greenfield. The port fixed two defects present in the
+    source instance: git's stderr was inherited, so outside a work tree ~100
+    lines of usage text buried the gate's own message, and the three git commands
+    shared one try/catch, so `diff HEAD` failing in a repo with no commits — that
+    is commit #1, the scaffold — silently voided the author-scoping. **Declared
+    limit:** `vue-starter` does NOT get this gate in this change. It defines its
+    own `verify` and copies only the deletion guard from `ts-base`, so nothing
+    breaks; but the scanner reads `.ts`/`.tsx` only, and a Vue project's
+    duplication lives partly in `.vue` template and style blocks. Shipping it
+    there would gate the composables and silently miss the SFCs, which is the
+    half-covered map this very ADR is about. BACKLOG'd with the trigger. Still
+    deferred: the creation-moment hook (C-099 — no instance exists anywhere yet;
+    `/decide` before any code).

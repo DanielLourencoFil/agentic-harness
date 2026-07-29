@@ -4,7 +4,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "verify": "pnpm typecheck && pnpm lint && pnpm test",
+    "clones": "node scripts/clone-budget-check.mjs",
+    "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm test",
     "prepare": "husky"
   },
   "lint-staged": { "*.{ts,tsx,json,md,css}": "prettier --write" },

@@ -23,6 +23,28 @@ Lesson, generalized: **a wired rule is not a live rule until it has been seen
 rejecting a violation.** This is the rationale for extending the selftest with
 negative cases for the gates themselves (planned).
 
+## 2026-07-29 — The CI watch was dead and looked identical to working
+
+The git rite says: watch CI in the background after a push. The watch loop was
+written around `jq`, which is not installed on this machine. All 80 iterations
+died with `jq: command not found`, the monitor emitted zero events, and the
+agent reported to the human that CI was "being watched in the background". It
+was silent, not watching. Nothing distinguished that from a run still in
+progress; it surfaced only on reading the output file afterwards. CI happened to
+be green, which makes the case worse rather than better: the failure cost
+nothing this time.
+
+Decision: use `gh --jq` (gojq is embedded in `gh`), do not install `jq`. Checked
+that day: no hook in `home/bin/` and no local script depends on it; the only use
+is a product's `.github/workflows/ci.yml`, running on GitHub runners that ship it.
+
+Lesson, generalized: **a watcher that cannot read the state must shout, never
+continue quietly.** With `jq` installed, the next missing binary reproduces the
+failure exactly. Sibling of 2026-07-10 above: a wired rule is not live until seen
+rejecting a violation, and a watcher is not alive until seen reporting a failure.
+harness-candidate: watch loops cover the error path (`|| echo "cannot read
+state"`) and verify their tooling (`command -v`) before arming.
+
 ## 2026-07-30 — Audit calibration: 16 findings, 0 confabulated, all four gates blind
 
 The gates written the day before (ADR 27) were audited in fresh context, scoped
@@ -54,3 +76,4 @@ inspected the *text* of what they guarded. Text checks are dodged by any refacto
 that preserves meaning while changing shape. The fix that held in every case was
 to assert **behaviour** — a path that must be denied, a count that must rise — and
 to keep the text check only as a cheap extra.
+

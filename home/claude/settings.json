@@ -1,5 +1,8 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(git commit:*)"
+    ],
     "deny": [
       "Bash(git commit --no-verify*)",
       "Bash(git push --force*)",
@@ -8,11 +11,10 @@
       "Read(**/.env.*.local)"
     ],
     "ask": [
-      "Bash(git commit:*)",
       "Bash(git push:*)"
     ]
   },
-  "model": "opus",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -74,6 +76,6 @@
       }
     ]
   },
-  "switchModelsOnFlag": true,
-  "effortLevel": "max"
+  "effortLevel": "xhigh",
+  "switchModelsOnFlag": true
 }

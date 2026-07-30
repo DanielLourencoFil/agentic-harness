@@ -72,10 +72,19 @@ grep -q "no frontmatter" "$TMP/reasons.log" \
   || { echo "FAIL: rejection reasons not reported" >&2; cat "$TMP/reasons.log" >&2; exit 1; }
 
 check_ledger() { # $1 = ledger path; prints reasons; non-zero exit on violation
-  local f="$1" ok=0 dups bad
+  local f="$1" ok=0 dups bad malformed
   dups="$(awk -F'|' '/^\| C-/ {gsub(/ /,"",$2); print $2}' "$f" | sort | uniq -d)"
   if [ -n "$dups" ]; then
     echo "  duplicate claim ids: $dups"; ok=1
+  fi
+  # Ids are C-NNN and nothing else. Nothing enforced the format before, so an
+  # inserted `C-100a` was accepted here AND skipped by check_executors, whose
+  # filter needs digits then a space — a row that no gate ever looked at
+  # (audit 2026-07-30).
+  malformed="$(awk -F'|' '/^\| C-/ {gsub(/ /,"",$2);
+    if ($2 !~ /^C-[0-9][0-9][0-9]$/) print " " $2}' "$f")"
+  if [ -n "$malformed" ]; then
+    echo "  claim id is not C-NNN on:$malformed"; ok=1
   fi
   bad="$(awk -F'|' '/^\| C-/ {v=$6; sub(/^ +/,"",v);
     if (v !~ /^(adopted \((force|half-force|steer)|rejected|already have|deferred)/) print $2}' "$f")"
@@ -101,6 +110,10 @@ if check_ledger "$TMP/ledger.md" >/dev/null; then
   echo "FAIL: the ledger check accepted duplicate ids, a rogue verdict, and a degree-less adopted" >&2
   exit 1
 fi
+printf '| C-100a | 2026-07-30 | src | inserted row | adopted (force) | ghost-gate.sh |\n' > "$TMP/badid.md"
+out="$(check_ledger "$TMP/badid.md" || true)"
+grep -q "not C-NNN" <<<"$out" \
+  || { echo "FAIL: a non-numeric id was accepted, and no other gate looks at that row" >&2; exit 1; }
 
 # Every enforcing artefact this repo ships must be indexed in the ledger. The
 # families below are all things the harness claims to do: a selftest gate, a
@@ -122,18 +135,35 @@ ARTEFACT_GLOBS=(
   "templates/*/.claude/skills/*/SKILL.md"
   "templates/*/.claude/agents/*.md"
   "templates/*/scripts/*"
+  # Added 2026-07-30: the audit found the comment above promised "every
+  # enforcing artefact" while the list watched none of these — the hook chain,
+  # the lint cage, the CI workflow, the budget file, the permission baselines.
+  "templates/*/.husky/*"
+  "templates/*/eslint.config.*"
+  "templates/*/.clonebudget.json"
+  ".github/workflows/*.yml"
+  "home/claude/settings.json"
+  ".claude/settings.json"
 )
 
-coverage_needle() { # $1 = artefact path → the string some ledger row must carry
-  case "$1" in
-    # SKILL.md is the same basename for every rite, so the rite IS its directory.
-    */SKILL.md) printf 'skills/%s' "$(basename "$(dirname "$1")")" ;;
-    *)          basename "$1" ;;
-  esac
+artefact_paths() { # $1 = repo root — every shipped artefact, one per line
+  local root="$1" glob a
+  for glob in "${ARTEFACT_GLOBS[@]}"; do
+    for a in "$root"/$glob; do
+      [ -e "$a" ] && printf '%s\n' "${a#"$root"/}"
+    done
+  done
 }
 
+# Basenames this repo ships more than once. Computed from the REAL repo, never
+# from the root under test: in a two-file fixture directory every basename looks
+# unique, which let a planted `home/skills/ghost-rite/SKILL.md` be anchored by
+# any other rite's row. An ambiguity set is only meaningful against the whole
+# shipped set.
+AMBIGUOUS_BASENAMES=""
+
 check_coverage() { # $1 = ledger; $2 = repo root — every shipped artefact indexed
-  local f="$1" root="$2" ok=0 glob a needle stem index
+  local f="$1" root="$2" ok=0 a base index ambiguous
   # Only the claim ($5) and Where ($7) columns count as an index. The Source
   # column ($3) names external material — C-098 cites the calendar-app's own
   # `clone-budget-check.js` — and letting provenance stand in for a claim marks
@@ -141,53 +171,81 @@ check_coverage() { # $1 = ledger; $2 = repo root — every shipped artefact inde
   # not hypothetical: it is the first thing this gate got wrong, on 2026-07-29,
   # and it passed green while blind, which is the failure mode it exists to stop.
   index="$(awk -F'|' '/^\| C-/ {print $5 "|" $7}' "$f")"
-  for glob in "${ARTEFACT_GLOBS[@]}"; do
-    for a in "$root"/$glob; do
-      [ -e "$a" ] || continue
-      needle="$(coverage_needle "$a")"
-      grep -q -- "$needle" <<<"$index" && continue
-      # Fallback: a row may legitimately anchor an artefact to the gate that
-      # proves it instead of to its own path — C-036 does that for
-      # deletion-guard.mjs. Only a compound (hyphenated) stem counts as
-      # evidence; a single word like "verify" appears everywhere and proves
-      # nothing.
-      stem="${needle%.*}"
-      if [[ "$stem" == *-* ]] && grep -q -- "$stem" <<<"$index"; then continue; fi
-      echo "  artefact not indexed in the claims ledger: ${a#"$root"/}"; ok=1
-    done
-  done
+  # Basenames shared by two or more shipped artefacts. Matching those would let
+  # one row cover a file it never meant: SKILL.md is eight rites, settings.json
+  # is two permission baselines. For these the full repo-relative path is the
+  # only acceptable anchor.
+  ambiguous="$AMBIGUOUS_BASENAMES"
+  while IFS= read -r a; do
+    [ -n "$a" ] || continue
+    # Whole-token, literal match. Substring matching made `skills/feat` satisfy
+    # the row for `skills/feature`, and a hyphenated-stem fallback made a new
+    # `clone-budget-check.sh` inherit the row of the `.mjs` (audit 2026-07-30).
+    grep -qwF -- "$a" <<<"$index" && continue
+    base="$(basename "$a")"
+    if ! grep -qxF -- "$base" <<<"$ambiguous" && grep -qwF -- "$base" <<<"$index"; then
+      continue
+    fi
+    echo "  artefact not indexed in the claims ledger: $a"; ok=1
+  done < <(artefact_paths "$root")
   return "$ok"
 }
 
+# A file that can be executed by a gate. A force claim satisfied by a `.md` is
+# prompt-and-pray wearing the word "force" — which is what the failure message
+# below accuses others of (audit 2026-07-30). Prose may anchor a HALF-force row,
+# where the semantic half is admittedly a rite, never a force one.
+EXECUTABLE_EXT='sh|py|mjs|cjs|js|ts|yml|yaml'
+ANCHOR_EXT="$EXECUTABLE_EXT|json|toml|md"
+
 check_executors() { # $1 = ledger — force/half-force rows must cite an existing executor
-  local f="$1" ok=0 line id where refs r
-  while IFS= read -r line; do
-    id="$(awk -F'|' '{gsub(/ /,"",$2); print $2}' <<<"$line")"
-    # The Where column ($7) only. The claim column is prose and names files it
-    # never anchors ("AGENTS.md is canonical; CLAUDE.md/GEMINI.md are one-line
-    # adapters", C-033), which a whole-line scan reads as paths and then has to
-    # resolve by basename to avoid failing on them.
-    where="$(awk -F'|' '{print $7}' <<<"$line")"
-    refs="$(grep -oE '[A-Za-z0-9._/-]+\.(sh|py|yml|json|mjs|md)' <<<"$where" | sort -u || true)"
+  local f="$1" ok=0 line id degree where refs r found_exec superseded
+  # Rows are append-only, so a row whose anchor turned out wrong is corrected by
+  # appending one that says "supersedes C-NNN" (the ledger's own rule; C-093 does
+  # this to C-058). The superseded row keeps its text as the dated snapshot it
+  # is, and stops being held to the executor contract — the replacement carries
+  # that now.
+  superseded="$(grep -oE 'supersedes C-[0-9]{3}' "$f" | grep -oE 'C-[0-9]{3}' | sort -u)"
+  while IFS='|' read -r _ id degree where; do
+    id="${id// /}"
+    grep -qxF -- "$id" <<<"$superseded" && continue
+    refs="$(grep -oE "[A-Za-z0-9._/~-]+\.($ANCHOR_EXT)" <<<"$where" | sort -u || true)"
     if [ -z "$refs" ]; then
       echo "  force-degree row $id cites no executor file"; ok=1; continue
     fi
+    found_exec=0
     while IFS= read -r r; do
       case "$r" in
+        # A home path is machine-dependent and unverifiable from the repo. The
+        # old char class simply dropped the `~`, so `~/.claude/settings.json`
+        # was silently validated against the repo's own `.claude/settings.json`.
+        '~'*)
+          echo "  row $id anchors a home path ($r) — use the repo-relative path"; ok=1; continue ;;
         # A ref that carries a path is checked as that exact path: basename
         # matching keeps passing after the file has moved, which is the rot.
         */*)
           [ -e "$HARNESS_DIR/$r" ] \
-            || { echo "  row $id cites a ghost executor: $r"; ok=1; } ;;
+            || { echo "  row $id cites a ghost executor: $r"; ok=1; continue; } ;;
         *)
-          [ -n "$(find "$HARNESS_DIR/scripts" "$HARNESS_DIR/home/bin" "$HARNESS_DIR/.github" \
-                -name "$r" 2>/dev/null | head -1)" ] \
-            || { echo "  row $id cites a ghost executor: $r"; ok=1; } ;;
+          # Repo-wide: restricting the search to scripts/, home/bin/ and .github/
+          # reported a real file at the repo root as a ghost.
+          [ -n "$(find "$HARNESS_DIR" -name .git -prune -o -name "$r" -print 2>/dev/null | head -1)" ] \
+            || { echo "  row $id cites a ghost executor: $r"; ok=1; continue; } ;;
       esac
+      [[ "$r" =~ \.($EXECUTABLE_EXT)$ ]] && found_exec=1
     done <<<"$refs"
-  done < <(grep -E '^\| C-[0-9]+ .*\| *adopted \((force|half-force)' "$f")
+    if [ "$found_exec" -eq 0 ] && [[ "$degree" == *"(force"* ]]; then
+      echo "  row $id is force but cites no executable gate, only prose/config"; ok=1
+    fi
+    # Verdict read from its own column. Matching the whole line made a *rejected*
+    # row executor-checked whenever its claim text happened to contain
+    # "adopted (force)" (audit 2026-07-30).
+  done < <(awk -F'|' '/^\| C-/ {v=$6; sub(/^ +/,"",v);
+    if (v ~ /^adopted \((force|half-force)/) print "|" $2 "|" $6 "|" $7}' "$f")
   return "$ok"
 }
+
+AMBIGUOUS_BASENAMES="$(artefact_paths "$HARNESS_DIR" | xargs -r -n1 basename | sort | uniq -d)"
 
 echo "==> Claims coverage: every shipped artefact indexed; force rows cite real executors (ADR 17)"
 if ! out="$(check_coverage "$LEDGER" "$HARNESS_DIR")"; then
@@ -223,6 +281,46 @@ fi
 printf '| C-901 | 2026-07-17 | src | moved gate | adopted (force) | `scripts/gone/selftest.sh` |\n' > "$TMP/moved.md"
 if check_executors "$TMP/moved.md" >/dev/null; then
   echo "FAIL: executor check accepted a path that no longer exists (basename matching hid the move)" >&2; exit 1
+fi
+
+# Everything below was found by the fresh-context audit of 2026-07-30. Each case
+# passes green against the code as it shipped the day before; that is the point.
+echo "==> Negative cases: name collisions must not stand in for an index (audit 2026-07-30)"
+mkdir -p "$TMP/collide/home/skills/audit" "$TMP/collide/.claude/skills/feat" \
+  "$TMP/collide/templates/x/scripts"
+: > "$TMP/collide/home/skills/audit/SKILL.md"
+: > "$TMP/collide/.claude/skills/feat/SKILL.md"
+: > "$TMP/collide/templates/x/scripts/clone-budget-check.sh"
+out="$(check_coverage "$LEDGER" "$TMP/collide" || true)"
+grep -q "home/skills/audit/SKILL.md" <<<"$out" \
+  || { echo "FAIL: a rite reusing another layer's directory name inherited its row" >&2; exit 1; }
+grep -q ".claude/skills/feat/SKILL.md" <<<"$out" \
+  || { echo "FAIL: a rite whose name is a PREFIX of an indexed one passed (substring match)" >&2; exit 1; }
+grep -q "clone-budget-check.sh" <<<"$out" \
+  || { echo "FAIL: same stem, different extension inherited the .mjs row (stem fallback)" >&2; exit 1; }
+
+echo "==> Negative cases: a force row must cite something executable (audit 2026-07-30)"
+printf '| C-903 | 2026-07-30 | src | doc-only force claim | adopted (force) | `docs/DECISIONS.md` ADR 27 |\n' > "$TMP/prose.md"
+out="$(check_executors "$TMP/prose.md" || true)"
+grep -q "cites no executable gate" <<<"$out" \
+  || { echo "FAIL: prose satisfied a force claim — that IS prompt-and-pray" >&2; exit 1; }
+printf '| C-904 | 2026-07-30 | src | home-path anchor | adopted (force) | `~/.claude/settings.json` |\n' > "$TMP/home.md"
+out="$(check_executors "$TMP/home.md" || true)"
+grep -q "anchors a home path" <<<"$out" \
+  || { echo "FAIL: a ~/ anchor was validated against the repo's own copy" >&2; exit 1; }
+printf '| C-905 | 2026-07-30 | src | ghost with an unlisted extension | adopted (force) | `scripts/selftest.sh` + `templates/vue-starter/ghost.ts` |\n' > "$TMP/ext.md"
+out="$(check_executors "$TMP/ext.md" || true)"
+grep -q "ghost.ts" <<<"$out" \
+  || { echo "FAIL: a ghost with an unlisted extension was invisible beside a real file" >&2; exit 1; }
+# The mirror case: the check must not fire on rows it has no business reading.
+printf '| C-906 | 2026-07-30 | src | prose mentioning adopted (force) elsewhere | rejected: n/a | ghost-gate.sh |\n' > "$TMP/rejected.md"
+if ! check_executors "$TMP/rejected.md" >/dev/null; then
+  echo "FAIL: a REJECTED row was executor-checked because its claim text said 'adopted (force)'" >&2; exit 1
+fi
+# A superseded row keeps its snapshot text and stops being held to the contract.
+printf '| C-907 | 2026-07-30 | src | wrong anchor | adopted (force) | `docs/DECISIONS.md` |\n| C-908 | 2026-07-30 | src (supersedes C-907) | corrected | adopted (force) | `scripts/selftest.sh` |\n' > "$TMP/sup.md"
+if ! check_executors "$TMP/sup.md" >/dev/null; then
+  echo "FAIL: a row explicitly superseded by a later one was still held to the executor contract" >&2; exit 1
 fi
 
 echo "==> Enforcement mix (adopted claims)"

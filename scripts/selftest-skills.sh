@@ -72,7 +72,7 @@ grep -q "no frontmatter" "$TMP/reasons.log" \
   || { echo "FAIL: rejection reasons not reported" >&2; cat "$TMP/reasons.log" >&2; exit 1; }
 
 check_ledger() { # $1 = ledger path; prints reasons; non-zero exit on violation
-  local f="$1" ok=0 dups bad malformed
+  local f="$1" ok=0 dups bad malformed shape
   dups="$(awk -F'|' '/^\| C-/ {gsub(/ /,"",$2); print $2}' "$f" | sort | uniq -d)"
   if [ -n "$dups" ]; then
     echo "  duplicate claim ids: $dups"; ok=1
@@ -85,6 +85,14 @@ check_ledger() { # $1 = ledger path; prints reasons; non-zero exit on violation
     if ($2 !~ /^C-[0-9][0-9][0-9]$/) print " " $2}' "$f")"
   if [ -n "$malformed" ]; then
     echo "  claim id is not C-NNN on:$malformed"; ok=1
+  fi
+  # Every check here reads columns positionally, so a stray `|` inside a cell
+  # shifts the verdict and Where of that row and every check silently reads the
+  # wrong field. Flagged as a lead by audit 2026-07-30 (no such row existed);
+  # this is the guard that keeps it that way.
+  shape="$(awk -F'|' '/^\| C-/ {if (NF != 8) print " " $2 " has " NF-2 " cells, expected 6"}' "$f")"
+  if [ -n "$shape" ]; then
+    echo '  row shape broken (a pipe inside a cell shifts every column):'"$shape"; ok=1
   fi
   bad="$(awk -F'|' '/^\| C-/ {v=$6; sub(/^ +/,"",v);
     if (v !~ /^(adopted \((force|half-force|steer)|rejected|already have|deferred)/) print $2}' "$f")"
@@ -114,6 +122,10 @@ printf '| C-100a | 2026-07-30 | src | inserted row | adopted (force) | ghost-gat
 out="$(check_ledger "$TMP/badid.md" || true)"
 grep -q "not C-NNN" <<<"$out" \
   || { echo "FAIL: a non-numeric id was accepted, and no other gate looks at that row" >&2; exit 1; }
+printf '| C-112 | 2026-07-30 | src | a claim naming the "Write|Edit" matcher | adopted (force) | selftest.sh |\n' > "$TMP/shape.md"
+out="$(check_ledger "$TMP/shape.md" || true)"
+grep -q "row shape broken" <<<"$out" \
+  || { echo "FAIL: a pipe inside a cell shifted every column and no gate noticed" >&2; exit 1; }
 
 # Every enforcing artefact this repo ships must be indexed in the ledger. The
 # families below are all things the harness claims to do: a selftest gate, a

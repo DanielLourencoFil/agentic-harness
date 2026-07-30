@@ -22,3 +22,35 @@ settings; the negative test now shows "Dependency cycle detected".
 Lesson, generalized: **a wired rule is not a live rule until it has been seen
 rejecting a violation.** This is the rationale for extending the selftest with
 negative cases for the gates themselves (planned).
+
+## 2026-07-30 — Audit calibration: 16 findings, 0 confabulated, all four gates blind
+
+The gates written the day before (ADR 27) were audited in fresh context, scoped
+to the four files that change, with the neutral prompt. Outcome: 16 correctness
+findings, 8 implementation problems, 4 architecture concerns, 3 leads — and after
+triage, **0 confabulated**. Every finding became a negative case; the fixes are
+ADR 28.
+
+Calibration notes worth keeping:
+
+- **The auditor was right and I was wrong once.** The inline-comment paste finding
+  did not reproduce on my first attempt, because I built the fixture with nine
+  significant lines instead of eight. One failed reproduction is not a refutation
+  — re-read the reported fixture before discarding a finding.
+- **The worst finding was a green run, not a crash.** `check_allowlist` passed
+  while a planted fifth exemption allowed writes to `/etc/`. Nothing in the output
+  looked wrong; the guarantee was simply gone.
+
+Lesson, generalized: **auditing a gate is a different question from auditing
+code.** The question is not "is this correct?" but "can this pass while blind?" —
+and the answer arrives as a mutation that leaves the suite green. Sibling of
+2026-07-10 ("a wired rule is not a live rule until it has been seen rejecting a
+violation") and of 2026-07-29 ("a watcher is not alive until seen reporting a
+failure"): a gate is not alive until it has been seen rejecting a mutation of the
+thing it guards, and the mutation has to be planted on purpose.
+
+Second-order lesson, about the source-shape trap: three of the four gates
+inspected the *text* of what they guarded. Text checks are dodged by any refactor
+that preserves meaning while changing shape. The fix that held in every case was
+to assert **behaviour** — a path that must be denied, a count that must rise — and
+to keep the text check only as a cheap extra.

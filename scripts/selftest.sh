@@ -125,7 +125,6 @@ done
 
 echo "==> Claim 5: the copy-paste budget must block a pasted block and pass when it shrinks"
 rm -f src/violations.ts src/cycle-a.ts src/cycle-b.ts
-mkdir -p src
 # Eight significant lines, which is the window: shorter and the gate is blind by
 # design, so a fixture under it would prove nothing.
 for name in first second; do

@@ -497,3 +497,50 @@ separate link files rot unread; see ADR 3).
     half-covered map this very ADR is about. BACKLOG'd with the trigger. Still
     deferred: the creation-moment hook (C-099 — no instance exists anywhere yet;
     `/decide` before any code).
+28. **2026-07-30 — The gates written for ADR 27 were audited in fresh context and
+    all four could pass while blind; 16 correctness findings fixed, every one
+    reified as a negative case.** The audit was requested by the owner and run as
+    a read-only subagent (PLAYBOOK admits "new session or subagent"), scoped to
+    the four files ADR 27 touched, with the neutral prompt template. It reported
+    16 correctness findings, 8 implementation problems, 4 architecture concerns
+    and 3 leads. Triage outcome: **0 confabulated.** Three were re-verified by
+    hand before any fix — one of those (the inline-comment paste) failed to
+    reproduce on the first attempt because the fixture built here had nine lines
+    instead of eight; the auditor's fixture was correct and mine was not, which is
+    worth recording as a caution about dismissing a finding on one failed repro.
+    The severe class, and the reason this ADR exists: **`check_allowlist` stayed
+    green while writes to `/etc/` were allowed.** `grep -c` counts matching
+    *lines*, so a fifth exemption appended to an existing line read as one; and
+    retargeting an exemption (`~/Dev/organizer/` → `~/Dev/`) changed nothing the
+    check looked at, because it compared counts to the code and strings to a list
+    hardcoded in the test, never the code to its own prose. The fix that matters
+    is not a better parse: it is **near-miss behavioural denials** — one step
+    outside each entry must still be denied — the only half a refactor of the
+    Python cannot dodge. Same lesson in `check_coverage`, whose substring index
+    let a rite reuse another layer's directory name, a prefix satisfy a longer
+    name, and a same-stem `.sh` inherit the `.mjs` row: now whole-token literal
+    matching on the repo-relative path, with basenames accepted only where this
+    repo ships exactly one such file — and that ambiguity set computed from the
+    real repo, since in a two-file fixture every basename looks unique (found by
+    the fixture itself). `check_executors` gained the rule its own error message
+    already implied: a force row citing only prose is prompt-and-pray, so it must
+    cite something executable (C-110 supersedes C-101, which promised force while
+    anchored to a config file and a header comment). The clone detector was wrong
+    about comments in both directions — a line opening and closing a block comment
+    lost the code after it, taking an 8-line paste to 7 and under the window,
+    while a comment opened mid-line had its prose hashed as logic — and its count
+    depended on `readdirSync` order, so identical source could be red on one
+    machine and green on another. Enforcement mix after: force 27 · half-force 5 ·
+    steer 30 (+7 force, no new doctrine steer; ADR 25 admits force always).
+    Method note, the durable one: **an audit of a gate must ask "can this pass
+    while blind?", not "is this code correct?"** Every finding above is a green
+    run over a broken guarantee, which is the only failure mode that matters in a
+    gate and the one ordinary review does not look for. Rejected: extending the
+    ghost-executor check to steer and rejected rows (the ledger's contract says a
+    row is a dated snapshot that "may rot honestly"; only a live force guarantee
+    needs a live executor); editing C-101 in place to fix its anchor (rows are
+    append-only — "supersedes C-NNN" is the mechanism, and the gate now reads it).
+    Honest limits carried forward: the clone detector does not understand comment
+    markers inside string literals (a parser is a dependency this gate does not
+    justify), and `vue-starter` still has no budget because `.vue` blocks are
+    unscanned — both declared in place and BACKLOG'd rather than papered over.

@@ -35,10 +35,15 @@ import { findClones, intFromEnv, WINDOW_LINES } from "./clone-detect.mjs";
 const ROOT = path.join(import.meta.dirname, "..");
 const BUDGET_FILE = path.join(ROOT, ".clonebudget.json");
 
-/** Scanned, relative to the project root. A dir that does not exist is skipped:
- *  the empty scaffold must keep `verify` green (same class as the TS18003 note in
- *  tsconfig.json — a tool that errors on "nothing to do" blocks the kickoff). */
-const SCAN_DIRS = ["src"];
+/**
+ * Scanned, relative to the project root. A dir that does not exist is skipped,
+ * so this list is a superset: the empty scaffold must keep `verify` green (same
+ * class as the TS18003 note in tsconfig.json — a tool that errors on "nothing to
+ * do" blocks the kickoff), and a monorepo gets its real roots watched instead of
+ * a gate quietly guarding one directory (audit 2026-07-30 flagged the `src`-only
+ * scope). Add a root here if the project invents one.
+ */
+const SCAN_DIRS = ["src", "app", "lib", "apps", "packages"];
 
 function gitLines(command) {
   try {

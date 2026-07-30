@@ -60,13 +60,32 @@ expect_allow "write to session scratchpad (named allowlist)" \
 expect_allow "write to the cross-project data repo (backlog rite, ADR 13)" \
   "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"'"$FAKEHOME"'/Dev/organizer/BACKLOG.md"}}')"
 
+# Near-miss denials: one step outside each allowlist entry must still be denied.
+# This is the load-bearing half of the allowlist check, and the only half a
+# refactor of the Python cannot dodge — a widened target (~/Dev/organizer/ ->
+# ~/Dev/) or a brand-new exemption changes BEHAVIOUR, whatever the source looks
+# like. Audit 2026-07-30 found both slipping past a source-shape check alone.
+echo "==> write-containment: one step outside each allowlist entry must still be denied"
+expect_deny  "a sibling project under ~/Dev (the organizer entry must not widen)" \
+  "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"'"$FAKEHOME"'/Dev/other-project/steal.md"}}')"
+expect_deny  "another ~/.claude subdir (memory and plans must not widen)" \
+  "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"'"$FAKEHOME"'/.claude/other/x.md"}}')"
+expect_deny  "a /tmp dir that is not a session scratchpad" \
+  "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"/tmp/notclaude/x.txt"}}')"
+expect_deny  "a system path (no exemption may be added quietly)" \
+  "$(containment '{"tool_name":"Write","cwd":"'"$ROOT"'","tool_input":{"file_path":"/etc/cron.d/pwn"}}')"
+
 check_allowlist() { # $1 = write-containment.py — the named list must stay named and short
   local f="$1" ok=0 n docstring reason entry
   # The allowlist lives three times in that file: the code that builds it, the
   # module docstring, and the denial message the human reads. ADR 26 added the
   # 4th entry and had to hand-fix both prose copies, which "would otherwise
   # lie". A list kept in three places rots in two of them.
-  n="$(grep -cE '^ +or (under\(real, |real\.startswith\()' "$f" || true)"
+  #
+  # Occurrences, not lines: `grep -c` counts matching LINES, so two conditions
+  # written on one line read as one exemption. Audit 2026-07-30 planted exactly
+  # that and the whole selftest stayed green while writes to /etc/ were allowed.
+  n="$(grep -oE 'or (under\(real, |real\.startswith\()' "$f" | wc -l)"
   if [ "$n" -ne 4 ]; then
     echo "  the allowlist has $n exemptions, expected 4"
     echo "  (the owner closed this list on 2026-07-17; ADR 13/26. Adding one is his"
@@ -74,7 +93,10 @@ check_allowlist() { # $1 = write-containment.py — the named list must stay nam
     ok=1
   fi
   docstring="$(awk '/"""/{n++; if(n==2) exit} n' "$f")"
-  reason="$(awk '/permissionDecisionReason/{p=1} p' "$f")"
+  # Bounded at the closing paren of the reason expression. Running to EOF let a
+  # trailing comment mentioning the four paths satisfy the check while the real
+  # message named none of them (audit 2026-07-30).
+  reason="$(awk '/permissionDecisionReason/{p=1} p && /^ *\),?$/{exit} p' "$f")"
   for entry in '~/.claude/projects/' '~/.claude/plans/' '/tmp/claude-*' '~/Dev/organizer/'; do
     grep -qF -- "$entry" <<<"$docstring" \
       || { echo "  docstring does not name the allowlist entry $entry"; ok=1; }
@@ -89,17 +111,32 @@ if ! out="$(check_allowlist "$BIN/write-containment.py")"; then
   echo "FAIL: the containment allowlist and its prose disagree" >&2; echo "$out" >&2; exit 1
 fi
 
-echo "==> Negative cases: a silent 5th exemption and a lying prose copy must be seen rejected"
-sed 's|^    or under(real, organizer)$|    or under(real, organizer)\n    or under(real, anywhere)|' \
-  "$BIN/write-containment.py" > "$TMP/grown.py"
+mutate() { # $1 = sed script; $2 = output path — a fixture that did not change is a dead test
+  sed "$1" "$BIN/write-containment.py" > "$2"
+  if cmp -s "$BIN/write-containment.py" "$2"; then
+    echo "FAIL: fixture unchanged — the sed anchor no longer matches the source," >&2
+    echo "      so this negative case proves nothing. Re-anchor it: $1" >&2
+    exit 1
+  fi
+}
+
+echo "==> Negative cases: a grown allowlist (new line OR same line) and a lying prose copy must be rejected"
+mutate 's|^    or under(real, organizer)$|    or under(real, organizer)\n    or under(real, anywhere)|' "$TMP/grown.py"
 out="$(check_allowlist "$TMP/grown.py" || true)"
 grep -q "expected 4" <<<"$out" \
-  || { echo "FAIL: a 5th exemption landed without the gate saying no" >&2; exit 1; }
-sed 's|rascunho do plan mode (~/.claude/plans/)|rascunho do plan mode|' \
-  "$BIN/write-containment.py" > "$TMP/lying.py"
+  || { echo "FAIL: a 5th exemption on a new line landed without the gate saying no" >&2; exit 1; }
+mutate 's|^    or under(real, plans_dir)$|    or under(real, plans_dir) or real.startswith("/etc/")|' "$TMP/inline.py"
+out="$(check_allowlist "$TMP/inline.py" || true)"
+grep -q "expected 4" <<<"$out" \
+  || { echo "FAIL: a 5th exemption appended to an EXISTING line was invisible (audit 2026-07-30)" >&2; exit 1; }
+mutate 's|rascunho do plan mode (~/.claude/plans/)|rascunho do plan mode|' "$TMP/lying.py"
 out="$(check_allowlist "$TMP/lying.py" || true)"
 grep -q "denial message does not name" <<<"$out" \
   || { echo "FAIL: the denial message dropped an entry and the gate did not notice" >&2; exit 1; }
+mutate 's|^"""write-containment.*$|"""write-containment: PreToolUse gate.\n\nSee the code.\n"""\n_unused = """|' "$TMP/mute.py"
+out="$(check_allowlist "$TMP/mute.py" || true)"
+grep -q "docstring does not name" <<<"$out" \
+  || { echo "FAIL: a gutted docstring passed the prose check" >&2; exit 1; }
 
 echo "==> secret-scan: secret-shaped prompts must be blocked, benign ones must pass"
 fake_key="sk-AAAAAAAAAAAAAAAAAAAA" # fixture, not a credential

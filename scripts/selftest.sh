@@ -125,7 +125,6 @@ done
 
 echo "==> Claim 5: the copy-paste budget must block a pasted block and pass when it shrinks"
 rm -f src/violations.ts src/cycle-a.ts src/cycle-b.ts
-mkdir -p src
 # Eight significant lines, which is the window: shorter and the gate is blind by
 # design, so a fixture under it would prove nothing.
 for name in first second; do
@@ -152,9 +151,48 @@ grep -q "clone-first.ts" clones.log || {
   cat clones.log >&2
   exit 1
 }
-# Asymmetry: removing the paste must PASS, not fail for being under budget.
-rm src/clone-second.ts
-pnpm clones || { echo "FAIL: under-budget must pass, never fail" >&2; exit 1; }
-rm -f src/clone-first.ts
+# The filenames alone prove nothing: the fallback branch prints the same list
+# under "Could not tell which are new". Without this line the assertion above
+# passed with touchedFiles() returning an empty set, so C-104's only mechanical
+# evidence was vacuous (audit 2026-07-30).
+grep -q "Clones involving files you touched" clones.log || {
+  echo "FAIL: the failure output did not scope to the author's files (C-104)" >&2
+  cat clones.log >&2
+  exit 1
+}
+# A block that opens AND closes a comment before real code is still a clone.
+# Dropping such a line whole took an 8-line paste down to 7 and under the window.
+rm -f src/clone-first.ts src/clone-second.ts
+for name in third fourth; do
+  cat > "src/clone-$name.ts" <<'EOF'
+/* seed */ const base = 42;
+const total = rows.reduce((sum, n) => sum + n, base);
+const count = rows.length;
+const mean = count === 0 ? 0 : total / count;
+const high = rows.reduce((hi, n) => (n > hi ? n : hi), 0);
+const low = rows.reduce((lo, n) => (n < lo ? n : lo), 0);
+const spread = high - low;
+const label = `${String(count)} rows, spread ${String(spread)}`;
+EOF
+done
+if pnpm clones > inline.log 2>&1; then
+  echo "FAIL: a paste whose first line carries an inline block comment was missed" >&2
+  cat inline.log >&2
+  exit 1
+fi
+# Asymmetry, both halves. Equal-to-budget passes; strictly under passes AND says
+# so — that branch was unreachable in a scaffold whose budget ships at 0, so the
+# ratchet direction C-102 names had never been exercised.
+pnpm clones --update > /dev/null 2>&1 || { echo "FAIL: --update must succeed" >&2; exit 1; }
+pnpm clones > equal.log 2>&1 || { echo "FAIL: at-budget must pass" >&2; cat equal.log >&2; exit 1; }
+rm src/clone-fourth.ts
+pnpm clones > under.log 2>&1 || { echo "FAIL: under-budget must pass, never fail" >&2; cat under.log >&2; exit 1; }
+grep -q "ratchet it down" under.log || {
+  echo "FAIL: a shrink did not prompt the ratchet — the direction C-102 claims" >&2
+  cat under.log >&2
+  exit 1
+}
+rm -f src/clone-third.ts
+node scripts/clone-budget-check.mjs --update > /dev/null
 
 echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone budget holds both directions."

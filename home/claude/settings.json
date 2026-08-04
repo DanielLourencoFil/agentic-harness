@@ -6,6 +6,7 @@
     "deny": [
       "Bash(git commit --no-verify*)",
       "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
       "Read(**/.env)",
       "Read(**/.env.local)",
       "Read(**/.env.*.local)"
@@ -14,7 +15,7 @@
       "Bash(git push:*)"
     ]
   },
-  "model": "claude-fable-5[1m]",
+  "model": "opus",
   "hooks": {
     "SessionStart": [
       {
@@ -74,8 +75,20 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/recommendation-anchor.py\"",
+            "timeout": 10,
+            "statusMessage": "anchoring: checking the answer declares its evidence"
+          }
+        ]
+      }
     ]
   },
-  "effortLevel": "xhigh",
+  "skipDangerousModePermissionPrompt": true,
   "switchModelsOnFlag": true
 }

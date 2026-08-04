@@ -595,3 +595,40 @@ separate link files rot unread; see ADR 3).
     instructed the agent to attempt the call reached the gate. This sharpens the
     2026-07-10 lesson: a wired rule is not live until seen rejecting a violation
     that was actually attempted.
+30. **2026-08-04 - A recommendation must declare what verified it, and the
+    anchoring law loses its "about a repo" scope.** Trigger: three recommendations
+    in one session were made from what seemed reasonable rather than from
+    measurement. Cut the `workflow` scope, which turned out to be required for
+    pushing any commit touching `.github/workflows/` over an HTTPS remote, and
+    which the calendar-app used 5 hours earlier. Cut the `gist` scope, which `gh`
+    documents as unremovable from its minimum set, and which closes nothing while
+    `repo` can create and push a public repository. Adopt a permissive permission
+    mode as an interim posture, which contradicts the harness's own premise and
+    was withdrawn in ADR 29. The common shape is not carelessness about facts: it
+    is that each was stated without the check that would have settled it, and two
+    of the three had an adjacent measurement that did not cover the claim.
+    Diagnosis, and it is the useful part: inside the repository every assertion in
+    that session carried a command and its output, and the discipline was dropped
+    the moment the subject moved to a GitHub account and a permission model, which
+    the anchoring law appeared not to cover because it read "every claim about a
+    repo". A second mechanism compounded it, that a conversation with momentum
+    treats every turn as needing an actionable next step, and invents one when
+    none is warranted. Adopted: the scope limit is deleted from the law, and a
+    recommendation is named explicitly as a claim that carries its verification or
+    an honest label. Wired as the first Stop hook in this harness
+    (`home/bin/recommendation-anchor.py`), which reads `last_assistant_message`
+    and blocks once when recommendation markers appear with no declaration line
+    from the closed set (Verificado, Medido, Não verificado, Hipótese, and their
+    English forms). The mechanism was measured before being proposed: the Stop
+    event carries `last_assistant_message` and accepts `decision: "block"` with a
+    `reason` fed back to the model, which is what makes any of this possible, and
+    no prior hook in this harness could see the agent's own output. Honest label:
+    half-force. The firing is mechanical, the truth of the declaration is not, and
+    the hook cannot judge whether a measurement covers the claim it is attached
+    to, which is precisely the class two of the three failures belonged to. It
+    catches the pure-memory recommendation, and it makes the other class visible
+    by forcing an author with nothing to declare to write that down. Rejected:
+    leaving this to the reworded law alone, since steer is what already failed
+    here; and a stricter gate keyed on whether the turn contained any tool call,
+    which would fire on every legitimate follow-up answer and die of fatigue,
+    the failure mode ADR 13 already names.

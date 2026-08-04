@@ -11,7 +11,10 @@
 #   2. secret-scan blocks prompts carrying secret-shaped values;
 #   3. env-dump-guard denies commands that would dump secrets into context;
 #   4. deliberation-nudge reminds on deliberation markers (nudge, never block)
-#      and stays silent on plain work prompts (ADR 19).
+#      and stays silent on plain work prompts (ADR 19);
+#   5. recommendation-anchor blocks an answer that recommends without declaring
+#      what verified it, accepts an honest "não verificado", stays silent on
+#      plain work, and never blocks twice on one turn (ADR 30).
 set -euo pipefail
 
 HARNESS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -181,10 +184,38 @@ test -z "$out" || { echo "FAIL: git commit was nudged (over-fire on the wrong bo
 out="$(printf '{"tool_input":{"command":"echo mentioning gh pr create in prose"}}' | python3 "$BIN/audit-reminder.py")"
 test -z "$out" || { echo "FAIL: 'gh pr create' as command DATA was nudged (the 2026-07-20 false positive)" >&2; exit 1; }
 
+echo "==> recommendation-anchor: a recommendation without a declared source must be blocked"
+anchor() { # $1 = last_assistant_message; $2 = stop_hook_active (optional)
+  python3 -c 'import json,sys; print(json.dumps({"last_assistant_message": sys.argv[1], "stop_hook_active": sys.argv[2] == "1"}))' \
+    "$1" "${2:-0}" | python3 "$BIN/recommendation-anchor.py"
+}
+out="$(anchor "Recomendo cortar o scope gist, e depois revês os outros.")"
+grep -q '"decision": "block"' <<<"$out" \
+  || { echo "FAIL: a bare recommendation was not blocked" >&2; echo "$out" >&2; exit 1; }
+grep -q "recommendation-anchor" <<<"$out" \
+  || { echo "FAIL: the block gave no actionable reason" >&2; exit 1; }
+out="$(anchor "I recommend cutting that scope.")"
+grep -q '"decision": "block"' <<<"$out" \
+  || { echo "FAIL: the English marker set did not fire" >&2; exit 1; }
+# Declared evidence is compliance, in either direction.
+out="$(anchor "Recomendo cortar o scope gist.
+
+Verificado: gh auth status mostra 'gist' nos scopes e gh gist list devolve 0 usos.")"
+test -z "$out" || { echo "FAIL: a recommendation declaring Verificado was blocked" >&2; echo "$out" >&2; exit 1; }
+out="$(anchor "Sugiro trocar por um PAT.
+
+Não verificado: falta confirmar se o gh aceita um PAT sem o scope minimo.")"
+test -z "$out" || { echo "FAIL: an honestly-labelled unverified recommendation was blocked" >&2; exit 1; }
+# Plain work must pass silent, and a second pass must never loop.
+out="$(anchor "Corrigi o docstring e os selftests estao verdes.")"
+test -z "$out" || { echo "FAIL: a plain answer with no recommendation was blocked" >&2; exit 1; }
+out="$(anchor "Recomendo cortar o scope gist." 1)"
+test -z "$out" || { echo "FAIL: blocked twice on the same turn (stop_hook_active ignored)" >&2; exit 1; }
+
 echo "==> wiring: settings.json must be valid and reference every hook script"
 python3 -c 'import json; json.load(open("'"$SETTINGS"'"))' \
   || { echo "FAIL: home/claude/settings.json is not valid JSON" >&2; exit 1; }
-for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py; do
+for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py; do
   grep -q "$script" "$SETTINGS" || { echo "FAIL: $script not wired in settings.json" >&2; exit 1; }
   test -x "$BIN/$script" || { echo "FAIL: $BIN/$script missing or not executable" >&2; exit 1; }
 done

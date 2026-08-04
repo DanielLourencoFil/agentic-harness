@@ -544,3 +544,44 @@ separate link files rot unread; see ADR 3).
     markers inside string literals (a parser is a dependency this gate does not
     justify), and `vue-starter` still has no budget because `.vue` blocks are
     unscanned — both declared in place and BACKLOG'd rather than papered over.
+29. **2026-08-04 - Bash containment: the hook claimed a sandbox that does not
+    exist, and the denylist-first model the owner wanted turns out to be natively
+    supported.** Trigger: permission fatigue had pushed 24 rules into the machine
+    layer without a decision, four of them arbitrary code execution (`python3 -c`,
+    `node -e`, `pnpm exec`, `npx`), because `~/.claude/settings.json` is a symlink
+    into this repo (`home/bootstrap.sh:21`), so a grant made while working on
+    another project lands in the cage that ships everywhere. The owner asked the
+    right question: which commands are genuinely no-go, and can everything else
+    run unasked. Measured before deciding, all on this machine, 2026-08-04:
+    (1) a plain Bash command wrote into `$HOME`, wrote into a sibling project,
+    read `~/.ssh` and reached the network, with no sandbox flag set, which
+    falsified the docstring in `home/bin/write-containment.py`; (2) Claude Code
+    2.1.50 exposes no Bash sandbox setting, so there is no switch to flip and
+    containment must come from outside the product, a point its own help text
+    concedes by recommending the bypass flags "only for sandboxes with no internet
+    access"; (3) under `--permission-mode bypassPermissions`, PreToolUse hooks
+    still fire (a Write outside the project root was blocked by the ADR 10 gate)
+    and `deny` permission rules still fire (`git commit --no-verify` was invoked
+    and refused by the permission layer, not by the model). Decided: denylist-first
+    is correct as a safety net and wrong as a boundary, since destruction cannot be
+    enumerated over a shell and reading key material to send it away is not
+    destructive at all; but because measurement (3) holds, it needs no custom
+    mechanism from us. `bypassPermissions` plus a `deny` list is the model the
+    owner described, using the product's own gate, and the `bash-denylist.py` hook
+    drafted for this decision is not built. Containment stays the only thing that
+    bounds the unenumerable, and measurement (2) says it must be a container.
+    Sequenced, and the split is the point: the ergonomics can be had today and the
+    exposure it leaves is now a clean risk-appetite call rather than an unknown.
+    Rejected: `--dangerously-skip-permissions` as a posture, since it drops the
+    deny rules that measurement (3) shows are the load-bearing half; per-command
+    `bwrap` or `unshare` wrapping, since a PreToolUse hook decides allow or deny
+    and cannot rewrite the command, and neither tool is installed. Declared limit
+    of the recommended path: a container bounds the write radius, not the
+    read-and-send one, so the ADR 23 threat model of a manipulated agent stays
+    partly open until network egress is addressed too. Method finding, worth more
+    than the result: two of the three probes measured nothing, because the agent
+    refused on constitutional grounds before invoking the tool, and a refusal
+    tells you about the prisoner, not the cell. Only the probe that explicitly
+    instructed the agent to attempt the call reached the gate. This sharpens the
+    2026-07-10 lesson: a wired rule is not live until seen rejecting a violation
+    that was actually attempted.

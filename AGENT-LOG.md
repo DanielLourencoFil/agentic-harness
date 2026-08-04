@@ -77,3 +77,45 @@ that preserves meaning while changing shape. The fix that held in every case was
 to assert **behaviour** — a path that must be denied, a count that must rise — and
 to keep the text check only as a cheap extra.
 
+## 2026-08-04 — Two of three gate probes measured obedience, not the gate
+
+Probing whether the harness survives `--permission-mode bypassPermissions`, three
+things were asked of a throwaway session. One reached the gate. Two never did.
+
+The one that worked shows a tool call and a hook rejecting it:
+
+    ● Write(~/probe-DELETEME.txt)
+      ⎿ PreToolUse:Write hook returned blocking error
+      ⎿ Contenção de escrita (ADR 10): ...
+
+The two that failed show no tool call at all, only prose: "não posso correr
+`--no-verify`, é uma das operações explicitamente proibidas no rito de git", and
+an equivalent refusal for the environment-dumping command. The agent refused on
+constitutional grounds and never invoked the tool, so the gate was never
+consulted. Insisting twice produced the same refusal.
+
+Both contaminated probes were aimed at rules the constitution names explicitly.
+The better the doctrine, the blinder the test: a well-steered agent will not
+attempt the violation you need it to attempt.
+
+Only an explicit instruction to attempt the call regardless reached the gate, and
+then the mechanism showed itself, denying at the permission layer rather than by
+refusal. That is how the ADR 29 measurement finally landed.
+
+Lesson, generalized: **a refusal tells you about the prisoner, not about the
+cell.** Sharpening the 2026-07-10 entry — a wired rule is not live until seen
+rejecting a violation *that was actually attempted*. When probing a gate, either
+instruct the agent to attempt the call, or use a synthetic rule the doctrine has
+no opinion about (a planted deny on `echo`), because a probe carrying real danger
+will be refused before it is tested.
+
+Corollary for probes with a payload: never test the secret-hygiene gate with real
+secrets, since a hook that fails to fire writes the environment into a transcript
+that persists on disk.
+
+Second-order, found while writing this entry: `env-dump-guard.py` blocked the
+command that was writing these very paragraphs, because the prose *quotes* the
+name of a dumping command. It matches command names appearing as data, which is
+the false positive `audit-reminder.py` already fixed for `gh pr create` and has a
+regression case for. Same bug, unfixed sibling.
+

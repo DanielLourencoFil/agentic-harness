@@ -7,7 +7,11 @@ outside the project root, with a short named allowlist: the agent memory dir
 ExitPlanMode renders for approval; ADR 26), the session scratchpad
 (/tmp/claude-*) and the cross-project data repo (~/Dev/organizer/ — the backlog
 rite writes there from any session; ADR 13). Honest limit: binds the file tools
-only — Bash is contained by an OS sandbox, not by this.
+only. Bash is NOT covered, by this hook or by anything else: probed on the dev
+machine 2026-08-04, a plain Bash command wrote into $HOME, wrote into a sibling
+project, read ~/.ssh and reached the network, with no sandbox flag set. Until
+that changes, this gate bounds the file tools and nothing more; do not read it
+as a boundary on what the agent can reach.
 """
 import json
 import os

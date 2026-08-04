@@ -570,8 +570,18 @@ separate link files rot unread; see ADR 3).
     owner described, using the product's own gate, and the `bash-denylist.py` hook
     drafted for this decision is not built. Containment stays the only thing that
     bounds the unenumerable, and measurement (2) says it must be a container.
-    Sequenced, and the split is the point: the ergonomics can be had today and the
-    exposure it leaves is now a clean risk-appetite call rather than an unknown.
+    Rejected, and this corrects the first draft of this same ADR: an interim
+    posture that turns the bypass mode on now and compensates with a longer deny
+    list, pending the container. It is inadequate for this harness while the shell
+    is uncontained, because it removes the last remaining control on the one
+    surface that has no other defense, which is where its entire effect lands. The
+    order is not ergonomics now and containment later; it is containment, and only
+    then a review of permissions, since a bounded blast radius is what makes broad
+    permissions cheap. Recorded because the draft framed the trade as the owner's
+    risk appetite, which is the wrong question: adequacy against the harness's own
+    premise, that tooling and not prompting is what rejects bad output, is a
+    property of the design rather than a preference. Prompt fatigue is a real cost
+    and the answer to it is the container, never the removal of the checkpoint.
     Rejected: `--dangerously-skip-permissions` as a posture, since it drops the
     deny rules that measurement (3) shows are the load-bearing half; per-command
     `bwrap` or `unshare` wrapping, since a PreToolUse hook decides allow or deny

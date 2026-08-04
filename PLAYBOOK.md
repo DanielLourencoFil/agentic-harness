@@ -471,6 +471,11 @@ it ends wired + selftested (ADR 12); the CLAIMS ledger records the verdict eithe
   (`home/bin/write-containment.py`), negative cases in `scripts/selftest-home.sh` in CI
   (plain, `../` and symlink escapes each seen blocked). Bash remains the honest hole
   (OS sandbox territory); the read side stays settings-level per project.
+  **Measured 2026-08-04, and worse than "hole" suggests:** a plain Bash command wrote
+  into `$HOME`, wrote into a sibling project, read `~/.ssh` and reached the network,
+  with no sandbox flag set. The hole is the whole filesystem plus the network, not an
+  edge case. Layer A's write-containment invariant therefore holds for the file tools
+  and for nothing else.
 - Provenance stamp ✅ (ADR 9, 2026-07-17) — `/kickoff` step 3 emits
   `source: agentic-harness@<sha>` into each copied skill. Honest label: steer (an
   instruction executed on invocation, no mechanical check yet). The drift report in

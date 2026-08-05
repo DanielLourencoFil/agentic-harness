@@ -279,10 +279,56 @@ test -z "$out" || { echo "FAIL: a qualified declaration was rejected" >&2; exit 
 out="$(anchor "Recomendo cortar o scope gist." 1)"
 test -z "$out" || { echo "FAIL: blocked twice on the same turn (stop_hook_active ignored)" >&2; exit 1; }
 
+echo "==> evidence-gate: a completion claim needs a verification command that RAN"
+FAKE_T="$TMP/transcript.jsonl"
+tool_line() { # $1 = command -> one transcript line shaped like a real Bash tool_use
+  python3 -c 'import json,sys; print(json.dumps({"message":{"content":[{"type":"tool_use","name":"Bash","input":{"command":sys.argv[1]}}]}}))' "$1"
+}
+evidence() { # $1 = message; $2 = transcript path; $3 = stop_hook_active
+  python3 -c 'import json,sys; print(json.dumps({"last_assistant_message":sys.argv[1],"transcript_path":sys.argv[2],"stop_hook_active":sys.argv[3]=="1"}))' \
+    "$1" "$2" "${3:-0}" | python3 "$BIN/evidence-gate.py"
+}
+
+: > "$FAKE_T"
+out="$(evidence "Está feito, o hook novo funciona." "$FAKE_T")"
+grep -q '"decision": "block"' <<<"$out" \
+  || { echo "FAIL: a completion claim with an empty transcript was not blocked" >&2; exit 1; }
+grep -q "evidence-gate" <<<"$out" || { echo "FAIL: the block gave no actionable reason" >&2; exit 1; }
+
+# A verification command that RAN is evidence.
+tool_line "bash scripts/selftest-home.sh" > "$FAKE_T"
+out="$(evidence "Está feito, o hook novo funciona." "$FAKE_T")"
+test -z "$out" || { echo "FAIL: blocked although a selftest ran this session" >&2; echo "$out" >&2; exit 1; }
+
+# The same tool name as DATA inside a command is not evidence. This is the
+# env-dump-guard mistake, and it was measured on a real transcript before wiring.
+tool_line 'grep -n "vitest\|test" .github/workflows/ci.yml' > "$FAKE_T"
+out="$(evidence "Está feito, tudo verde." "$FAKE_T")"
+grep -q '"decision": "block"' <<<"$out" \
+  || { echo "FAIL: a grep MENTIONING vitest counted as having run it" >&2; exit 1; }
+
+# `cd x && pnpm verify` is a real run; the prefix is navigation.
+tool_line "cd apps/web && pnpm verify" > "$FAKE_T"
+out="$(evidence "Concluído." "$FAKE_T")"
+test -z "$out" || { echo "FAIL: a cd-prefixed verify was not recognised" >&2; exit 1; }
+
+# Labelling the absence honestly is the sanctioned path, not an evasion.
+: > "$FAKE_T"
+out="$(evidence "IMPLEMENTED - NOT VERIFIED: corre \`pnpm verify\` para confirmar." "$FAKE_T")"
+test -z "$out" || { echo "FAIL: an honestly downgraded claim was blocked" >&2; exit 1; }
+out="$(evidence "Está feito. Não verificado: falta correr o selftest." "$FAKE_T")"
+test -z "$out" || { echo "FAIL: a claim carrying an honest label was blocked" >&2; exit 1; }
+
+# Plain work passes silent, and a second pass never loops.
+out="$(evidence "Escrevi o ficheiro e adicionei os comentários." "$FAKE_T")"
+test -z "$out" || { echo "FAIL: an answer claiming nothing was blocked" >&2; exit 1; }
+out="$(evidence "Está feito, funciona." "$FAKE_T" 1)"
+test -z "$out" || { echo "FAIL: blocked twice on the same turn (stop_hook_active ignored)" >&2; exit 1; }
+
 echo "==> wiring: settings.json must be valid and reference every hook script"
 python3 -c 'import json; json.load(open("'"$SETTINGS"'"))' \
   || { echo "FAIL: home/claude/settings.json is not valid JSON" >&2; exit 1; }
-for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py; do
+for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py evidence-gate.py; do
   grep -q "$script" "$SETTINGS" || { echo "FAIL: $script not wired in settings.json" >&2; exit 1; }
   test -x "$BIN/$script" || { echo "FAIL: $BIN/$script missing or not executable" >&2; exit 1; }
   # The mode GIT records, not the one on disk. This machine has core.fileMode

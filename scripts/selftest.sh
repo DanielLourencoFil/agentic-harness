@@ -35,6 +35,7 @@ node -e '
   );
 '
 rm package.snippet.json README.md
+chmod +x .husky/pre-push
 
 echo "==> Claim 0: canonical AGENTS.md + adapters are present and coherent"
 test -f AGENTS.md || { echo "FAIL: AGENTS.md missing" >&2; exit 1; }
@@ -44,13 +45,15 @@ node -e 'JSON.parse(require("node:fs").readFileSync(".claude/settings.json","utf
   || { echo "FAIL: .claude/settings.json is not valid JSON" >&2; exit 1; }
 
 echo "==> Claim 0b: the packaged rites are present and the auditor stays read-only"
-for f in .claude/agents/auditor.md .claude/skills/feature/SKILL.md .claude/skills/audit/SKILL.md \
-  .claude/skills/debug/SKILL.md; do
+for f in .claude/agents/auditor.md .claude/agents/test-auditor.md .claude/skills/feature/SKILL.md \
+  .claude/skills/audit/SKILL.md .claude/skills/audit-tests/SKILL.md .claude/skills/debug/SKILL.md; do
   test -f "$f" || { echo "FAIL: $f missing (rites-as-skills claim)" >&2; exit 1; }
   head -1 "$f" | grep -qx -- '---' || { echo "FAIL: $f lacks frontmatter" >&2; exit 1; }
 done
-grep -q '^tools: Read, Grep, Glob$' .claude/agents/auditor.md \
-  || { echo "FAIL: auditor must stay read-only (tools: Read, Grep, Glob)" >&2; exit 1; }
+for agent in auditor test-auditor; do
+  grep -q '^tools: Read, Grep, Glob$' ".claude/agents/$agent.md" \
+    || { echo "FAIL: $agent must stay read-only (tools: Read, Grep, Glob)" >&2; exit 1; }
+done
 
 echo "==> Step 4 (README): pnpm install + chmod hook"
 pnpm install
@@ -195,4 +198,21 @@ grep -q "ratchet it down" under.log || {
 rm -f src/clone-third.ts
 node scripts/clone-budget-check.mjs --update > /dev/null
 
-echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone budget holds both directions."
+echo "==> Claim 6: the diff-size nudge warns past budget and stays silent under it (C-072)"
+# Warn-not-block: it must print AND exit 0, and be silent when there is no base
+# ref to compare against (fail open, since a size hint is not worth an error).
+seq 1 400 | sed 's/^/const x/;s/$/ = 0;/' > src/big.ts
+git add src/big.ts
+git commit -q -m "test: large branch" --no-verify  # committed: the nudge measures pushed work
+# No origin/main in this throwaway repo, so point the base at the initial commit.
+BASE="$(git rev-list --max-parents=0 HEAD | head -1)"
+warn="$(DIFF_SIZE_BASE=$BASE node scripts/diff-size-check.mjs 2>&1)"; code=$?
+[ "$code" -eq 0 ] || { echo "FAIL: the diff-size nudge blocked (must warn, never block)" >&2; exit 1; }
+grep -q "Diff-size nudge" <<<"$warn" || { echo "FAIL: past budget, the nudge said nothing" >&2; echo "$warn" >&2; exit 1; }
+silent="$(DIFF_SIZE_BASE=$BASE DIFF_SIZE_BUDGET=99999 node scripts/diff-size-check.mjs 2>&1)"
+test -z "$silent" || { echo "FAIL: under budget, the nudge still fired" >&2; echo "$silent" >&2; exit 1; }
+nogit="$(DIFF_SIZE_BASE=does-not-exist node scripts/diff-size-check.mjs 2>&1)"; code=$?
+[ "$code" -eq 0 ] && [ -z "$nogit" ] || { echo "FAIL: a missing base ref must fail open and silent" >&2; exit 1; }
+git rm -q src/big.ts; git commit -q -m "test: cleanup" --no-verify
+
+echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone budget holds both directions, diff-size nudge warns not blocks."

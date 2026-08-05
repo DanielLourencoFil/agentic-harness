@@ -713,3 +713,102 @@ separate link files rot unread; see ADR 3).
     interview scenario itself is served by the machine layer, which travels to any
     session including a repo nobody may install into, rather than by a template
     nobody has time to stamp under a timer.
+33. **2026-08-05 - Two posts by R. C. Martin absorbed: nine claims, zero adoptions,
+    and one stale deferral closed.** Source: @unclebobmartin on X, 2026-07-26,
+    checked 2026-08-05. Post one argues that since agents generate fast, the
+    programmer's time reallocates to writing unit, acceptance, property, torture,
+    mutation and QA tests, and that the result is still many times more productive
+    and better. Post two describes agents building him a dependency-checking tool
+    whose architecture he specifies and they enforce, plus a UML viewer that finds
+    cycles. Already have, anchored: the reallocation premise is the feature loop
+    itself (PLAYBOOK.md:416-420); cycle detection is `import-x/no-cycle` as an error
+    in all three templates, recorded seen firing in C-037; the general layer map was
+    already scoped out at PLAYBOOK.md:177, which says to use arch-boundary tooling
+    on a large layered codebase and keep only the pure-core rule on a small app; and
+    the risk implicit in "I had my agents build the tool", that a gate written by
+    the agent it constrains encodes the same misunderstanding and reports green, is
+    the harness's own scar (AGENT-LOG 2026-07-10, and four such gates found blind in
+    the 2026-07-30 audit). Rejected: "many times more productive and the result will
+    be better", unfalsifiable as stated and losing to C-093, the kill/continue rule
+    that refuses this exact assumption about this repo; and the UML viewer, which
+    informs without blocking and duplicates what no-cycle enforces, losing to
+    force-over-steer and to the documented-but-unwired anti-pattern. Deferred with
+    triggers: property-based testing (C-120), which is a practice without a consumer
+    here; and mutation testing (C-121), already queued since the 2026-07-27 dogfood
+    finding and scoped to an allowlist, since STRATEGY-BRIEF:211 rejects it globally.
+    Closed as a side effect: C-053 deferred "executable architecture boundary, wired
+    not optional" on 2026-07-17 with the trigger "wire in vue-starter when a
+    consumer's src/lib exists"; that trigger fired and the work landed in both
+    vue-starter and react-starter with negative tests, and nobody updated the row.
+    C-123 supersedes it as adopted. The useful shape of this run: an external source
+    from a famous author produced no new practice, confirmed four decisions already
+    made, and its only genuinely sharp item (mutation testing measures test power
+    rather than volume) was already in the queue from our own dogfooding. That is
+    the ledger working as designed rather than a disappointing source.
+34. **2026-08-05 - Three deferrals whose triggers had fired, built in one session:
+    the evidence gate, the shelf-hook closure, and the diff-size nudge.** Trigger:
+    a sweep of the ledger's 17 deferred rows found several stale, in the C-053
+    pattern where a trigger fires and the row is never updated. Three were live.
+    (1) **C-051, evidence as force.** The constitution's oldest rule — an "it works"
+    claim carries the command output that proves it (C-047, steer since
+    2026-07-11) — was deferred for a wired version because in July nobody knew a
+    hook could read the agent's own output. ADR 30 proved it could. `evidence-gate.py`
+    is a Stop hook that blocks a completion claim unless a verification command
+    actually RAN this session, parsed from the transcript's Bash tool calls, never
+    from prose: a `grep -n "vitest\|test"` mentions the tool as data and must not
+    count, which was measured against a real 2282-line transcript before wiring
+    (62 matches dropped to 59, the three being exactly such greps). An honest
+    "IMPLEMENTED - NOT VERIFIED" is the sanctioned escape. Half-force: it proves a
+    command ran, not that it passed or covered the claim. (2) **C-099 closed.** The
+    shelf hook was built on 2026-08-04 (C-114/C-115) while its deferred row still
+    read "deferred", the C-053 disease 24 hours later; C-129 marks it built.
+    (3) **C-072, diff-size nudge.** Trigger was "first monster PR", and this very
+    branch is 1354 added lines. `diff-size-check.mjs` warns past ~300 added lines
+    vs the merge-base with the default branch. Deliberately warn-not-block, stated
+    as a design decision rather than timidity: the per-file max-lines 300 cap is
+    the blocking half already, total added diff is a fuzzy branch metric, and a
+    hard block on it would punish large-but-coherent work (a template plus its
+    selftest) and teach splitting by line count rather than by concern. It fails
+    open with no git or no base ref, because a size hint is not worth breaking a
+    push. Each of the three was seen rejecting or warning on a planted case in
+    selftest before landing, and the git-mode gate built this morning caught
+    evidence-gate.py shipping 100644 — the harness applying its own lesson to its
+    own new files. Rejected across all three: making any of them a hard block that
+    would fire on this session's own legitimate work. Enforcement mix after: force
+    30, half-force 10, steer 31.
+35. **2026-08-05 - Test quality gets a fresh-context audit rite (Phase 1); mutation
+    is its reify arm (Phase 2, not built).** Trigger: the harness forces tests to
+    PASS but nothing checks they are the right tests or have power; the owner was
+    the manual hook for it ("podemos escrever um teste aqui?" on Kinous), and the
+    owner sharpened it: the review of test correctness can itself be an agentic
+    audit, not left to human memory. Measured first: the existing /audit is
+    implementation/bug focused (`templates/ts-base/.claude/skills/audit/SKILL.md`),
+    the `auditor` agent is free on the fixed plan and read-only by construction, and
+    Stryker (9.6.1) supports a native `--mutate` allowlist and `--incremental`,
+    which is what makes a scoped, cheap Phase 2 possible. Adopted (D, phased):
+    **Phase 1 now** — a separate `/audit-tests` rite driving a read-only
+    `test-auditor` agent with a test-specific lens (missing negative, wrong level,
+    weak assertion, coupled-to-implementation, non-determinism, could-never-fail),
+    fresh-context so the authoring session's bias is removed. Its triage differs
+    from /audit by kind: missing-case findings reify by writing the red test;
+    wrong-level findings name the structural move; weak-assertion findings are the
+    ones only mutation can settle and stay OPEN until Phase 2, never closed on a
+    green run. The authoring session RESPONDS to findings but does not judge them,
+    because it is contaminated; the human decides. **Phase 2 later** — Stryker with
+    the allowlist pointed only at the modules Phase 1 flagged, scoped to `src/lib`,
+    wired only once Phase 1 produces real findings, which is how C-121 (mutation
+    testing) lands: not as a standalone gate but as this audit's reify arm.
+    Separate rite, not an extension of /audit: bug-framing and test-framing dilute
+    each other. Rejected: mutation alone (blind to missing tests and wrong levels,
+    silent on a module with no tests); a global mutation run (STRATEGY-BRIEF:211,
+    cost); coverage-ratchet as the presence gate (the floor is as arbitrary as a
+    ceiling and it actively manufactures assertion-free line-touching tests, the
+    owner's refutation). Declared limit, load-bearing: neither the audit nor the
+    mutant can judge whether the test's EXPECTED VALUE is the RIGHT behavior — a
+    test can faithfully encode a wrong requirement, and that stays the human's, on
+    the spec. Enforcement: the rite is half-force (mechanical fresh-context reminder
+    and reified missing-case findings; the weak-assertion verdict is deferred and
+    spec-correctness is steer); read-only is force, asserted in selftest.sh.
+    Freeze note (ADR 25): this is a PROCESS rite in the externalized-memory / audit
+    family, the same class as /audit (ADR 15) and audit-reminder (ADR 24), which
+    the freeze admits; it is not quality-doctrine steer.

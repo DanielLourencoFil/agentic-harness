@@ -908,3 +908,34 @@ separate link files rot unread; see ADR 3).
     change; it does not prove the test asserts the RIGHT behavior — a test faithful
     to a wrong spec passes mutation and stays the human's to catch. Enforcement mix
     after: force 32, half-force 12, steer 34.
+39. **2026-08-06 - Mutation testing becomes a blocking CI gate by default, built
+    ahead because the growth is certain and the template is authored once.**
+    Trigger: with the on-demand capability shipped (ADR 38), the owner argued the
+    gate should be automatic, not opt-in, and refuted the "add it when it hurts"
+    plan: src/lib grows in any serious project, so deferring the CI gate
+    re-introduces the memory dependence (someone must notice the slow CI AND know
+    the fix) that Principle 2 kills, and the per-project re-derivation that ts-base
+    ("author once, clone forever") exists to prevent. Building for a CERTAIN future
+    pain, into a build-once template, is not YAGNI. Measured before building: full
+    mutation on a 25-function synthetic core is 300 mutants in 92s; changing ONE
+    file and running `--incremental` is 4s, because Stryker reuses the baseline for
+    unchanged files (23x, and it scales with the diff, not the core size). The
+    inverse ratchet the owner adopted: blocking by default, relaxed only on felt
+    pain — mark an equivalent mutant at the site (like ALLOW_BIG_DELETE), or
+    disable wholesale only if cost genuinely bites; the pain is self-announcing
+    (slow CI), unlike the silent gap of a gate never turned on. Adopted: a separate
+    `mutation` job in ts-base ci.yml (separate so verify stays seconds), running
+    `pnpm mutants:ci` (`stryker run --incremental`) on every push and PR, with an
+    actions/cache restoring the incremental baseline (this branch, then the default
+    branch via prefix so a fresh PR reuses main's, then any). It FAILS SAFE: a
+    cache miss leaves no baseline and Stryker runs full, correct and only slower,
+    never a false pass (verified: a run with no incremental file does a full run).
+    allowEmpty keeps a young project's empty src/lib instant. The earlier "measure
+    the cache hit/miss rate first" was dropped as over-caution: the rate reveals
+    itself in use (the inverse principle), and the mechanism fails safe, so an
+    unverified cache costs at most "occasionally slow", never wrong. Whether a red
+    here BLOCKS a merge is the repo's branch protection, the human's act, exactly
+    as for verify. Honest limit unverified from here: the GitHub Actions cache
+    scope (a PR restoring main's baseline) is confirmed only by a real CI run, not
+    the selftest; a miss is safe, so the downside is bounded to a full run.
+    Enforcement mix after: force 33, half-force 12, steer 34.

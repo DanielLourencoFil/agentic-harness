@@ -20,8 +20,10 @@ below, `pnpm install`. Framework modules (Vue/React/Nest) layer **on top** (see
 - **Mutation testing** (`pnpm mutants`, Stryker) — opt-in, on-demand, scoped to `src/lib`.
   It mutates the pure core and fails if any mutant survives, which is the wired half of
   "every test must fail if the logic breaks" (a rule that is prayer without a tool). NOT in
-  `verify`: it reruns the suite per mutant, so it belongs on a deliberate run, not every
-  commit. Empty `src/lib` passes; widen `mutate` in `stryker.config.mjs` when a module earns it.
+  `verify` (it reruns the suite per mutant). It ALSO runs as a separate, blocking CI job on
+  every push and PR (`pnpm mutants:ci`), incremental + cached so the cost tracks the diff, not
+  the codebase; a cache miss falls back to a full run (correct, only slower). Empty `src/lib`
+  passes instantly; widen `mutate` in `stryker.config.mjs` when a module earns it.
 - **Husky pre-commit**: deletion guard → lint-staged → `verify` (typecheck + lint + clones + test).
 - **GitHub Actions**: `verify` on **every push and every PR** (never PR-only), with
   `concurrency: cancel-in-progress`, a job timeout, dependabot skip — plus a weekly
@@ -59,6 +61,7 @@ binding gates remain the verify/CI machinery above.
     "clones": "node scripts/clone-budget-check.mjs",
     "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm test",
     "mutants": "stryker run",
+    "mutants:ci": "stryker run --incremental",
     "prepare": "husky"
   },
   "lint-staged": { "*.{ts,tsx,json,md,css}": "prettier --write" },

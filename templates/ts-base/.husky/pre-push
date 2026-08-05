@@ -1,0 +1,4 @@
+# Soft nudge only: the blocking gates all run at pre-commit and in CI. This is a
+# branch-level size hint (C-072), and it must never stop a push — a warning that
+# blocks is a block. Exit 0 regardless.
+node scripts/diff-size-check.mjs || true

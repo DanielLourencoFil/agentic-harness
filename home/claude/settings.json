@@ -15,7 +15,7 @@
       "Bash(git push:*)"
     ]
   },
-  "model": "opus",
+  "model": "claude-fable-5[1m]",
   "hooks": {
     "SessionStart": [
       {
@@ -95,12 +95,18 @@
             "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/recommendation-anchor.py\"",
             "timeout": 10,
             "statusMessage": "anchoring: checking the answer declares its evidence"
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/evidence-gate.py\"",
+            "timeout": 10,
+            "statusMessage": "evidence-gate: checking a completion claim ran something"
           }
         ]
       }
     ]
   },
+  "tui": "fullscreen",
   "skipDangerousModePermissionPrompt": true,
-  "switchModelsOnFlag": true,
-  "tui": "fullscreen"
+  "switchModelsOnFlag": true
 }

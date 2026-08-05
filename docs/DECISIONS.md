@@ -745,3 +745,34 @@ separate link files rot unread; see ADR 3).
     made, and its only genuinely sharp item (mutation testing measures test power
     rather than volume) was already in the queue from our own dogfooding. That is
     the ledger working as designed rather than a disappointing source.
+34. **2026-08-05 - Three deferrals whose triggers had fired, built in one session:
+    the evidence gate, the shelf-hook closure, and the diff-size nudge.** Trigger:
+    a sweep of the ledger's 17 deferred rows found several stale, in the C-053
+    pattern where a trigger fires and the row is never updated. Three were live.
+    (1) **C-051, evidence as force.** The constitution's oldest rule — an "it works"
+    claim carries the command output that proves it (C-047, steer since
+    2026-07-11) — was deferred for a wired version because in July nobody knew a
+    hook could read the agent's own output. ADR 30 proved it could. `evidence-gate.py`
+    is a Stop hook that blocks a completion claim unless a verification command
+    actually RAN this session, parsed from the transcript's Bash tool calls, never
+    from prose: a `grep -n "vitest\|test"` mentions the tool as data and must not
+    count, which was measured against a real 2282-line transcript before wiring
+    (62 matches dropped to 59, the three being exactly such greps). An honest
+    "IMPLEMENTED - NOT VERIFIED" is the sanctioned escape. Half-force: it proves a
+    command ran, not that it passed or covered the claim. (2) **C-099 closed.** The
+    shelf hook was built on 2026-08-04 (C-114/C-115) while its deferred row still
+    read "deferred", the C-053 disease 24 hours later; C-129 marks it built.
+    (3) **C-072, diff-size nudge.** Trigger was "first monster PR", and this very
+    branch is 1354 added lines. `diff-size-check.mjs` warns past ~300 added lines
+    vs the merge-base with the default branch. Deliberately warn-not-block, stated
+    as a design decision rather than timidity: the per-file max-lines 300 cap is
+    the blocking half already, total added diff is a fuzzy branch metric, and a
+    hard block on it would punish large-but-coherent work (a template plus its
+    selftest) and teach splitting by line count rather than by concern. It fails
+    open with no git or no base ref, because a size hint is not worth breaking a
+    push. Each of the three was seen rejecting or warning on a planted case in
+    selftest before landing, and the git-mode gate built this morning caught
+    evidence-gate.py shipping 100644 — the harness applying its own lesson to its
+    own new files. Rejected across all three: making any of them a hard block that
+    would fire on this session's own legitimate work. Enforcement mix after: force
+    30, half-force 10, steer 31.

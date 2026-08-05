@@ -262,4 +262,14 @@ EOF
 pnpm mutants > mut-strong.log 2>&1 || { echo "FAIL: a strong test that kills every mutant was still rejected" >&2; cat mut-strong.log >&2; exit 1; }
 rm -f src/lib/eligible.ts src/lib/eligible.test.ts
 
+# The blocking CI job must ship, or a future edit drops the standing gate silently.
+grep -q "^  mutation:" .github/workflows/ci.yml \
+  || { echo "FAIL: ci.yml ships no mutation job — the standing gate is gone (ADR 39)" >&2; exit 1; }
+grep -q "pnpm mutants:ci" .github/workflows/ci.yml \
+  || { echo "FAIL: the mutation job does not run the incremental script" >&2; exit 1; }
+grep -q "stryker-incremental.json" .github/workflows/ci.yml \
+  || { echo "FAIL: the mutation job does not cache the incremental baseline (cost would not track the diff)" >&2; exit 1; }
+grep -q "\"mutants:ci\": \"stryker run --incremental\"" package.json \
+  || { echo "FAIL: the mutants:ci script is missing or not incremental" >&2; exit 1; }
+
 echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone budget holds both directions, diff-size nudge warns not blocks, mutation kills a weak test."

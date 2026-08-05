@@ -7,6 +7,7 @@
     "clones": "node scripts/clone-budget-check.mjs",
     "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm test",
     "mutants": "stryker run",
+    "mutants:ci": "stryker run --incremental",
     "prepare": "husky"
   },
   "lint-staged": { "*.{ts,tsx,json,md,css}": "prettier --write" },

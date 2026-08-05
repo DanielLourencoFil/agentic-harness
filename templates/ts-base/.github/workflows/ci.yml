@@ -24,3 +24,44 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify
+
+  mutation:
+    # The wired half of "every test must fail if the logic breaks" (ADR 38/39):
+    # a surviving mutant fails the build. Blocking by default, relaxed only on
+    # felt pain (mark an equivalent mutant at the site, or widen nothing) — the
+    # same ratchet shape as the deletion guard and the clone budget.
+    #
+    # Separate job, not a step in verify: verify must stay seconds for fast
+    # feedback, and mutation is minutes on a large core. Incremental + cache bound
+    # the cost to the DIFF, not the codebase (measured 4s incremental vs 92s full
+    # on a 25-function core). A cache miss falls back to a full run: correct, only
+    # slower — it FAILS SAFE, never a false pass. allowEmpty means an empty
+    # src/lib passes instantly, so a young project pays nothing until its pure
+    # core grows. Whether a red here BLOCKS the merge is the repo's branch
+    # protection (the human's act), exactly like the verify check.
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Restore mutation baseline
+        # Restores the most recent baseline: this branch first, then the default
+        # branch (a fresh PR reuses main's baseline via the prefix), then any.
+        # A miss leaves no file, and Stryker runs full — slow, not wrong.
+        uses: actions/cache@v4
+        with:
+          path: reports/stryker-incremental.json
+          key: stryker-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            stryker-${{ github.ref_name }}-
+            stryker-${{ github.event.repository.default_branch }}-
+            stryker-
+      - run: pnpm mutants:ci

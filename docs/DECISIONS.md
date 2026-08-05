@@ -776,3 +776,39 @@ separate link files rot unread; see ADR 3).
     own new files. Rejected across all three: making any of them a hard block that
     would fire on this session's own legitimate work. Enforcement mix after: force
     30, half-force 10, steer 31.
+35. **2026-08-05 - Test quality gets a fresh-context audit rite (Phase 1); mutation
+    is its reify arm (Phase 2, not built).** Trigger: the harness forces tests to
+    PASS but nothing checks they are the right tests or have power; the owner was
+    the manual hook for it ("podemos escrever um teste aqui?" on Kinous), and the
+    owner sharpened it: the review of test correctness can itself be an agentic
+    audit, not left to human memory. Measured first: the existing /audit is
+    implementation/bug focused (`templates/ts-base/.claude/skills/audit/SKILL.md`),
+    the `auditor` agent is free on the fixed plan and read-only by construction, and
+    Stryker (9.6.1) supports a native `--mutate` allowlist and `--incremental`,
+    which is what makes a scoped, cheap Phase 2 possible. Adopted (D, phased):
+    **Phase 1 now** — a separate `/audit-tests` rite driving a read-only
+    `test-auditor` agent with a test-specific lens (missing negative, wrong level,
+    weak assertion, coupled-to-implementation, non-determinism, could-never-fail),
+    fresh-context so the authoring session's bias is removed. Its triage differs
+    from /audit by kind: missing-case findings reify by writing the red test;
+    wrong-level findings name the structural move; weak-assertion findings are the
+    ones only mutation can settle and stay OPEN until Phase 2, never closed on a
+    green run. The authoring session RESPONDS to findings but does not judge them,
+    because it is contaminated; the human decides. **Phase 2 later** — Stryker with
+    the allowlist pointed only at the modules Phase 1 flagged, scoped to `src/lib`,
+    wired only once Phase 1 produces real findings, which is how C-121 (mutation
+    testing) lands: not as a standalone gate but as this audit's reify arm.
+    Separate rite, not an extension of /audit: bug-framing and test-framing dilute
+    each other. Rejected: mutation alone (blind to missing tests and wrong levels,
+    silent on a module with no tests); a global mutation run (STRATEGY-BRIEF:211,
+    cost); coverage-ratchet as the presence gate (the floor is as arbitrary as a
+    ceiling and it actively manufactures assertion-free line-touching tests, the
+    owner's refutation). Declared limit, load-bearing: neither the audit nor the
+    mutant can judge whether the test's EXPECTED VALUE is the RIGHT behavior — a
+    test can faithfully encode a wrong requirement, and that stays the human's, on
+    the spec. Enforcement: the rite is half-force (mechanical fresh-context reminder
+    and reified missing-case findings; the weak-assertion verdict is deferred and
+    spec-correctness is steer); read-only is force, asserted in selftest.sh.
+    Freeze note (ADR 25): this is a PROCESS rite in the externalized-memory / audit
+    family, the same class as /audit (ADR 15) and audit-reminder (ADR 24), which
+    the freeze admits; it is not quality-doctrine steer.

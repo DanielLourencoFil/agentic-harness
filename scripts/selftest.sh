@@ -45,13 +45,15 @@ node -e 'JSON.parse(require("node:fs").readFileSync(".claude/settings.json","utf
   || { echo "FAIL: .claude/settings.json is not valid JSON" >&2; exit 1; }
 
 echo "==> Claim 0b: the packaged rites are present and the auditor stays read-only"
-for f in .claude/agents/auditor.md .claude/skills/feature/SKILL.md .claude/skills/audit/SKILL.md \
-  .claude/skills/debug/SKILL.md; do
+for f in .claude/agents/auditor.md .claude/agents/test-auditor.md .claude/skills/feature/SKILL.md \
+  .claude/skills/audit/SKILL.md .claude/skills/audit-tests/SKILL.md .claude/skills/debug/SKILL.md; do
   test -f "$f" || { echo "FAIL: $f missing (rites-as-skills claim)" >&2; exit 1; }
   head -1 "$f" | grep -qx -- '---' || { echo "FAIL: $f lacks frontmatter" >&2; exit 1; }
 done
-grep -q '^tools: Read, Grep, Glob$' .claude/agents/auditor.md \
-  || { echo "FAIL: auditor must stay read-only (tools: Read, Grep, Glob)" >&2; exit 1; }
+for agent in auditor test-auditor; do
+  grep -q '^tools: Read, Grep, Glob$' ".claude/agents/$agent.md" \
+    || { echo "FAIL: $agent must stay read-only (tools: Read, Grep, Glob)" >&2; exit 1; }
+done
 
 echo "==> Step 4 (README): pnpm install + chmod hook"
 pnpm install

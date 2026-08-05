@@ -10,3 +10,7 @@ coverage/
 # Private — personal learning / interview prep (never `git add -f`)
 /notes/
 INTERVIEW-NOTES.md
+
+# Mutation testing (Stryker)
+reports/
+.stryker-tmp/

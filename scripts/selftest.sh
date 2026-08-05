@@ -215,4 +215,51 @@ nogit="$(DIFF_SIZE_BASE=does-not-exist node scripts/diff-size-check.mjs 2>&1)"; 
 [ "$code" -eq 0 ] && [ -z "$nogit" ] || { echo "FAIL: a missing base ref must fail open and silent" >&2; exit 1; }
 git rm -q src/big.ts; git commit -q -m "test: cleanup" --no-verify
 
-echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone budget holds both directions, diff-size nudge warns not blocks."
+echo "==> Claim 7: mutation testing survives a weak test and passes a strong one (ADR 38)"
+# The wired half of "every test must fail if the logic breaks": Stryker mutates
+# src/lib and breaks (exit != 0) if any mutant survives. Seen rejecting a real
+# weak test, not just asserted. Empty src/lib must pass (allowEmpty), so the
+# scaffold is not held hostage to mutation before any pure logic exists.
+mkdir -p src/lib
+mutants_empty="$(pnpm mutants > mut-empty.log 2>&1; echo $?)"
+[ "$mutants_empty" -eq 0 ] || { echo "FAIL: mutants must pass on an empty src/lib (allowEmpty)" >&2; cat mut-empty.log >&2; exit 1; }
+
+cat > src/lib/eligible.ts <<'EOF'
+export function eligible(age: number): boolean {
+  return age >= 18;
+}
+EOF
+# WEAK: never pins the boundary, so the `>=`->`>` mutant survives.
+cat > src/lib/eligible.test.ts <<'EOF'
+import { expect, test } from "vitest";
+
+import { eligible } from "./eligible";
+
+test("eligible", () => {
+  expect(eligible(20)).toBe(true);
+  expect(eligible(10)).toBe(false);
+});
+EOF
+if pnpm mutants > mut-weak.log 2>&1; then
+  echo "FAIL: mutation testing PASSED a weak test that never pins the boundary (wired-but-blind)" >&2
+  cat mut-weak.log >&2
+  exit 1
+fi
+grep -qi "survived" mut-weak.log || { echo "FAIL: a mutant survived but the report did not say so" >&2; cat mut-weak.log >&2; exit 1; }
+
+# STRONG: pins the boundary (18) and one below (17), killing every mutant.
+cat > src/lib/eligible.test.ts <<'EOF'
+import { expect, test } from "vitest";
+
+import { eligible } from "./eligible";
+
+test("eligible pins the boundary", () => {
+  expect(eligible(18)).toBe(true);
+  expect(eligible(17)).toBe(false);
+  expect(eligible(0)).toBe(false);
+});
+EOF
+pnpm mutants > mut-strong.log 2>&1 || { echo "FAIL: a strong test that kills every mutant was still rejected" >&2; cat mut-strong.log >&2; exit 1; }
+rm -f src/lib/eligible.ts src/lib/eligible.test.ts
+
+echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone budget holds both directions, diff-size nudge warns not blocks, mutation kills a weak test."

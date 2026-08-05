@@ -13,9 +13,16 @@ dilute each other.
    Pass the scope verbatim. The auditor's prompt is neutral; "none found" is a
    valid outcome and must not be second-guessed into invented findings.
 2. Triage each finding by KIND, because tests reify differently from bugs:
-   - **Missing negative / could-never-fail:** reify by writing the missing test.
-     It should be red now (the rule it guards is untested) and named for what it
-     pins. A "missing test" finding that a written test proves already covered was
+   - **Missing negative / could-never-fail:** reify by writing the missing test,
+     but redness is only available when the code is BROKEN. Split by case:
+     - *missing test over broken code* — the test is red now; that is the signal.
+     - *missing test over CORRECT code* (the common brownfield case: the rule
+       works, it just has no test) — the test PASSES on the first run, so redness
+       proves nothing. Write it, name the mutation that must kill it, and leave it
+       OPEN for Phase 2. Do not mark it resolved because a new green test exists.
+       (Verified against the first real run, 2026-08-05: six Criticals were
+       missing tests over correct code; Phase 1 alone closed zero.)
+     A "missing test" finding that a written test proves already covered was
      confabulated: discard it.
    - **Wrong level:** structural. Name the move (test the endpoint, not the
      service; drop the mock of the unit under test). Do not rewrite unasked.

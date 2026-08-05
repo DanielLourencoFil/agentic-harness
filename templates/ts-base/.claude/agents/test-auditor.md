@@ -20,10 +20,18 @@ Review the tests for these categories:
    guard rejects everyone; the allow test passes even if there is no guard, so one
    never covers the other. The allow direction is the one silently missing — a
    locked-out holder produces no error, no crash, no log, just a shrug and a
-   workaround (a permission guard measured 1 allow-assertion for ~155 rules;
-   calendar-app testimony, unverified here). Point at the rule and the absent
+   workaround (a permission guard measured 155 rule sites and 12 raw
+   200-assertions, of which only 1 named allow-direction pair; calendar-app
+   2026-08-05, the 155 reproduced exactly, the split of the 12 unread). Point at
+   the rule and the absent
    direction; "the STAFF role that should be denied" AND "the OWNER role that must
-   not be" are two findings, not one.
+   not be" are two findings, not one. A permission that grants a BOUNDED view (own
+   vs all) has a **third** direction: what the holder is scoped to SEE. This one
+   fails as a silent cross-member data exposure, not a 403 — a professional with
+   `x.own.read` who is served every member's records passes every deny test and
+   every allow test, because neither asserts the boundary. Pin it with a pair:
+   a holder of `x.own` sees only their own, a holder of `x.all` sees both
+   (calendar-app 2026-08-05 found two such exposures its 403-rich suite missed).
 2. **Wrong level.** A test that does not exercise the thing it names: a contract
    test calling the service directly so a guard/middleware never runs; a unit test
    mocking the exact function under test; an e2e where a unit would catch the bug

@@ -652,13 +652,23 @@ separate link files rot unread; see ADR 3).
     which is exactly the semantic-duplicate case. Adopted: ask with a one-line
     reason for the human, inventory plus shelf path as additionalContext for the
     agent, firing only on a file that does not exist yet, only for direct children
-    of a configured shelf, and only once the shelf holds minEntries. Config is
-    `.claude/shelf.json` in the project, absent by default, so a project without a
-    shelf convention never sees the hook. The threshold exists because the firing
-    profile is the inverse of the usefulness profile: on the reference repo 81% of
-    new shelf files landed in the first three months while the shelf was still
-    being built and had nothing to duplicate, against roughly one per month in
-    steady state. The context names the shelf path and forbids searching
+    of a directory it judges to be a shelf. **Corrected the same day, before
+    merge:** the first version required `.claude/shelf.json` per project, which
+    traded "the agent must remember to look" for "the human must remember to
+    declare", the same disease renamed, as the owner said on reading it. A
+    directory now qualifies on two measured signals and no setup: at least 10
+    files (something worth duplicating) AND at least 10 distinct directories
+    importing from it (genuinely shared). Both are needed, and the pair was
+    chosen from data rather than from folder names, an earlier classification
+    that measurement refuted: across the reference repo's 18 sibling directories,
+    `ui` (39 files, fan-in 63) and `booking` (30, 16) are real shelves, while
+    `landing` (28, 2) and `public-page` (14, 2) hold as many files but serve one
+    screen, so a size rule alone fires on them; fan-in alone would catch
+    `platform-admin` (6 files, fan-in 13), where nothing is worth deduplicating.
+    Together the pair fires on 3 of 18 and all 3 are correct, including
+    `apps/api/test` at 118 files staying silent. `.claude/shelf.json` survives as
+    an override, not a prerequisite: an explicit list wins, and an empty list
+    disables. The context names the shelf path and forbids searching
     elsewhere, because both runs that carried bare names sent the agent hunting
     for the source, one sweeping ~/Dev and the other walking into a sibling
     project to read its components, which Bash allows since it is uncontained

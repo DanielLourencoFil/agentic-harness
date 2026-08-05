@@ -188,13 +188,22 @@ test -z "$out" || { echo "FAIL: git commit was nudged (over-fire on the wrong bo
 out="$(printf '{"tool_input":{"command":"echo mentioning gh pr create in prose"}}' | python3 "$BIN/audit-reminder.py")"
 test -z "$out" || { echo "FAIL: 'gh pr create' as command DATA was nudged (the 2026-07-20 false positive)" >&2; exit 1; }
 
-echo "==> shelf-inventory: a new file on a configured shelf must ask AND hand the agent the list"
+echo "==> shelf-inventory: auto-detects a shelf by size AND fan-in, no config"
 SHELF_ROOT="$TMP/shelfproj"
-mkdir -p "$SHELF_ROOT/.claude" "$SHELF_ROOT/src/components/ui" "$SHELF_ROOT/src/lib"
+mkdir -p "$SHELF_ROOT/src/components/ui" "$SHELF_ROOT/src/components/landing" "$SHELF_ROOT/src/lib"
 for n in alert badge button calendar card dialog input popover select toast; do
   : > "$SHELF_ROOT/src/components/ui/$n.tsx"
+  : > "$SHELF_ROOT/src/components/landing/hero-$n.tsx"
 done
-printf '{"shelves":[{"path":"src/components/ui","minEntries":10}]}\n' > "$SHELF_ROOT/.claude/shelf.json"
+# 12 distinct directories import from ui; only 2 import from landing. Same file
+# count, opposite verdict: that pair is the whole point of the two signals.
+for i in $(seq 1 12); do
+  mkdir -p "$SHELF_ROOT/src/app/page$i"
+  printf 'import { Button } from "@/components/ui/button";\n' > "$SHELF_ROOT/src/app/page$i/page.tsx"
+done
+for i in 1 2; do
+  printf 'import { Hero } from "@/components/landing/hero-alert";\n' >> "$SHELF_ROOT/src/app/page$i/page.tsx"
+done
 
 shelf() { # $1 = absolute target path; stdout = hook output
   printf '{"tool_name":"Write","cwd":"%s","tool_input":{"file_path":"%s"}}' "$SHELF_ROOT" "$1" \
@@ -203,29 +212,38 @@ shelf() { # $1 = absolute target path; stdout = hook output
 
 out="$(shelf "$SHELF_ROOT/src/components/ui/date-range-picker.tsx")"
 grep -q '"permissionDecision": "ask"' <<<"$out" \
-  || { echo "FAIL: a new shelf file did not stop for the human" >&2; echo "$out" >&2; exit 1; }
+  || { echo "FAIL: a new file on an auto-detected shelf did not stop for the human" >&2; echo "$out" >&2; exit 1; }
 grep -q '"additionalContext"' <<<"$out" \
   || { echo "FAIL: the agent got no inventory — the only channel that reaches it (5 probe runs, ADR 31)" >&2; exit 1; }
 grep -q 'calendar' <<<"$out" \
   || { echo "FAIL: the inventory does not name the existing entries" >&2; exit 1; }
-grep -q 'src/components/ui' <<<"$out" \
+grep -q 'components/ui' <<<"$out" \
   || { echo "FAIL: the context omits the shelf path, which sends the agent hunting" >&2; exit 1; }
 grep -q 'never another project' <<<"$out" \
   || { echo "FAIL: the context does not forbid leaving the project (observed twice: ~/Dev sweep, sibling repo)" >&2; exit 1; }
 
-# Four silences. Each is a false positive this hook must never produce.
+# Same size, different fan-in: a directory serving one screen is not a shelf.
+out="$(shelf "$SHELF_ROOT/src/components/landing/hero-new.tsx")"
+test -z "$out" || { echo "FAIL: fired on a same-sized directory with fan-in 2 (landing, 28 files, ADR 31)" >&2; exit 1; }
+# Shared but tiny: nothing to duplicate yet.
+out="$(shelf "$SHELF_ROOT/src/lib/helper.ts")"
+test -z "$out" || { echo "FAIL: fired below MIN_ENTRIES, where the shelf has nothing to duplicate" >&2; exit 1; }
 out="$(shelf "$SHELF_ROOT/src/components/ui/button.tsx")"
 test -z "$out" || { echo "FAIL: fired on an EXISTING file (edit, not creation)" >&2; exit 1; }
-out="$(shelf "$SHELF_ROOT/src/lib/helper.ts")"
-test -z "$out" || { echo "FAIL: fired outside the configured shelf" >&2; exit 1; }
 out="$(shelf "$SHELF_ROOT/src/components/ui/nested/deep.tsx")"
 test -z "$out" || { echo "FAIL: fired on a nested dir, which is its own concern" >&2; exit 1; }
-printf '{"shelves":[{"path":"src/components/ui","minEntries":50}]}\n' > "$SHELF_ROOT/.claude/shelf.json"
+# Explicit config wins in both directions.
+mkdir -p "$SHELF_ROOT/.claude"
+printf '{"shelves":[]}\n' > "$SHELF_ROOT/.claude/shelf.json"
 out="$(shelf "$SHELF_ROOT/src/components/ui/another.tsx")"
-test -z "$out" || { echo "FAIL: fired below minEntries, where the shelf has nothing to duplicate" >&2; exit 1; }
-rm -f "$SHELF_ROOT/.claude/shelf.json"
+test -z "$out" || { echo "FAIL: an empty shelves list must disable the hook entirely" >&2; exit 1; }
+printf '{"shelves":[{"path":"src/components/landing"}]}\n' > "$SHELF_ROOT/.claude/shelf.json"
+out="$(shelf "$SHELF_ROOT/src/components/landing/hero-new.tsx")"
+grep -q '"permissionDecision": "ask"' <<<"$out" \
+  || { echo "FAIL: an explicitly declared shelf was not honoured over auto-detection" >&2; exit 1; }
 out="$(shelf "$SHELF_ROOT/src/components/ui/another.tsx")"
-test -z "$out" || { echo "FAIL: fired with NO config — a project without a shelf must never see this" >&2; exit 1; }
+test -z "$out" || { echo "FAIL: config listed only landing, so ui must stop being a shelf" >&2; exit 1; }
+rm -rf "$SHELF_ROOT/.claude"
 
 echo "==> recommendation-anchor: a recommendation without a declared source must be blocked"
 anchor() { # $1 = last_assistant_message; $2 = stop_hook_active (optional)

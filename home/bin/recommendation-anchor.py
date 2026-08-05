@@ -45,7 +45,10 @@ DECLARATION = re.compile(
     r"^\s*(?:[-*>]\s*)?(?:\*\*)?"
     r"(verificado|medido|n[aã]o verificado|hip[oó]tese|por verificar"
     r"|verified|measured|not verified|hypothesis|unverified)"
-    r"(?:\*\*)?\s*:",
+    # A short qualifier may sit between the keyword and the colon: "Medido em 5
+    # corridas:" is a declaration, and the first version rejected it (found by
+    # the hook blocking its own author, 2026-08-04).
+    r"[^:\n]{0,40}?(?:\*\*)?\s*:",
     re.IGNORECASE | re.MULTILINE,
 )
 

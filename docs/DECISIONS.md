@@ -632,3 +632,42 @@ separate link files rot unread; see ADR 3).
     here; and a stricter gate keyed on whether the turn contained any tool call,
     which would fire on every legitimate follow-up answer and die of fatigue,
     the failure mode ADR 13 already names.
+31. **2026-08-04 - The creation-moment shelf hook asks the human and informs the
+    agent, because the reason field reaches neither.** Trigger: C-099, deferred
+    since 2026-07-29, built on owner override, since the second half of its
+    trigger (a recorded duplication the registry gate missed) never fired. The
+    gap it closes is real and neither existing gate covers it: the registry test
+    catches "you did not document it" after the fact, and the clone budget is
+    blind to a rename, so a semantic duplicate under a different name passes both.
+    The design carried in BACKLOG said to inject the inventory as
+    additionalContext by analogy with deliberation-nudge, which is a
+    UserPromptSubmit hook doing a plain print, while this is PreToolUse; the right
+    precedent is audit-reminder.py. Five probe runs on 2026-08-04 settled the rest,
+    and each answer contradicted the obvious design: permissionDecision "ask" does
+    stop the write and reach the human; permissionDecisionReason NEVER reaches the
+    human on a file operation, 874 characters emitted and zero seen across all
+    five runs, because the IDE diff occupies that space; additionalContext DOES
+    reach the agent alongside "ask", confirmed by the probe agent stating so and
+    then naming `calendar` as the overlap with the requested `date-range-picker`,
+    which is exactly the semantic-duplicate case. Adopted: ask with a one-line
+    reason for the human, inventory plus shelf path as additionalContext for the
+    agent, firing only on a file that does not exist yet, only for direct children
+    of a configured shelf, and only once the shelf holds minEntries. Config is
+    `.claude/shelf.json` in the project, absent by default, so a project without a
+    shelf convention never sees the hook. The threshold exists because the firing
+    profile is the inverse of the usefulness profile: on the reference repo 81% of
+    new shelf files landed in the first three months while the shelf was still
+    being built and had nothing to duplicate, against roughly one per month in
+    steady state. The context names the shelf path and forbids searching
+    elsewhere, because both runs that carried bare names sent the agent hunting
+    for the source, one sweeping ~/Dev and the other walking into a sibling
+    project to read its components, which Bash allows since it is uncontained
+    (ADR 29). A shelf check that crosses into another repo imports its conventions
+    by accident, which is worse than the duplication it was meant to prevent.
+    Rejected: injection alone, which does not prevent, since the tool runs and the
+    duplicate is on disk before the agent sees anything; the inventory in
+    permissionDecisionReason, measured dead for file operations; deny, which
+    without an escape makes a new shelf component impossible. Honest label:
+    half-force. The pause and the inventory are mechanical, recognising that Btn
+    is Button stays judgment, and the threshold of 10 is a starting point taken
+    from one repo's distribution rather than a measured optimum.

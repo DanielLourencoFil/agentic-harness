@@ -14,7 +14,11 @@
 #      and stays silent on plain work prompts (ADR 19);
 #   5. recommendation-anchor blocks an answer that recommends without declaring
 #      what verified it, accepts an honest "não verificado", stays silent on
-#      plain work, and never blocks twice on one turn (ADR 30).
+#      plain work, and never blocks twice on one turn (ADR 30);
+#   6. shelf-inventory asks on a NEW file in a configured shelf and hands the
+#      agent the entries plus the shelf path, and stays silent on an existing
+#      file, outside the shelf, in a nested dir, below minEntries, and with no
+#      config at all (ADR 31).
 set -euo pipefail
 
 HARNESS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -184,6 +188,45 @@ test -z "$out" || { echo "FAIL: git commit was nudged (over-fire on the wrong bo
 out="$(printf '{"tool_input":{"command":"echo mentioning gh pr create in prose"}}' | python3 "$BIN/audit-reminder.py")"
 test -z "$out" || { echo "FAIL: 'gh pr create' as command DATA was nudged (the 2026-07-20 false positive)" >&2; exit 1; }
 
+echo "==> shelf-inventory: a new file on a configured shelf must ask AND hand the agent the list"
+SHELF_ROOT="$TMP/shelfproj"
+mkdir -p "$SHELF_ROOT/.claude" "$SHELF_ROOT/src/components/ui" "$SHELF_ROOT/src/lib"
+for n in alert badge button calendar card dialog input popover select toast; do
+  : > "$SHELF_ROOT/src/components/ui/$n.tsx"
+done
+printf '{"shelves":[{"path":"src/components/ui","minEntries":10}]}\n' > "$SHELF_ROOT/.claude/shelf.json"
+
+shelf() { # $1 = absolute target path; stdout = hook output
+  printf '{"tool_name":"Write","cwd":"%s","tool_input":{"file_path":"%s"}}' "$SHELF_ROOT" "$1" \
+    | env CLAUDE_PROJECT_DIR="$SHELF_ROOT" python3 "$BIN/shelf-inventory.py"
+}
+
+out="$(shelf "$SHELF_ROOT/src/components/ui/date-range-picker.tsx")"
+grep -q '"permissionDecision": "ask"' <<<"$out" \
+  || { echo "FAIL: a new shelf file did not stop for the human" >&2; echo "$out" >&2; exit 1; }
+grep -q '"additionalContext"' <<<"$out" \
+  || { echo "FAIL: the agent got no inventory — the only channel that reaches it (5 probe runs, ADR 31)" >&2; exit 1; }
+grep -q 'calendar' <<<"$out" \
+  || { echo "FAIL: the inventory does not name the existing entries" >&2; exit 1; }
+grep -q 'src/components/ui' <<<"$out" \
+  || { echo "FAIL: the context omits the shelf path, which sends the agent hunting" >&2; exit 1; }
+grep -q 'never another project' <<<"$out" \
+  || { echo "FAIL: the context does not forbid leaving the project (observed twice: ~/Dev sweep, sibling repo)" >&2; exit 1; }
+
+# Four silences. Each is a false positive this hook must never produce.
+out="$(shelf "$SHELF_ROOT/src/components/ui/button.tsx")"
+test -z "$out" || { echo "FAIL: fired on an EXISTING file (edit, not creation)" >&2; exit 1; }
+out="$(shelf "$SHELF_ROOT/src/lib/helper.ts")"
+test -z "$out" || { echo "FAIL: fired outside the configured shelf" >&2; exit 1; }
+out="$(shelf "$SHELF_ROOT/src/components/ui/nested/deep.tsx")"
+test -z "$out" || { echo "FAIL: fired on a nested dir, which is its own concern" >&2; exit 1; }
+printf '{"shelves":[{"path":"src/components/ui","minEntries":50}]}\n' > "$SHELF_ROOT/.claude/shelf.json"
+out="$(shelf "$SHELF_ROOT/src/components/ui/another.tsx")"
+test -z "$out" || { echo "FAIL: fired below minEntries, where the shelf has nothing to duplicate" >&2; exit 1; }
+rm -f "$SHELF_ROOT/.claude/shelf.json"
+out="$(shelf "$SHELF_ROOT/src/components/ui/another.tsx")"
+test -z "$out" || { echo "FAIL: fired with NO config — a project without a shelf must never see this" >&2; exit 1; }
+
 echo "==> recommendation-anchor: a recommendation without a declared source must be blocked"
 anchor() { # $1 = last_assistant_message; $2 = stop_hook_active (optional)
   python3 -c 'import json,sys; print(json.dumps({"last_assistant_message": sys.argv[1], "stop_hook_active": sys.argv[2] == "1"}))' \
@@ -209,13 +252,19 @@ test -z "$out" || { echo "FAIL: an honestly-labelled unverified recommendation w
 # Plain work must pass silent, and a second pass must never loop.
 out="$(anchor "Corrigi o docstring e os selftests estao verdes.")"
 test -z "$out" || { echo "FAIL: a plain answer with no recommendation was blocked" >&2; exit 1; }
+# A qualifier between the keyword and the colon is still a declaration. The
+# first regex rejected "Medido em 5 corridas:" and blocked its own author.
+out="$(anchor "Recomendo cortar.
+
+**Medido em 5 corridas:** o ask parou a escrita em todas.")"
+test -z "$out" || { echo "FAIL: a qualified declaration was rejected" >&2; exit 1; }
 out="$(anchor "Recomendo cortar o scope gist." 1)"
 test -z "$out" || { echo "FAIL: blocked twice on the same turn (stop_hook_active ignored)" >&2; exit 1; }
 
 echo "==> wiring: settings.json must be valid and reference every hook script"
 python3 -c 'import json; json.load(open("'"$SETTINGS"'"))' \
   || { echo "FAIL: home/claude/settings.json is not valid JSON" >&2; exit 1; }
-for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py; do
+for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py; do
   grep -q "$script" "$SETTINGS" || { echo "FAIL: $script not wired in settings.json" >&2; exit 1; }
   test -x "$BIN/$script" || { echo "FAIL: $BIN/$script missing or not executable" >&2; exit 1; }
 done

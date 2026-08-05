@@ -74,6 +74,17 @@
             "statusMessage": "containment: checking write target"
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/shelf-inventory.py\"",
+            "timeout": 10,
+            "statusMessage": "shelf: checking what already exists"
+          }
+        ]
       }
     ],
     "Stop": [
@@ -90,5 +101,6 @@
     ]
   },
   "skipDangerousModePermissionPrompt": true,
-  "switchModelsOnFlag": true
+  "switchModelsOnFlag": true,
+  "tui": "fullscreen"
 }

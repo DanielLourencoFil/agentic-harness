@@ -1,14 +1,18 @@
 # TOUR — see the harness bite, in ten minutes
 
 Every claim below is demonstrated live, not narrated. Prerequisites: node ≥22, pnpm,
-git. Total time: ~10 minutes, of which ~3 are `pnpm install`.
+git. Total time: ~12 minutes, of which ~3 are `pnpm install`.
 
 ## 1. The system proves itself (1 min)
 
 Open the [Actions tab](https://github.com/DanielLourencoFil/agentic-harness/actions).
-Every push runs `selftest` and `selftest-vue`: they consume the templates exactly as
-the READMEs instruct, in a throwaway directory, and fail if any promise regresses —
-including the promise that the gate *rejects* bad code. Or run it yourself:
+Every push runs four gates. Two (`selftest`, `selftest-vue`) consume the templates
+exactly as the READMEs instruct, in a throwaway directory. One (`selftest-home`)
+pipe-tests every machine-layer hook against a planted violation. One
+(`selftest-skills`) holds the claims ledger to its own contract: a shipped artefact
+with no row fails the build, and so does a force-degree claim citing an executor that
+does not exist. All four fail if a promise regresses, including the promise that the
+gate *rejects* bad code. Or run one yourself:
 
 ```bash
 git clone https://github.com/DanielLourencoFil/agentic-harness && cd agentic-harness
@@ -50,14 +54,47 @@ git rm feature.txt && git commit -m "cleanup"
 Blocked: `❌ Deletion guard: 100 lines deleted (limit 80)`. Large removals need an
 explicit flag — nothing disappears silently.
 
-## 5. Try to bypass everything (1 min)
+## 5. Try to paste code instead of reusing it (1 min)
+
+In the consumed project, copy any eight-line block into a second file, then:
+
+```bash
+pnpm clones
+```
+
+Rejected: `❌ Copy-paste budget exceeded: 1 > 0`, and the failure names the file you
+just touched rather than the repo's worst offenders. The count may only fall; a
+deliberate duplicate is allowed but has to be declared by raising the budget in the
+same commit, where a reviewer sees the reason next to the copy.
+
+## 6. The machine layer bites with no project at all (1 min)
+
+The gates above live in the project. These travel with the machine, so they hold in a
+session opened anywhere — including someone else's repo, where nothing may be
+installed. No project needed to see one refuse:
+
+```bash
+printf '{"tool_name":"Write","cwd":"/tmp/demo","tool_input":{"file_path":"%s/.ssh/authorized_keys"}}' "$HOME" \
+  | CLAUDE_PROJECT_DIR=/tmp/demo python3 home/bin/write-containment.py
+```
+
+It denies, naming the real resolved path and the short allowlist of what may be
+written outside the project root. `../` and symlink escapes are resolved before the
+check, and each of those cases is a negative test in `selftest-home`.
+
+Honest limit, measured rather than assumed: this binds the **file tools**. Bash is not
+contained by it, and on this machine nothing else contains it either
+([ADR 29](DECISIONS.md)) — the harness says so in its own docs instead of implying a
+wall that is not there.
+
+## 7. Try to bypass everything (1 min)
 
 `git commit --no-verify` is denied to the agent by `.claude/settings.json`; and even
 a bypassed local hook dies at the server — the repo's ruleset requires a PR with the
 green `selftest` check to touch `main`. Local gates are convenience; **the server-side
 gate is the guarantee**, and it binds humans, agents and bots alike.
 
-## 6. Why these rules and not others (2 min)
+## 8. Why these rules and not others (2 min)
 
 Read [`docs/RATIONALE.md`](RATIONALE.md) — the four-category taxonomy (validity,
 examinability, procedure, human judgment) and the honest limits (tools verify form,

@@ -16,9 +16,12 @@ agentic-harness/
 ├── docs/CLAIMS.md         # the claims ledger: every guarantee the harness holds,
 │                          #   with its enforcement degree (force / half-force / steer)
 ├── docs/RATIONALE.md      # why these rules exist (the four-category taxonomy)
-├── scripts/selftest*.sh   # consume the templates as documented; run by CI on every push
-├── home/                  # the MACHINE layer: constitution, secret-hygiene hooks,
-│                          #   conversation rituals — symlinked once per machine (bootstrap.sh)
+├── scripts/selftest*.sh   # four gates, all run by CI on every push: two consume the
+│                          #   templates as documented, one pipe-tests the machine-layer
+│                          #   hooks, one holds the claims ledger to its own contract
+├── home/                  # the MACHINE layer: constitution, plus hooks that contain
+│                          #   writes, guard secrets, and refuse an unanchored claim —
+│                          #   symlinked once per machine (bootstrap.sh)
 └── templates/             # the PROJECT layer: stamped into each new repo at kickoff
     ├── ts-base/           # the TypeScript quality cage — copy, don't rebuild
     └── vue-starter/       # Layer 2 overlay on create-vue, extracted from real use
@@ -35,9 +38,13 @@ The harness is consumed in exactly three ways — which one applies is decided b
    referenced at coding time (vendoring beats reference — a referenced catalog
    propagates silent behavior changes to every consumer; see ADR 9).
 2. **My machine → bootstrap, once.** `home/bootstrap.sh` *symlinks* the machine
-   layer into `~/.claude`: constitution (incl. the portable layer-A rules),
-   secret-hygiene and write-containment hooks, conversation rituals. These must
-   hold in sessions that have no project at all, so they cannot live in stamps.
+   layer into `~/.claude`: the constitution (incl. the portable layer-A rules) and
+   seven hooks in four families — write containment, secret hygiene, conversation
+   rituals, and gates that fire at a specific moment (a PR being opened, a
+   recommendation made without evidence, a new file landing on a shared shelf).
+   These must hold in sessions that have no project at all, so they cannot live in
+   stamps. Honest limit: they bind the file tools and the permission layer; Bash
+   itself is uncontained, measured 2026-08-04 (ADR 29).
 3. **Someone else's repo → envelope folder, nothing installed.** One folder per
    engagement — `~/Dev/<engagement>/` (not a git repo, or a private notes repo)
    holding a `CLAUDE.md` with the engagement's rules plus `app/` = their clone,
@@ -65,8 +72,10 @@ Starting a new project is one instruction to the agent:
 
 The playbook is written **for the AI, not for humans** — layered and imperative:
 
-- **Layer 0 — Universal:** every commit passes typecheck + lint + test (pre-commit
-  *and* CI); zero warnings; deletion guard; decisions logged as dated one-line ADRs.
+- **Layer 0 — Universal:** every commit passes typecheck + lint + copy-paste budget
+  + test (pre-commit *and* CI); zero warnings; deletion guard; decisions logged as
+  dated one-line ADRs. The budget counts duplicated blocks and may only fall, which
+  is the wired half of "check whether it already exists before writing it again".
 - **Layer 1 — Language (TypeScript):** the `ts-base` template — strict tsconfig,
   `no-explicit-any` / `no-floating-promises` / complexity caps as errors.
 - **Layer 2 — Framework (Vue / React / Nest):** the enforceable rule subset per
@@ -93,7 +102,10 @@ bugs).
    the semantic gap is closed by owned test scenarios and human review.
 4. **Knowing ≠ applying.** Maturity is choosing which practices *not* to use.
 
-Distilled from my projects, including a production SaaS, and held to its own standard:
-this repo's CI runs `scripts/selftest.sh`, which consumes the template exactly as its
-README instructs — the template's claims are gates, not prose. Each project feeds
-lessons back into the playbook.
+Distilled from my projects, including a production SaaS, and held to its own standard.
+This repo's CI runs four gates on every push: two consume the templates exactly as their
+READMEs instruct, one pipe-tests every machine-layer hook against a planted violation,
+and one holds the claims ledger to its own contract — a shipped artefact with no ledger
+row fails the build, and so does a force-degree claim citing an executor that does not
+exist. The claims are gates, not prose, including the claims about the claims. Each
+project feeds lessons back into the playbook.

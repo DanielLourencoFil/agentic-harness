@@ -812,3 +812,29 @@ separate link files rot unread; see ADR 3).
     Freeze note (ADR 25): this is a PROCESS rite in the externalized-memory / audit
     family, the same class as /audit (ADR 15) and audit-reminder (ADR 24), which
     the freeze admits; it is not quality-doctrine steer.
+36. **2026-08-05 - The test-auditor learns that a guard fails in two directions,
+    from a calendar-app session report absorbed as testimony (ADR 23).** Trigger:
+    a report from the calendar-app session evaluating a claim this session had made
+    (that test-level correctness cannot be forced). Absorbed, not inherited: its
+    measurements are testimony, and its narrative anchored partly on the project's
+    EXECUTION_PLAN, which the owner confirmed is rotted, abandoned steer with zero
+    evidentiary weight — so the "green since March" framing was discounted and only
+    the git/code-anchored findings counted. One adoption for this repo: the
+    test-auditor's category 1 was "missing negative" (the deny direction only); it
+    now requires BOTH directions of a guard, because deny (unauthorized blocked)
+    and allow (authorized NOT blocked) fail independently and one test never covers
+    the other. The allow direction is the silently-missing one: a locked-out holder
+    produces no error, no crash, no log. This was adopted on logic plus an
+    independent check, not on the report's authority: a surviving reject-everyone
+    mutant IS the missing-allow signal, which is also why it strengthens the Phase 2
+    mutation case (C-133). The report's own gate candidates (a per-decorator
+    positive-assertion rule, a reachability matrix) are project-specific in form and
+    were deferred to calendar-app's queue, not adopted into ts-base (C-134). And it
+    corrected this session twice-over: the "you cannot force the right test plan"
+    line was drawn too pessimistically — much of that failure was statically
+    computable (a decorator demanding a key the template lacks), so the honest
+    reformulation is that each "cannot force" layer has a computable half and the
+    residue is prioritization under cost, not knowledge of what is right (C-135).
+    Freeze note: sharpening an admitted process rite's lens (ADR 35 audit family),
+    not a new quality-doctrine steer line. Source: calendar-app session report,
+    checked 2026-08-05, measurements unverified from this repo by scoping.

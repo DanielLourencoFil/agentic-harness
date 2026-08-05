@@ -13,9 +13,17 @@ production code AND its tests; a test is judged against what the code promises.
 
 Review the tests for these categories:
 
-1. **Missing negative.** A rule the code enforces with no test for its forbidden
-   case (the past-date booking that should throw, the STAFF role that should be
-   denied). The case AI forgets. Point at the rule in the code and the absent test.
+1. **Missing direction.** A rule the code enforces, tested in only one direction.
+   A guard fails TWO ways and each needs its own test: the **deny** direction
+   (who lacks the key gets 403, the forbidden input throws) AND the **allow**
+   direction (who HAS the key is NOT blocked). The deny test passes even if the
+   guard rejects everyone; the allow test passes even if there is no guard, so one
+   never covers the other. The allow direction is the one silently missing — a
+   locked-out holder produces no error, no crash, no log, just a shrug and a
+   workaround (a permission guard measured 1 allow-assertion for ~155 rules;
+   calendar-app testimony, unverified here). Point at the rule and the absent
+   direction; "the STAFF role that should be denied" AND "the OWNER role that must
+   not be" are two findings, not one.
 2. **Wrong level.** A test that does not exercise the thing it names: a contract
    test calling the service directly so a guard/middleware never runs; a unit test
    mocking the exact function under test; an e2e where a unit would catch the bug

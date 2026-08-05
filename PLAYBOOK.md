@@ -117,11 +117,31 @@ do not rebuild (its README is the consumption recipe; `scripts/selftest-vue.sh` 
 (dependency-cruiser or eslint import rule) — keeps the pure core pure.
 
 ### React
-**Enforce:** `eslint-plugin-react-hooks` (`rules-of-hooks`, `exhaustive-deps` as errors) ·
-`react/jsx-key`.
+Packaged as `templates/react-starter` (overlay on `create-vite react-ts`), consumed end
+to end by `scripts/selftest-react.sh` in CI.
+**Enforce:** `eslint-plugin-react-hooks` (`rules-of-hooks`, `exhaustive-deps` as **errors** —
+the plugin ships the second as a warning) · pure-core import ban (`src/lib/**` may not
+import `react`) · the whole ts-base validity set.
 **Convention:** derived state computed during render — **no `useEffect` for deriving state**
-("You Might Not Need an Effect"); effects = external sync only; event logic in handlers;
-server state in TanStack Query, not effects+setState.
+("You Might Not Need an Effect"); effects = external sync only, each carrying a one-line
+comment naming the system it syncs with; event logic in handlers; server state in a query
+library, never effects+setState; keys are stable identity from the data, never the index.
+
+### Next.js (App Router)
+**Enforce:** `@next/eslint-plugin-next` `core-web-vitals` with **every rule pinned to
+error** (Next ships most as warnings; the harness has no warning level). The one
+server/client mistake a linter can catch is `no-async-client-component`.
+**Convention:** components are Server Components by default and `"use client"` is a
+**boundary in the tree, not a decoration on a file** — push it down to the interactive
+leaf, never up to the page, or the whole subtree ships to the browser. Fetch on the
+server and pass data down; a client component fetching in an effect what the server
+already had is the waterfall the framework exists to remove. `"use client"` does not mean
+browser-only: those components still render server-side for the first paint, so
+module-scope `window` breaks the build. Route handlers and server actions are trust
+boundaries — validate with a schema exactly as an API endpoint would; colocation with the
+UI does not make the caller trustworthy.
+Honest limit: the Next path has no selftest job — the Vite path is proven end to end, the
+Next overlay is verified only as far as the plugin's config shape (ADR 32).
 
 ### Node / NestJS (backend)
 **Enforce:** schema-first validation at every boundary (`nestjs-zod` / Zod) — `class-validator`

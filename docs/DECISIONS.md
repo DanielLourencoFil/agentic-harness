@@ -681,3 +681,35 @@ separate link files rot unread; see ADR 3).
     half-force. The pause and the inventory are mechanical, recognising that Btn
     is Button stays judgment, and the threshold of 10 is a starting point taken
     from one repo's distribution rather than a measured optimum.
+32. **2026-08-05 - Layer 2 React ships, Next gets a documented overlay, and the
+    ADR 25 steer freeze is broken here by explicit owner decision.** Trigger: a
+    live-coding exercise on React or Next, two days out, against a harness whose
+    only framework layer was Vue. Measured first: `ts-base` is framework-agnostic
+    and already covers a React project's cage entirely, so the gap was Layer 2 and
+    not the cage. The PLAYBOOK's React section already prescribed the rules
+    (`rules-of-hooks`, `exhaustive-deps` as errors) but nothing was packaged, and
+    `grep -ciE "server component|rsc|use client|app router"` over the PLAYBOOK
+    returned 0, which is the dominant failure surface for AI-written Next in 2026,
+    since the training corpus predates the App Router. Adopted:
+    `templates/react-starter`, an overlay on `create-vite react-ts` in the shape of
+    `vue-starter`, consumed end to end by `scripts/selftest-react.sh` in CI, which
+    also plants eight violations and requires each to be rejected: any, ==,
+    non-exhaustive switch, import cycle, depth, a hook behind a condition, a lying
+    dependency array, React inside the pure core, and a duplicated block.
+    `exhaustive-deps` is pinned to error against the plugin's own default, because
+    a lying dependency array reproduces only on the second render. Next arrives as
+    one extra file rather than a second template, `eslint.next.mjs`, layering
+    `core-web-vitals` with every rule pinned to error: Next ships most as warnings
+    and this harness has no warning level. Two things were checked rather than
+    assumed before writing that file: the plugin's flat-config export shape and its
+    22 rules with their default severities, inspected 2026-08-05, and the earlier
+    guess that a template selftest costs 20 minutes of CI, which measurement put at
+    41 seconds. Freeze note, and it is the load-bearing one: the conventions in
+    `react-conventions.md` and the new PLAYBOOK Next section are **quality-doctrine
+    steer**, which ADR 25 froze until the lab's FINDINGS v1. They enter by explicit
+    owner decision, recorded here as an override rather than drift, exactly as the
+    C-099 trigger override was. Declared limits: the Next path has no selftest job,
+    so the Vite path is proven and the Next overlay is only documented; and the
+    interview scenario itself is served by the machine layer, which travels to any
+    session including a repo nobody may install into, rather than by a template
+    nobody has time to stamp under a timer.

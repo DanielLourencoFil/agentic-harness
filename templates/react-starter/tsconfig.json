@@ -1,0 +1,12 @@
+{
+  // The consumable root config: `tsc --noEmit` type-checks app AND tests in one
+  // pass, so `verify` cannot be green while a test file is broken.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "types": ["vite/client"],
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src", "tests", "vitest.config.ts", "eslint.config.mjs"]
+}

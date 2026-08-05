@@ -13,9 +13,25 @@ production code AND its tests; a test is judged against what the code promises.
 
 Review the tests for these categories:
 
-1. **Missing negative.** A rule the code enforces with no test for its forbidden
-   case (the past-date booking that should throw, the STAFF role that should be
-   denied). The case AI forgets. Point at the rule in the code and the absent test.
+1. **Missing direction.** A rule the code enforces, tested in only one direction.
+   A guard fails TWO ways and each needs its own test: the **deny** direction
+   (who lacks the key gets 403, the forbidden input throws) AND the **allow**
+   direction (who HAS the key is NOT blocked). The deny test passes even if the
+   guard rejects everyone; the allow test passes even if there is no guard, so one
+   never covers the other. The allow direction is the one silently missing — a
+   locked-out holder produces no error, no crash, no log, just a shrug and a
+   workaround (a permission guard measured 155 rule sites and 12 raw
+   200-assertions, of which only 1 named allow-direction pair; calendar-app
+   2026-08-05, the 155 reproduced exactly, the split of the 12 unread). Point at
+   the rule and the absent
+   direction; "the STAFF role that should be denied" AND "the OWNER role that must
+   not be" are two findings, not one. A permission that grants a BOUNDED view (own
+   vs all) has a **third** direction: what the holder is scoped to SEE. This one
+   fails as a silent cross-member data exposure, not a 403 — a professional with
+   `x.own.read` who is served every member's records passes every deny test and
+   every allow test, because neither asserts the boundary. Pin it with a pair:
+   a holder of `x.own` sees only their own, a holder of `x.all` sees both
+   (calendar-app 2026-08-05 found two such exposures its 403-rich suite missed).
 2. **Wrong level.** A test that does not exercise the thing it names: a contract
    test calling the service directly so a guard/middleware never runs; a unit test
    mocking the exact function under test; an e2e where a unit would catch the bug

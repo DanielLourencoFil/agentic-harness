@@ -812,3 +812,62 @@ separate link files rot unread; see ADR 3).
     Freeze note (ADR 25): this is a PROCESS rite in the externalized-memory / audit
     family, the same class as /audit (ADR 15) and audit-reminder (ADR 24), which
     the freeze admits; it is not quality-doctrine steer.
+36. **2026-08-05 - The test-auditor learns that a guard fails in two directions,
+    from a calendar-app session report absorbed as testimony (ADR 23).** Trigger:
+    a report from the calendar-app session evaluating a claim this session had made
+    (that test-level correctness cannot be forced). Absorbed, not inherited: its
+    measurements are testimony, and its narrative anchored partly on the project's
+    EXECUTION_PLAN, which the owner confirmed is rotted, abandoned steer with zero
+    evidentiary weight — so the "green since March" framing was discounted and only
+    the git/code-anchored findings counted. One adoption for this repo: the
+    test-auditor's category 1 was "missing negative" (the deny direction only); it
+    now requires BOTH directions of a guard, because deny (unauthorized blocked)
+    and allow (authorized NOT blocked) fail independently and one test never covers
+    the other. The allow direction is the silently-missing one: a locked-out holder
+    produces no error, no crash, no log. This was adopted on logic plus an
+    independent check, not on the report's authority: a surviving reject-everyone
+    mutant IS the missing-allow signal, which is also why it strengthens the Phase 2
+    mutation case (C-133). The report's own gate candidates (a per-decorator
+    positive-assertion rule, a reachability matrix) are project-specific in form and
+    were deferred to calendar-app's queue, not adopted into ts-base (C-134). And it
+    corrected this session twice-over: the "you cannot force the right test plan"
+    line was drawn too pessimistically — much of that failure was statically
+    computable (a decorator demanding a key the template lacks), so the honest
+    reformulation is that each "cannot force" layer has a computable half and the
+    residue is prioritization under cost, not knowledge of what is right (C-135).
+    Freeze note: sharpening an admitted process rite's lens (ADR 35 audit family),
+    not a new quality-doctrine steer line. Source: calendar-app session report,
+    checked 2026-08-05, measurements unverified from this repo by scoping.
+37. **2026-08-05 - The first real /audit-tests run audited the harness back:
+    three refinements absorbed, three gotchas deferred, one number I wrote today
+    corrected.** Source: the calendar-app /audit-tests report
+    (`calendar-app/docs/AUDITS/2026-08-05-permission-test-audit.md`, testimony per
+    ADR 23, checked 2026-08-05). It is the rite's first consumption outside the
+    template, and the most rigorous testimony this ledger has taken: every claim
+    carries a provenance label (verified / auditor-only / measured / hypothesis),
+    it verifies the harness's own figure, and it disputes one of its own findings.
+    Calibration: 14 findings, 5 Critical, 0 confabulated (C-142), the number that
+    calibrates future trust in test-auditor. The passo-zero question — does
+    auditing tests find real things — is answered emphatically: two of the five
+    Criticals (F10, F11) are silent cross-member data exposures a 403-rich suite
+    never saw. Adopted into the harness, all refinements of an admitted process
+    rite, not new quality-doctrine steer: (1) C-136 corrects the "1 allow-assertion
+    for 155 rules" figure I added this morning from the previous report — 155
+    reproduces exactly, but the "1" does not; the honest count is 1-to-12 unread,
+    so the lens now carries the measured range and supersedes the C-133 anchor.
+    (2) C-137 (H2): the reify instruction assumed redness, which is only available
+    over BROKEN code; a missing test over CORRECT code (the brownfield norm) passes
+    on first run, so it needs a named mutation and stays open for Phase 2 — the run
+    closed zero of its six such Criticals, which is honest, not a defect. (3) C-138
+    (H5): a permission granting a bounded view has a THIRD direction beyond
+    deny/allow, what the holder is scoped to SEE, failing as a data exposure rather
+    than a 403. Deferred with triggers: C-139 (H1, an agent copied mid-session
+    registers only after restart, so a skill launching it fails on first
+    invocation — a real adoption-path trap, unverified harness-mechanics claim);
+    C-140 (H3, a brownfield repo may lack AGENT-LOG.md while the rites write to it,
+    so its pain never reaches the ADR 18 queue); C-141 (H4, ADR 9 stamps skills not
+    agents, so a vendored agent drifts unstamped — an owner design question). The
+    product findings F1-F14 stay in calendar-app. Meta, worth stating: the harness
+    ate its own dog food at the top of the stack — a rite built this session to
+    audit tests was run, and it audited the rite, correcting a line written hours
+    earlier. Enforcement mix after: force 31, half-force 12, steer 34.

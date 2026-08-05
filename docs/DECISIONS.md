@@ -713,3 +713,35 @@ separate link files rot unread; see ADR 3).
     interview scenario itself is served by the machine layer, which travels to any
     session including a repo nobody may install into, rather than by a template
     nobody has time to stamp under a timer.
+33. **2026-08-05 - Two posts by R. C. Martin absorbed: nine claims, zero adoptions,
+    and one stale deferral closed.** Source: @unclebobmartin on X, 2026-07-26,
+    checked 2026-08-05. Post one argues that since agents generate fast, the
+    programmer's time reallocates to writing unit, acceptance, property, torture,
+    mutation and QA tests, and that the result is still many times more productive
+    and better. Post two describes agents building him a dependency-checking tool
+    whose architecture he specifies and they enforce, plus a UML viewer that finds
+    cycles. Already have, anchored: the reallocation premise is the feature loop
+    itself (PLAYBOOK.md:416-420); cycle detection is `import-x/no-cycle` as an error
+    in all three templates, recorded seen firing in C-037; the general layer map was
+    already scoped out at PLAYBOOK.md:177, which says to use arch-boundary tooling
+    on a large layered codebase and keep only the pure-core rule on a small app; and
+    the risk implicit in "I had my agents build the tool", that a gate written by
+    the agent it constrains encodes the same misunderstanding and reports green, is
+    the harness's own scar (AGENT-LOG 2026-07-10, and four such gates found blind in
+    the 2026-07-30 audit). Rejected: "many times more productive and the result will
+    be better", unfalsifiable as stated and losing to C-093, the kill/continue rule
+    that refuses this exact assumption about this repo; and the UML viewer, which
+    informs without blocking and duplicates what no-cycle enforces, losing to
+    force-over-steer and to the documented-but-unwired anti-pattern. Deferred with
+    triggers: property-based testing (C-120), which is a practice without a consumer
+    here; and mutation testing (C-121), already queued since the 2026-07-27 dogfood
+    finding and scoped to an allowlist, since STRATEGY-BRIEF:211 rejects it globally.
+    Closed as a side effect: C-053 deferred "executable architecture boundary, wired
+    not optional" on 2026-07-17 with the trigger "wire in vue-starter when a
+    consumer's src/lib exists"; that trigger fired and the work landed in both
+    vue-starter and react-starter with negative tests, and nobody updated the row.
+    C-123 supersedes it as adopted. The useful shape of this run: an external source
+    from a famous author produced no new practice, confirmed four decisions already
+    made, and its only genuinely sharp item (mutation testing measures test power
+    rather than volume) was already in the queue from our own dogfooding. That is
+    the ledger working as designed rather than a disappointing source.

@@ -285,6 +285,16 @@ python3 -c 'import json; json.load(open("'"$SETTINGS"'"))' \
 for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py; do
   grep -q "$script" "$SETTINGS" || { echo "FAIL: $script not wired in settings.json" >&2; exit 1; }
   test -x "$BIN/$script" || { echo "FAIL: $BIN/$script missing or not executable" >&2; exit 1; }
+  # The mode GIT records, not the one on disk. This machine has core.fileMode
+  # false (usual on WSL2), so chmod +x never reaches the index: the file is 755
+  # locally, 644 in the commit, and CI checks out something it cannot run. The
+  # disk check above passed while CI failed, which is a gate blind to the very
+  # thing that breaks. Fix a 644 with: git update-index --chmod=+x <path>
+  mode="$(git -C "$HARNESS_DIR" ls-files -s "home/bin/$script" | cut -d" " -f1)"
+  [ "$mode" = "100755" ] || {
+    echo "FAIL: home/bin/$script is $mode in git, not 100755 — CI will check out a file it cannot execute" >&2
+    echo "      git update-index --chmod=+x home/bin/$script" >&2
+    exit 1; }
 done
 grep -q '"Write|Edit|MultiEdit|NotebookEdit"' "$SETTINGS" \
   || { echo "FAIL: containment matcher must cover Write/Edit/NotebookEdit" >&2; exit 1; }

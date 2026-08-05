@@ -595,3 +595,89 @@ separate link files rot unread; see ADR 3).
     instructed the agent to attempt the call reached the gate. This sharpens the
     2026-07-10 lesson: a wired rule is not live until seen rejecting a violation
     that was actually attempted.
+30. **2026-08-04 - A recommendation must declare what verified it, and the
+    anchoring law loses its "about a repo" scope.** Trigger: three recommendations
+    in one session were made from what seemed reasonable rather than from
+    measurement. Cut the `workflow` scope, which turned out to be required for
+    pushing any commit touching `.github/workflows/` over an HTTPS remote, and
+    which the calendar-app used 5 hours earlier. Cut the `gist` scope, which `gh`
+    documents as unremovable from its minimum set, and which closes nothing while
+    `repo` can create and push a public repository. Adopt a permissive permission
+    mode as an interim posture, which contradicts the harness's own premise and
+    was withdrawn in ADR 29. The common shape is not carelessness about facts: it
+    is that each was stated without the check that would have settled it, and two
+    of the three had an adjacent measurement that did not cover the claim.
+    Diagnosis, and it is the useful part: inside the repository every assertion in
+    that session carried a command and its output, and the discipline was dropped
+    the moment the subject moved to a GitHub account and a permission model, which
+    the anchoring law appeared not to cover because it read "every claim about a
+    repo". A second mechanism compounded it, that a conversation with momentum
+    treats every turn as needing an actionable next step, and invents one when
+    none is warranted. Adopted: the scope limit is deleted from the law, and a
+    recommendation is named explicitly as a claim that carries its verification or
+    an honest label. Wired as the first Stop hook in this harness
+    (`home/bin/recommendation-anchor.py`), which reads `last_assistant_message`
+    and blocks once when recommendation markers appear with no declaration line
+    from the closed set (Verificado, Medido, Não verificado, Hipótese, and their
+    English forms). The mechanism was measured before being proposed: the Stop
+    event carries `last_assistant_message` and accepts `decision: "block"` with a
+    `reason` fed back to the model, which is what makes any of this possible, and
+    no prior hook in this harness could see the agent's own output. Honest label:
+    half-force. The firing is mechanical, the truth of the declaration is not, and
+    the hook cannot judge whether a measurement covers the claim it is attached
+    to, which is precisely the class two of the three failures belonged to. It
+    catches the pure-memory recommendation, and it makes the other class visible
+    by forcing an author with nothing to declare to write that down. Rejected:
+    leaving this to the reworded law alone, since steer is what already failed
+    here; and a stricter gate keyed on whether the turn contained any tool call,
+    which would fire on every legitimate follow-up answer and die of fatigue,
+    the failure mode ADR 13 already names.
+31. **2026-08-04 - The creation-moment shelf hook asks the human and informs the
+    agent, because the reason field reaches neither.** Trigger: C-099, deferred
+    since 2026-07-29, built on owner override, since the second half of its
+    trigger (a recorded duplication the registry gate missed) never fired. The
+    gap it closes is real and neither existing gate covers it: the registry test
+    catches "you did not document it" after the fact, and the clone budget is
+    blind to a rename, so a semantic duplicate under a different name passes both.
+    The design carried in BACKLOG said to inject the inventory as
+    additionalContext by analogy with deliberation-nudge, which is a
+    UserPromptSubmit hook doing a plain print, while this is PreToolUse; the right
+    precedent is audit-reminder.py. Five probe runs on 2026-08-04 settled the rest,
+    and each answer contradicted the obvious design: permissionDecision "ask" does
+    stop the write and reach the human; permissionDecisionReason NEVER reaches the
+    human on a file operation, 874 characters emitted and zero seen across all
+    five runs, because the IDE diff occupies that space; additionalContext DOES
+    reach the agent alongside "ask", confirmed by the probe agent stating so and
+    then naming `calendar` as the overlap with the requested `date-range-picker`,
+    which is exactly the semantic-duplicate case. Adopted: ask with a one-line
+    reason for the human, inventory plus shelf path as additionalContext for the
+    agent, firing only on a file that does not exist yet, only for direct children
+    of a directory it judges to be a shelf. **Corrected the same day, before
+    merge:** the first version required `.claude/shelf.json` per project, which
+    traded "the agent must remember to look" for "the human must remember to
+    declare", the same disease renamed, as the owner said on reading it. A
+    directory now qualifies on two measured signals and no setup: at least 10
+    files (something worth duplicating) AND at least 10 distinct directories
+    importing from it (genuinely shared). Both are needed, and the pair was
+    chosen from data rather than from folder names, an earlier classification
+    that measurement refuted: across the reference repo's 18 sibling directories,
+    `ui` (39 files, fan-in 63) and `booking` (30, 16) are real shelves, while
+    `landing` (28, 2) and `public-page` (14, 2) hold as many files but serve one
+    screen, so a size rule alone fires on them; fan-in alone would catch
+    `platform-admin` (6 files, fan-in 13), where nothing is worth deduplicating.
+    Together the pair fires on 3 of 18 and all 3 are correct, including
+    `apps/api/test` at 118 files staying silent. `.claude/shelf.json` survives as
+    an override, not a prerequisite: an explicit list wins, and an empty list
+    disables. The context names the shelf path and forbids searching
+    elsewhere, because both runs that carried bare names sent the agent hunting
+    for the source, one sweeping ~/Dev and the other walking into a sibling
+    project to read its components, which Bash allows since it is uncontained
+    (ADR 29). A shelf check that crosses into another repo imports its conventions
+    by accident, which is worse than the duplication it was meant to prevent.
+    Rejected: injection alone, which does not prevent, since the tool runs and the
+    duplicate is on disk before the agent sees anything; the inventory in
+    permissionDecisionReason, measured dead for file operations; deny, which
+    without an escape makes a new shelf component impossible. Honest label:
+    half-force. The pause and the inventory are mechanical, recognising that Btn
+    is Button stays judgment, and the threshold of 10 is a starting point taken
+    from one repo's distribution rather than a measured optimum.

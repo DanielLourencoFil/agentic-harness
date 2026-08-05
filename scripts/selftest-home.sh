@@ -11,7 +11,14 @@
 #   2. secret-scan blocks prompts carrying secret-shaped values;
 #   3. env-dump-guard denies commands that would dump secrets into context;
 #   4. deliberation-nudge reminds on deliberation markers (nudge, never block)
-#      and stays silent on plain work prompts (ADR 19).
+#      and stays silent on plain work prompts (ADR 19);
+#   5. recommendation-anchor blocks an answer that recommends without declaring
+#      what verified it, accepts an honest "não verificado", stays silent on
+#      plain work, and never blocks twice on one turn (ADR 30);
+#   6. shelf-inventory asks on a NEW file in a configured shelf and hands the
+#      agent the entries plus the shelf path, and stays silent on an existing
+#      file, outside the shelf, in a nested dir, below minEntries, and with no
+#      config at all (ADR 31).
 set -euo pipefail
 
 HARNESS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -181,12 +188,113 @@ test -z "$out" || { echo "FAIL: git commit was nudged (over-fire on the wrong bo
 out="$(printf '{"tool_input":{"command":"echo mentioning gh pr create in prose"}}' | python3 "$BIN/audit-reminder.py")"
 test -z "$out" || { echo "FAIL: 'gh pr create' as command DATA was nudged (the 2026-07-20 false positive)" >&2; exit 1; }
 
+echo "==> shelf-inventory: auto-detects a shelf by size AND fan-in, no config"
+SHELF_ROOT="$TMP/shelfproj"
+mkdir -p "$SHELF_ROOT/src/components/ui" "$SHELF_ROOT/src/components/landing" "$SHELF_ROOT/src/lib"
+for n in alert badge button calendar card dialog input popover select toast; do
+  : > "$SHELF_ROOT/src/components/ui/$n.tsx"
+  : > "$SHELF_ROOT/src/components/landing/hero-$n.tsx"
+done
+# 12 distinct directories import from ui; only 2 import from landing. Same file
+# count, opposite verdict: that pair is the whole point of the two signals.
+for i in $(seq 1 12); do
+  mkdir -p "$SHELF_ROOT/src/app/page$i"
+  printf 'import { Button } from "@/components/ui/button";\n' > "$SHELF_ROOT/src/app/page$i/page.tsx"
+done
+for i in 1 2; do
+  printf 'import { Hero } from "@/components/landing/hero-alert";\n' >> "$SHELF_ROOT/src/app/page$i/page.tsx"
+done
+
+shelf() { # $1 = absolute target path; stdout = hook output
+  printf '{"tool_name":"Write","cwd":"%s","tool_input":{"file_path":"%s"}}' "$SHELF_ROOT" "$1" \
+    | env CLAUDE_PROJECT_DIR="$SHELF_ROOT" python3 "$BIN/shelf-inventory.py"
+}
+
+out="$(shelf "$SHELF_ROOT/src/components/ui/date-range-picker.tsx")"
+grep -q '"permissionDecision": "ask"' <<<"$out" \
+  || { echo "FAIL: a new file on an auto-detected shelf did not stop for the human" >&2; echo "$out" >&2; exit 1; }
+grep -q '"additionalContext"' <<<"$out" \
+  || { echo "FAIL: the agent got no inventory — the only channel that reaches it (5 probe runs, ADR 31)" >&2; exit 1; }
+grep -q 'calendar' <<<"$out" \
+  || { echo "FAIL: the inventory does not name the existing entries" >&2; exit 1; }
+grep -q 'components/ui' <<<"$out" \
+  || { echo "FAIL: the context omits the shelf path, which sends the agent hunting" >&2; exit 1; }
+grep -q 'never another project' <<<"$out" \
+  || { echo "FAIL: the context does not forbid leaving the project (observed twice: ~/Dev sweep, sibling repo)" >&2; exit 1; }
+
+# Same size, different fan-in: a directory serving one screen is not a shelf.
+out="$(shelf "$SHELF_ROOT/src/components/landing/hero-new.tsx")"
+test -z "$out" || { echo "FAIL: fired on a same-sized directory with fan-in 2 (landing, 28 files, ADR 31)" >&2; exit 1; }
+# Shared but tiny: nothing to duplicate yet.
+out="$(shelf "$SHELF_ROOT/src/lib/helper.ts")"
+test -z "$out" || { echo "FAIL: fired below MIN_ENTRIES, where the shelf has nothing to duplicate" >&2; exit 1; }
+out="$(shelf "$SHELF_ROOT/src/components/ui/button.tsx")"
+test -z "$out" || { echo "FAIL: fired on an EXISTING file (edit, not creation)" >&2; exit 1; }
+out="$(shelf "$SHELF_ROOT/src/components/ui/nested/deep.tsx")"
+test -z "$out" || { echo "FAIL: fired on a nested dir, which is its own concern" >&2; exit 1; }
+# Explicit config wins in both directions.
+mkdir -p "$SHELF_ROOT/.claude"
+printf '{"shelves":[]}\n' > "$SHELF_ROOT/.claude/shelf.json"
+out="$(shelf "$SHELF_ROOT/src/components/ui/another.tsx")"
+test -z "$out" || { echo "FAIL: an empty shelves list must disable the hook entirely" >&2; exit 1; }
+printf '{"shelves":[{"path":"src/components/landing"}]}\n' > "$SHELF_ROOT/.claude/shelf.json"
+out="$(shelf "$SHELF_ROOT/src/components/landing/hero-new.tsx")"
+grep -q '"permissionDecision": "ask"' <<<"$out" \
+  || { echo "FAIL: an explicitly declared shelf was not honoured over auto-detection" >&2; exit 1; }
+out="$(shelf "$SHELF_ROOT/src/components/ui/another.tsx")"
+test -z "$out" || { echo "FAIL: config listed only landing, so ui must stop being a shelf" >&2; exit 1; }
+rm -rf "$SHELF_ROOT/.claude"
+
+echo "==> recommendation-anchor: a recommendation without a declared source must be blocked"
+anchor() { # $1 = last_assistant_message; $2 = stop_hook_active (optional)
+  python3 -c 'import json,sys; print(json.dumps({"last_assistant_message": sys.argv[1], "stop_hook_active": sys.argv[2] == "1"}))' \
+    "$1" "${2:-0}" | python3 "$BIN/recommendation-anchor.py"
+}
+out="$(anchor "Recomendo cortar o scope gist, e depois revês os outros.")"
+grep -q '"decision": "block"' <<<"$out" \
+  || { echo "FAIL: a bare recommendation was not blocked" >&2; echo "$out" >&2; exit 1; }
+grep -q "recommendation-anchor" <<<"$out" \
+  || { echo "FAIL: the block gave no actionable reason" >&2; exit 1; }
+out="$(anchor "I recommend cutting that scope.")"
+grep -q '"decision": "block"' <<<"$out" \
+  || { echo "FAIL: the English marker set did not fire" >&2; exit 1; }
+# Declared evidence is compliance, in either direction.
+out="$(anchor "Recomendo cortar o scope gist.
+
+Verificado: gh auth status mostra 'gist' nos scopes e gh gist list devolve 0 usos.")"
+test -z "$out" || { echo "FAIL: a recommendation declaring Verificado was blocked" >&2; echo "$out" >&2; exit 1; }
+out="$(anchor "Sugiro trocar por um PAT.
+
+Não verificado: falta confirmar se o gh aceita um PAT sem o scope minimo.")"
+test -z "$out" || { echo "FAIL: an honestly-labelled unverified recommendation was blocked" >&2; exit 1; }
+# Plain work must pass silent, and a second pass must never loop.
+out="$(anchor "Corrigi o docstring e os selftests estao verdes.")"
+test -z "$out" || { echo "FAIL: a plain answer with no recommendation was blocked" >&2; exit 1; }
+# A qualifier between the keyword and the colon is still a declaration. The
+# first regex rejected "Medido em 5 corridas:" and blocked its own author.
+out="$(anchor "Recomendo cortar.
+
+**Medido em 5 corridas:** o ask parou a escrita em todas.")"
+test -z "$out" || { echo "FAIL: a qualified declaration was rejected" >&2; exit 1; }
+out="$(anchor "Recomendo cortar o scope gist." 1)"
+test -z "$out" || { echo "FAIL: blocked twice on the same turn (stop_hook_active ignored)" >&2; exit 1; }
+
 echo "==> wiring: settings.json must be valid and reference every hook script"
 python3 -c 'import json; json.load(open("'"$SETTINGS"'"))' \
   || { echo "FAIL: home/claude/settings.json is not valid JSON" >&2; exit 1; }
-for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py; do
+for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py; do
   grep -q "$script" "$SETTINGS" || { echo "FAIL: $script not wired in settings.json" >&2; exit 1; }
   test -x "$BIN/$script" || { echo "FAIL: $BIN/$script missing or not executable" >&2; exit 1; }
+  # The mode GIT records, not the one on disk. This machine has core.fileMode
+  # false (usual on WSL2), so chmod +x never reaches the index: the file is 755
+  # locally, 644 in the commit, and CI checks out something it cannot run. The
+  # disk check above passed while CI failed, which is a gate blind to the very
+  # thing that breaks. Fix a 644 with: git update-index --chmod=+x <path>
+  mode="$(git -C "$HARNESS_DIR" ls-files -s "home/bin/$script" | cut -d" " -f1)"
+  [ "$mode" = "100755" ] || {
+    echo "FAIL: home/bin/$script is $mode in git, not 100755 — CI will check out a file it cannot execute" >&2
+    echo "      git update-index --chmod=+x home/bin/$script" >&2
+    exit 1; }
 done
 grep -q '"Write|Edit|MultiEdit|NotebookEdit"' "$SETTINGS" \
   || { echo "FAIL: containment matcher must cover Write/Edit/NotebookEdit" >&2; exit 1; }

@@ -24,8 +24,13 @@ same day by the owner's signature — ADR 19/20; item 9 on 2026-07-20 — ADR 23
   code to "simplify" — in legacy, characterization tests first.
 - **Shown evidence:** an "it works" claim carries the command output that proves it;
   without output it is a hypothesis.
-- **Anchoring law:** every claim about a repo carries a verified path or command;
-  otherwise it is labeled "hypothesis / not verified".
+- **Anchoring law:** every claim carries a verified path or command; otherwise it
+  is labeled "hypothesis / not verified". **Not scoped to repositories** — the
+  2026-08-04 failures were about a GitHub account and a permission model, where
+  the discipline was silently dropped because the claims were not "about a repo".
+  A recommendation is a claim: it names what verified its precondition, or it
+  says plainly that nothing did. If no line can be written, that is the finding;
+  a recommendation invented to give the turn a next step is the failure mode.
 - **Report before implement:** an evaluation request ("faz sentido?", "o que
   achas?", a doc or source to review) ends in a REPORT — assessment, options,
   recommendation — never a same-turn diff. Implementation starts only on the
@@ -44,7 +49,11 @@ same day by the owner's signature — ADR 19/20; item 9 on 2026-07-20 — ADR 23
   authority), so the claim-by-claim table is the friction that restores it.
 
 Honest labels: write containment outside the project root is force (PreToolUse hook,
-ADR 10/13); read-before-edit is half-force (the harness requires a prior Read);
+ADR 10/13) — but only for the file tools: Bash is uncontained, measured 2026-08-04
+(ADR 29), so this bounds the tools and not what the agent can reach; the anchoring
+law is half-force (a Stop hook reads the answer and blocks once when a
+recommendation declares no evidence — ADR 30; whether the declaration is true stays
+steer); read-before-edit is half-force (the harness requires a prior Read);
 report-before-implement is half-force (the deliberation-nudge hook injects the
 reminder mechanically and plan mode physically blocks edits; the enter-plan-mode
 link stays steer — ADR 19); AI-input-is-testimony is steer with no wirable half

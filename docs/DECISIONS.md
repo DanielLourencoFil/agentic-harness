@@ -939,3 +939,37 @@ separate link files rot unread; see ADR 3).
     scope (a PR restoring main's baseline) is confirmed only by a real CI run, not
     the selftest; a miss is safe, so the downside is bounded to a full run.
     Enforcement mix after: force 33, half-force 12, steer 34.
+40. **2026-08-06 - Pure logic stranded in a renderer gets a force ratchet,
+    modeled on the clone budget, because review does not scale.** Trigger: the
+    calendar-app has ~55 pure-looking functions inside .tsx components (heuristic,
+    one read deeply: deriveSetupItems, 125 lines, with a server rule reimplemented
+    inline), a class that `max-lines` misses when the component is small and that
+    mutation does not defend (it only mutates src/lib). The owner's reframe settled
+    it: the residual sub-300-line leak is real, and human review cannot catch it at
+    AI-produced volume, so leaning on "the review you already have" was the wrong
+    backstop. Deliberated down twice first (a /feature steer line was rejected as
+    wrong-moment and duplicative of an existing convention, ADR 8), then the owner's
+    criterion — trust the AI and the human as little as possible — pointed at the
+    one mechanism that depends on neither: a force ratchet. Adopted: a scan for
+    module-scope functions in .tsx files with no JSX, no hooks, no setState and no
+    impure globals (document/window/canvas/storage/fetch/clock/random, which drops
+    the canvas-exporter false positive the calendar-app scan admitted), counted into
+    `.strandedbudget.json` at 0, wired into `verify`. The count may only fall, the
+    exact clone-budget contract: new stranded logic raises it and fails the build,
+    moving a function to src/lib lowers it, and a genuine false positive (a large
+    schema by its form) is raised into the budget in the same commit where a
+    reviewer sees the reason. Heuristic and .tsx-only by construction: false
+    positives are baselined in the same way the clone budget baselines its noise,
+    and .vue single-file components need the <script> block extracted first and are
+    a declared follow-up. Proven before shipping: on a synthetic case it flagged the
+    real stranded function and skipped both the canvas I/O and the sub-4-line schema,
+    the ratchet failed on new stranded logic and passed when it moved to src/lib,
+    and the gate caught its own script (complexity 17 > 10) before it landed, forcing
+    a refactor. Not a gate but a report was rejected: a report depends on someone
+    reading it, which is the review dependence the owner is removing; the ratchet
+    forces without reading. A /feature planning line and a per-write hook were
+    rejected (wrong moment / fatigue). Precedent for building from one instance: the
+    clone budget was built from a single real case (2026-07-29). Declared limit,
+    the same as every heuristic gate here: it proves a function is MISPLACED by shape,
+    not that moving it is always right — a false positive is the human's to raise,
+    like a deliberate clone. Enforcement mix after: force 34, half-force 12, steer 34.

@@ -17,6 +17,12 @@ below, `pnpm install`. Framework modules (Vue/React/Nest) layer **on top** (see
   block appearing twice is a clone, and the count may only fall. Deliberate duplication stays
   allowed — raise the budget in the same commit, where a reviewer sees the reason next to the
   copy. This is the wired half of AGENTS.md's reuse-scan rule, not a warning budget.
+- **Stranded-logic budget** (`.strandedbudget.json`, ships at 0) inside `verify`: a
+  module-scope pure function written inside a `.tsx` renderer — logic that can only be
+  tested by mounting the component — is counted, and the count may only fall. Move it to
+  `src/lib` (testable without a renderer, defended by mutation) to lower it; raise the budget
+  deliberately for a genuine false positive (a schema next to its form). Heuristic and
+  `.tsx`-only; `.vue` is a follow-up. The wired half of "components render, `lib` decides".
 - **Mutation testing** (`pnpm mutants`, Stryker) — opt-in, on-demand, scoped to `src/lib`.
   It mutates the pure core and fails if any mutant survives, which is the wired half of
   "every test must fail if the logic breaks" (a rule that is prayer without a tool). NOT in
@@ -59,7 +65,8 @@ binding gates remain the verify/CI machinery above.
     "lint": "eslint .",
     "test": "vitest run",
     "clones": "node scripts/clone-budget-check.mjs",
-    "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm test",
+    "stranded": "node scripts/stranded-logic-check.mjs",
+    "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm stranded && pnpm test",
     "mutants": "stryker run",
     "mutants:ci": "stryker run --incremental",
     "prepare": "husky"

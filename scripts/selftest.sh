@@ -262,6 +262,64 @@ EOF
 pnpm mutants > mut-strong.log 2>&1 || { echo "FAIL: a strong test that kills every mutant was still rejected" >&2; cat mut-strong.log >&2; exit 1; }
 rm -f src/lib/eligible.ts src/lib/eligible.test.ts
 
+echo "==> Claim 8: the stranded-logic budget rejects pure logic in a .tsx renderer (ADR 40)"
+# The wired half of "components render, lib decides": a pure function in a .tsx
+# file is counted, and the count may only rise past the budget once. Seen
+# rejecting a real stranded function, and passing when it moves to src/lib.
+mkdir -p src/components src/lib
+cat > src/components/setup-hub.tsx <<'EOF'
+import { useState } from "react";
+
+function deriveSetupItems(hasHours: boolean, hasInfo: boolean): string[] {
+  const items: string[] = [];
+  if (!hasHours) items.push("hours");
+  if (hasInfo) items.push("info");
+  return items.filter((i) => i.length > 0);
+}
+
+export function SetupHub() {
+  const [n] = useState(0);
+  return <div>{deriveSetupItems(false, true).length + n}</div>;
+}
+EOF
+if pnpm stranded > stranded.log 2>&1; then
+  echo "FAIL: the stranded-logic budget accepted pure logic inside a .tsx (wired-but-blind)" >&2
+  cat stranded.log >&2
+  exit 1
+fi
+grep -q "Stranded-logic budget exceeded" stranded.log || { cat stranded.log >&2; exit 1; }
+grep -q "deriveSetupItems" stranded.log || { echo "FAIL: the failure did not name the stranded function" >&2; cat stranded.log >&2; exit 1; }
+# A false positive of a KNOWN impure kind must be skipped: a canvas exporter is I/O.
+cat > src/components/image-tools.tsx <<'EOF'
+export function exportCrop(canvas: HTMLCanvasElement): string {
+  const ctx = canvas.getContext("2d");
+  if (ctx) ctx.fillRect(0, 0, 1, 1);
+  return canvas.toDataURL("image/png");
+}
+EOF
+# Move the real stranded function to src/lib; the canvas one stays but is impure,
+# so the count returns to 0 and the budget passes.
+cat > src/lib/setup.ts <<'EOF'
+export function deriveSetupItems(hasHours: boolean, hasInfo: boolean): string[] {
+  const items: string[] = [];
+  if (!hasHours) items.push("hours");
+  if (hasInfo) items.push("info");
+  return items.filter((i) => i.length > 0);
+}
+EOF
+cat > src/components/setup-hub.tsx <<'EOF'
+import { useState } from "react";
+
+import { deriveSetupItems } from "@/lib/setup";
+
+export function SetupHub() {
+  const [n] = useState(0);
+  return <div>{deriveSetupItems(false, true).length + n}</div>;
+}
+EOF
+pnpm stranded > stranded-ok.log 2>&1 || { echo "FAIL: after moving to src/lib (impure canvas fn skipped), the budget still failed" >&2; cat stranded-ok.log >&2; exit 1; }
+rm -f src/components/setup-hub.tsx src/components/image-tools.tsx src/lib/setup.ts
+
 # The blocking CI job must ship, or a future edit drops the standing gate silently.
 grep -q "^  mutation:" .github/workflows/ci.yml \
   || { echo "FAIL: ci.yml ships no mutation job — the standing gate is gone (ADR 39)" >&2; exit 1; }
@@ -272,4 +330,4 @@ grep -q "stryker-incremental.json" .github/workflows/ci.yml \
 grep -q "\"mutants:ci\": \"stryker run --incremental\"" package.json \
   || { echo "FAIL: the mutants:ci script is missing or not incremental" >&2; exit 1; }
 
-echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone budget holds both directions, diff-size nudge warns not blocks, mutation kills a weak test."
+echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone + stranded budgets hold, diff-size nudge warns, mutation kills a weak test."

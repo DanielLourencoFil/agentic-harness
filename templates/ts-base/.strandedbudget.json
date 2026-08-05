@@ -1,0 +1,5 @@
+{
+  "maxStranded": 0,
+  "updatedAt": "2026-08-06",
+  "note": "Module-scope pure functions in .tsx files, counted by scripts/stranded-logic-check.mjs. This number may go down, never up. Move logic to src/lib to lower it; raise it deliberately only for a genuine false positive."
+}

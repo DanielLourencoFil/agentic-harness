@@ -5,12 +5,15 @@
     "lint": "eslint .",
     "test": "vitest run",
     "clones": "node scripts/clone-budget-check.mjs",
-    "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm test",
+    "stranded": "node scripts/stranded-logic-check.mjs",
+    "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm stranded && pnpm test",
     "mutants": "stryker run",
     "mutants:ci": "stryker run --incremental",
     "prepare": "husky"
   },
-  "lint-staged": { "*.{ts,tsx,json,md,css}": "prettier --write" },
+  "lint-staged": {
+    "*.{ts,tsx,json,md,css}": "prettier --write"
+  },
   "devDependencies": {
     "@eslint/js": "^9",
     "typescript-eslint": "^8",

@@ -6,6 +6,7 @@
     "test": "vitest run",
     "clones": "node scripts/clone-budget-check.mjs",
     "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm test",
+    "mutants": "stryker run",
     "prepare": "husky"
   },
   "lint-staged": { "*.{ts,tsx,json,md,css}": "prettier --write" },
@@ -19,6 +20,8 @@
     "prettier": "^3",
     "vitest": "^4",
     "@vitest/coverage-v8": "^4",
+    "@stryker-mutator/core": "^9",
+    "@stryker-mutator/vitest-runner": "^9",
     "husky": "^9",
     "lint-staged": "^17",
     "typescript": "^5"

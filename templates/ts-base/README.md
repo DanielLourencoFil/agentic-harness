@@ -17,6 +17,11 @@ below, `pnpm install`. Framework modules (Vue/React/Nest) layer **on top** (see
   block appearing twice is a clone, and the count may only fall. Deliberate duplication stays
   allowed — raise the budget in the same commit, where a reviewer sees the reason next to the
   copy. This is the wired half of AGENTS.md's reuse-scan rule, not a warning budget.
+- **Mutation testing** (`pnpm mutants`, Stryker) — opt-in, on-demand, scoped to `src/lib`.
+  It mutates the pure core and fails if any mutant survives, which is the wired half of
+  "every test must fail if the logic breaks" (a rule that is prayer without a tool). NOT in
+  `verify`: it reruns the suite per mutant, so it belongs on a deliberate run, not every
+  commit. Empty `src/lib` passes; widen `mutate` in `stryker.config.mjs` when a module earns it.
 - **Husky pre-commit**: deletion guard → lint-staged → `verify` (typecheck + lint + clones + test).
 - **GitHub Actions**: `verify` on **every push and every PR** (never PR-only), with
   `concurrency: cancel-in-progress`, a job timeout, dependabot skip — plus a weekly
@@ -53,6 +58,7 @@ binding gates remain the verify/CI machinery above.
     "test": "vitest run",
     "clones": "node scripts/clone-budget-check.mjs",
     "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm test",
+    "mutants": "stryker run",
     "prepare": "husky"
   },
   "lint-staged": { "*.{ts,tsx,json,md,css}": "prettier --write" },
@@ -60,6 +66,7 @@ binding gates remain the verify/CI machinery above.
     "@eslint/js": "^9", "typescript-eslint": "^8", "eslint": "^9", "globals": "^16",
     "eslint-plugin-import-x": "^4", "eslint-import-resolver-typescript": "^4",
     "prettier": "^3", "vitest": "^4", "@vitest/coverage-v8": "^4",
+    "@stryker-mutator/core": "^9", "@stryker-mutator/vitest-runner": "^9",
     "husky": "^9", "lint-staged": "^17", "typescript": "^5"
   }
 }

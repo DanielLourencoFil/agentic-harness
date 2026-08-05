@@ -871,3 +871,40 @@ separate link files rot unread; see ADR 3).
     ate its own dog food at the top of the stack — a rite built this session to
     audit tests was run, and it audited the rite, correcting a line written hours
     earlier. Enforcement mix after: force 31, half-force 12, steer 34.
+38. **2026-08-05 - Mutation testing ships in ts-base, opt-in and allowlisted, and
+    C-121 is answered YES.** Trigger: the owner asked plainly whether the harness
+    will have mutation testing, after a long deliberation that kept treating it as
+    an experiment to validate. Measured, and it settles it: the rule "every test
+    must fail if the logic breaks" lives in the constitution (CLAUDE.md:106) as
+    pure prayer — no gate forces it — and Principle 1 says a rule that can be a
+    tool is wired, that documented-but-unwired governance is the anti-pattern this
+    harness exists to kill. Mutation testing is the mechanism that reifies exactly
+    that rule, and it is force, which the ADR 25 freeze admits always, so nothing
+    blocked it but my own hedging. The precondition I kept deferring on — is the
+    problem real — was already answered: the /audit-tests first run (ADR 37) found
+    five Criticals that are missing tests over correct code, the exact class only
+    mutation closes, and this codebase's tests decayed silently for two months
+    (2026-07-27). Adopted: Stryker (9.6.1) with the vitest runner in ts-base,
+    `pnpm mutants` opt-in and on-demand, NOT in verify (it reruns the suite per
+    mutant, minutes where verify is seconds), scoped by `mutate` to `src/lib` (the
+    pure core, where a fast unit suite makes mutation cheap — measured ~2s on a
+    one-function scaffold). Break threshold 100: on the pure core a surviving
+    mutant is a real gap. `allowEmpty` so the empty scaffold and an empty src/lib
+    pass. Proven, not asserted: probed before templatizing, the weak test (never
+    pinning a boundary) leaves the `>=`->`>` mutant alive and exits non-zero, the
+    strong test kills all five and exits zero, and selftest.sh Claim 7 plants
+    exactly that weak test and requires the gate to reject it. Two frictions found
+    and fixed in the probe: Stryker's child process cannot auto-discover the runner
+    plugin under pnpm's symlinked store, so it is named explicitly in
+    `plugins`; and reports/.stryker-tmp were added to the template .gitignore.
+    Reverses my earlier "prove in calendar-app before templatizing" — that rule
+    was for /audit-tests, a novel rite; Stryker is a mature tool, and what needed
+    proving was the problem, not the tool. Deferred (Phase 3, the 27.07 autonomous
+    gate): mutation on every PR in CI, a force gate on the pure core, whose trigger
+    is a real project's cost data justifying the CI minutes; the on-demand
+    capability lands now, the standing gate waits. Rejected: global mutation
+    (STRATEGY-BRIEF, cost); putting mutation in verify (taxes every commit for a
+    scheduled check). Declared limit: mutation proves a test CAN fail on a code
+    change; it does not prove the test asserts the RIGHT behavior — a test faithful
+    to a wrong spec passes mutation and stays the human's to catch. Enforcement mix
+    after: force 32, half-force 12, steer 34.

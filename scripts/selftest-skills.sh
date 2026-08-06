@@ -335,6 +335,44 @@ if ! check_executors "$TMP/sup.md" >/dev/null; then
   echo "FAIL: a row explicitly superseded by a later one was still held to the executor contract" >&2; exit 1
 fi
 
+# Docs rot because nobody forces them to match reality. The verify script is the
+# one claim that drifts on every new gate (clones, stranded, mutation each broke
+# it), so it gets a gate: every step the template's verify actually runs must be
+# named in the docs that enumerate it. A step added and undocumented fails CI —
+# the harness's own thesis (wire what you can) applied to its own docs (ADR 41).
+check_verify_docs() { # $1 = harness dir
+  local dir="$1" ok=0 verify steps step doc line
+  verify="$(grep '"verify"' "$dir/templates/ts-base/package.snippet.json")"
+  # The step names are the words after each `pnpm`, minus `verify` itself.
+  steps="$(grep -oE 'pnpm [a-z:]+' <<<"$verify" | sed 's/pnpm //' | grep -vx verify)"
+  # Docs that ENUMERATE the verify contents in script-name form. A doc that only
+  # says "run verify" is not on this list; these three spell the steps out.
+  for doc in "PLAYBOOK.md" "templates/ts-base/README.md"; do
+    line="$(grep -iE 'verify.*(typecheck|=)' "$dir/$doc" | head -1)"
+    while IFS= read -r step; do
+      [ -n "$step" ] || continue
+      grep -qw -- "$step" <<<"$line" \
+        || { echo "  $doc names the verify steps but omits '$step' (docs rot: a gate the docs do not know verify runs)"; ok=1; }
+    done <<<"$steps"
+  done
+  return "$ok"
+}
+
+echo "==> Docs-match-reality: every verify step the template runs is named in the docs (ADR 41)"
+if ! out="$(check_verify_docs "$HARNESS_DIR")"; then
+  echo "FAIL: a verify step drifted out of the docs — the rot the harness exists to prevent" >&2
+  echo "$out" >&2; exit 1
+fi
+echo "==> Negative case: a verify step missing from a doc must be seen rejected"
+mkdir -p "$TMP/rot/templates/ts-base"
+cp "$HARNESS_DIR/templates/ts-base/package.snippet.json" "$TMP/rot/templates/ts-base/"
+# A doc that names typecheck/lint but omits a real step (stranded) must fail.
+printf '`verify` = typecheck + lint + test\n' > "$TMP/rot/PLAYBOOK.md"
+printf 'verify (typecheck + lint + test)\n' > "$TMP/rot/templates/ts-base/README.md"
+out="$(check_verify_docs "$TMP/rot" || true)"
+grep -q "omits" <<<"$out" \
+  || { echo "FAIL: a verify step missing from the docs was not caught (the check is blind)" >&2; exit 1; }
+
 echo "==> Enforcement mix (adopted claims)"
 awk -F'|' '/^\| C-/ {v=$6; sub(/^ +/,"",v);
   if (v ~ /^adopted \(force/) f++;

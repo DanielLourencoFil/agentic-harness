@@ -973,3 +973,26 @@ separate link files rot unread; see ADR 3).
     the same as every heuristic gate here: it proves a function is MISPLACED by shape,
     not that moving it is always right — a false positive is the human's to raise,
     like a deliberate clone. Enforcement mix after: force 34, half-force 12, steer 34.
+41. **2026-08-06 - Doc rot gets a gate: the docs that enumerate verify must match
+    the verify the template runs.** Trigger: the owner's standing worry, named from
+    the Kinous experience — a product that grew into a monster of outdated docs —
+    and the fact that this repo's own overview docs drifted after every feature
+    (README's "seven hooks" was 8, and clones/stranded/mutation each broke the
+    "verify = ..." list in README, PLAYBOOK and the ts-base README). Fixed all the
+    drift, then mechanized against it, because a fix that rots again is the exact
+    failure being complained about. Adopted: `check_verify_docs` in
+    selftest-skills.sh extracts the step names from the template's canonical verify
+    script (package.snippet.json) and asserts each is named in the docs that spell
+    the steps out (PLAYBOOK.md and the ts-base README). A new gate wired into verify
+    that the docs forget now fails CI, seen rejecting a planted doc that omits a
+    step. It is the harness's own thesis — wire what you can, do not trust memory —
+    turned on its own documentation. Declared limit, and it is the honest scope: it
+    checks the ONE claim that reliably drifts (the verify enumeration), not prose;
+    "the harness is externalized memory" cannot be machine-verified and stays steer.
+    The complementary move, applied not gated: brittle COUNTS were removed from the
+    overview docs ("seven hooks" became "the home/bin hooks", "four gates" became
+    "the selftest suite"), because a number in prose is drift-bait and the ledger is
+    the enumerated source that never rots by construction (append-only). Rejected:
+    checking every doc claim (most is prose, unverifiable); leaving the docs as prose
+    to fix by hand each time (the rot returns, which is the complaint). Enforcement
+    mix after: force 35, half-force 12, steer 34.

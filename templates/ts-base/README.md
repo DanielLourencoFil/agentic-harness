@@ -30,7 +30,7 @@ below, `pnpm install`. Framework modules (Vue/React/Nest) layer **on top** (see
   every push and PR (`pnpm mutants:ci`), incremental + cached so the cost tracks the diff, not
   the codebase; a cache miss falls back to a full run (correct, only slower). Empty `src/lib`
   passes instantly; widen `mutate` in `stryker.config.mjs` when a module earns it.
-- **Husky pre-commit**: deletion guard → lint-staged → `verify` (typecheck + lint + clones + test).
+- **Husky pre-commit**: deletion guard → lint-staged → `verify` (typecheck + lint + clones + stranded + test).
 - **GitHub Actions**: `verify` on **every push and every PR** (never PR-only), with
   `concurrency: cancel-in-progress`, a job timeout, dependabot skip — plus a weekly
   `pnpm audit --prod --audit-level=high` workflow.

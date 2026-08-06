@@ -81,8 +81,11 @@ flow rule is the only protection there.
 ## Backlog rite
 
 `~/Dev/BACKLOG.md` is the single source of truth for cross-project pending work (a
-SessionStart hook injects it). Any "do later" born in a session lands there before the
-session ends; agent memory only points at it. When closing an item, mark it done there.
+SessionStart hook injects it **only at the `~/Dev` desk** — project sessions stay
+isolated, so the cross-project index and its career PII never leak into a repo or a
+screen-shared interview session; ADR 45). Any "do later" born in a session lands there
+before the session ends; agent memory only points at it. When closing an item, mark it
+done there.
 
 ## Git rite (automatic — never ask)
 

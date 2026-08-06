@@ -380,9 +380,22 @@ fi
 out3="$(skill_activation)"
 [ -z "$out3" ] || { echo "FAIL: not silent when all tracked and linked" >&2; echo "$out3" >&2; exit 1; }
 
+# ---------------------------------------------------------------------------
+# backlog-inject: the cross-project BACKLOG is injected ONLY at the desk
+# (cwd == ~/Dev). In any project subfolder it stays silent, so the index and its
+# career PII never leak into a project or a screen-shared interview (ADR 45).
+echo "==> backlog-inject: injects at the ~/Dev desk, silent in a project subfolder"
+mkdir -p "$FAKEHOME/Dev/proj-x"
+printf '# BACKLOG\nSENTINEL-BACKLOG-LINE\n' > "$FAKEHOME/Dev/BACKLOG.md"
+backlog_inject() { printf '%s' "$1" | env HOME="$FAKEHOME" python3 "$BIN/backlog-inject.py"; }
+out="$(backlog_inject '{"cwd":"'"$FAKEHOME"'/Dev"}')"
+grep -q "SENTINEL-BACKLOG-LINE" <<<"$out" || { echo "FAIL: backlog not injected at the desk" >&2; echo "$out" >&2; exit 1; }
+out="$(backlog_inject '{"cwd":"'"$FAKEHOME"'/Dev/proj-x"}')"
+[ -z "$out" ] || { echo "FAIL: backlog injected in a project session (the PII leak)" >&2; echo "$out" >&2; exit 1; }
+
 python3 -c 'import json; json.load(open("'"$SETTINGS"'"))' \
   || { echo "FAIL: home/claude/settings.json is not valid JSON" >&2; exit 1; }
-for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py evidence-gate.py skill-activation.py; do
+for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py evidence-gate.py skill-activation.py backlog-inject.py; do
   grep -q "$script" "$SETTINGS" || { echo "FAIL: $script not wired in settings.json" >&2; exit 1; }
   test -x "$BIN/$script" || { echo "FAIL: $BIN/$script missing or not executable" >&2; exit 1; }
   # The mode GIT records, not the one on disk. This machine has core.fileMode

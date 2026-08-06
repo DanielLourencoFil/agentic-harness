@@ -22,8 +22,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "{ echo \"== BACKLOG (~/Dev/BACKLOG.md): fonte de verdade das pendencias cross-project. Consulte antes de propor rumo; todo novo 'depois' entra la antes da sessao acabar. ==\"; cat \"$HOME/Dev/BACKLOG.md\"; } 2>/dev/null || true",
-            "timeout": 10
+            "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/backlog-inject.py\"",
+            "timeout": 10,
+            "statusMessage": "backlog: injecting only at the ~/Dev desk"
           },
           {
             "type": "command",

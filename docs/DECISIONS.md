@@ -1058,3 +1058,19 @@ separate link files rot unread; see ADR 3).
     (BACKLOG candidate): widen check_verify_docs across every
     templates/*/package.snippet.json, so cross-template drift - the blind spot that let
     react-starter lack a gate ts-base had - stops being invisible to the anti-drift gate.
+45. **2026-08-06 - The BACKLOG SessionStart injection is gated to the ~/Dev desk;
+    project sessions stay isolated.** Trigger: the owner opened a coding-rehearsal
+    session and a career dossier (a named CTO of an unrelated company) had bled into it
+    - the SessionStart hook cat-ed the ENTIRE cross-project BACKLOG into every session
+    unconditionally, contradicting the constitution's own "one project, one session, one
+    cwd" rule and forming a real PII leak on a screen-shared interview (the contamination
+    was demonstrated live: the rehearsal agent reasoned from the injected ECENT dossier).
+    Adopted: home/bin/backlog-inject.py reads the SessionStart cwd and injects the BACKLOG
+    only when cwd == ~/Dev (the desk, where cross-project context is the whole point); in
+    any project subfolder it stays silent. The file remains the durable cross-project
+    index; only its delivery is gated, which resolves the isolation-vs-rite contradiction
+    the owner found. Seen in selftest-home injecting at the desk and staying silent in a
+    project subfolder. Honest limit: machine-local like every home/ hook, tested against
+    planted cwds, never the real ~/.claude. Rejected: deleting the BACKLOG (over-correction
+    - throws away the index to fix the delivery); leaving it unconditional (the leak caught
+    live). Enforcement mix after: force 38, half-force 12, steer 34.

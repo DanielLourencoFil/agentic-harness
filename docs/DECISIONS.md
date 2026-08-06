@@ -1117,3 +1117,27 @@ separate link files rot unread; see ADR 3).
     merge stays the human's act. Closes the doc/mechanism contradiction ADR 47 flagged, now
     that the owner chose "update" over "leave as override" - the same fix-the-doc-to-match
     discipline as ADR 45, applied to the constitution itself.
+49. **2026-08-06 - Project entry split into three skills: a neutral /start routes the
+    greenfield/brownfield fork; /greenfield (renamed from /kickoff) and /brownfield are
+    the two branches.** Trigger: the fork that inverts the whole harness posture was
+    UNROUTED. /kickoff assumed greenfield (its description said "brand-new project"),
+    BROWNFIELD lived only as prose in the PLAYBOOK (366-405) with no skill, so the
+    classification was made implicitly by which path the human happened to invoke - and a
+    greenfield gate on legacy demands retroactive perfection while a brownfield ratchet on
+    a fresh repo grandfathers debt, so choosing wrong poisons every downstream gate.
+    Adopted: /start asks the human green-or-brown before any scaffold/install/edit and
+    routes to /greenfield or /brownfield; /kickoff renamed to /greenfield (content intact,
+    plus a one-line guard redirecting to /brownfield if code exists); /brownfield wraps the
+    PLAYBOOK BROWNFIELD checklist. The classification is a human decision, never detected
+    mechanically - a just-copied template already has files, so a file count misreads a
+    fresh scaffold as legacy (the "100% of the decision human" rule, and the git ls-files
+    idea died on this confound). Rejected: two peer skills (the human self-routes by
+    picking one = the implicit classification we were removing); /kickoff-as-router (an
+    overloaded name); mechanical detection (a decision, not a datum). Enforcement: /start
+    is steer - it forces the question only if invoked, so a SessionStart/PreToolUse
+    hard-force hook stays a deferred option (a once-per-project event did not earn it).
+    This overrides ADR 18's "extract on first real use" defer, whose trigger is now met: a
+    brownfield rehearsal is imminent and Kinous was already one. Only live references were
+    updated (README, PLAYBOOK, plan skill); the append-only history (CLAIMS/DECISIONS/
+    briefs) naming /kickoff is left as dated snapshots. Enforcement mix after: force 39,
+    half-force 12, steer 35 (the C-154 steer row; the rename moved no row).

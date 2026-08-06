@@ -6,6 +6,13 @@ project's stack and surfaces. Propose the resulting subset to the human with a o
 justification per item ("load-bearing because X" / "skipped because Y"). It is correct to skip
 layers — applying everything everywhere is the failure mode this file exists to prevent.
 
+**Entry point: `/start`.** It asks the one question that precedes all the layers -
+greenfield (an empty repo, from an idea) or brownfield (an existing codebase) - and
+routes to `/greenfield` (spec interview + the KICKOFF CHECKLIST below) or `/brownfield`
+(the BROWNFIELD section below). The fork is the human's call, made before any scaffold
+or edit; the two paths invert each other's gate posture, so choosing wrong poisons
+everything downstream.
+
 ```
 Layer 0  UNIVERSAL        → always, every project
 Layer 1  LANGUAGE         → TypeScript
@@ -301,7 +308,7 @@ invariants only; procedures go to skills (on-demand).
 ## SPEC INTERVIEW — from idea to plan (before the kickoff checklist)
 
 The kickoff checklist assumes a project plan exists. When there is only an idea, run
-the spec interview first (packaged as the `/kickoff` skill in this repo's
+the spec interview first (packaged as the `/greenfield` skill, reached via `/start`, in this repo's
 `.claude/skills/`). Ask, one question at a time: problem / whose problem / how they
 solve it today · scope IN and explicitly OUT for v1 · riskiest assumption + the
 cheapest way to kill it (pre-registered kill criteria, dated) · the real-world success
@@ -505,7 +512,7 @@ it ends wired + selftested (ADR 12); the CLAIMS ledger records the verdict eithe
   with no sandbox flag set. The hole is the whole filesystem plus the network, not an
   edge case. Layer A's write-containment invariant therefore holds for the file tools
   and for nothing else.
-- Provenance stamp ✅ (ADR 9, 2026-07-17) — `/kickoff` step 3 emits
+- Provenance stamp ✅ (ADR 9, 2026-07-17) — `/greenfield` step 3 emits
   `source: agentic-harness@<sha>` into each copied skill. Honest label: steer (an
   instruction executed on invocation, no mechanical check yet). The drift report in
   `selftest.sh` — the force half — stays deferred while the catalog has a single

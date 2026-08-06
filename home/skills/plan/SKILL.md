@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Planning-session rite for a body of work — the layer between /kickoff (project birth) and /feature (one feature). Use when breaking a chunk of work into an ordered, sliced, justified plan ("como implementar isto", "plano de implementação", "quebrar isto em tarefas", "por onde começo"). Produces a one-sentence objective, an anchored inventory, vertical slices sized to one session, a live decided/rejected/open log, and a stop with decisions. Not a single decision (/decide) nor a single feature (/feature).
+description: Planning-session rite for a body of work — the layer between /greenfield (project birth) and /feature (one feature). Use when breaking a chunk of work into an ordered, sliced, justified plan ("como implementar isto", "plano de implementação", "quebrar isto em tarefas", "por onde começo"). Produces a one-sentence objective, an anchored inventory, vertical slices sized to one session, a live decided/rejected/open log, and a stop with decisions. Not a single decision (/decide) nor a single feature (/feature).
 ---
 
 # /plan <the body of work>

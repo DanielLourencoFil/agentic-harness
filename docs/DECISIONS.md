@@ -1095,3 +1095,18 @@ separate link files rot unread; see ADR 3).
     ruleset the kickoff applies at repo creation. Rejected: tightening the string blocklist
     (leaky by construction); flipping every push to ask (kills the rite's work-branch
     convenience). Enforcement mix after: force 39, half-force 12, steer 34.
+47. **2026-08-06 - ts-base flips git push from allow to ask, and drops the leaky
+    main-push string denies (now the machine push-guard's job).** Trigger: with the
+    push-guard (ADR 46) walling the default branch robustly, the ts-base settings'
+    `allow: git push:*` (which overrode the machine's `ask` and let a rehearsal agent
+    push a work branch silently) plus its `git push origin main` denies were both
+    redundant and misleading - a string blocklist implies main is protected by strings
+    when the guard is what protects it. Adopted: remove `git push:*` from the ts-base
+    allow, so push ASKS by default (the owner's chosen posture over silent auto-push - a
+    bad look on a shared screen, unsafe on an unprotected foreign repo), and remove the
+    two `git push origin main` / `HEAD:main` denies (redundant with the guard's target
+    resolution). Kept as hard denies: force-push, --no-verify, -n, merge. Honest tension:
+    this contradicts the constitution's git rite ("push work branches without asking");
+    the doc update is FLAGGED for the owner rather than silently rewritten, since the rite
+    is load-bearing. Rejected: keeping the leaky string denies (false confidence). No mix
+    change - project-layer permission config, not a ledger claim.

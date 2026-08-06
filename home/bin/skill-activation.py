@@ -44,7 +44,15 @@ def tracked_skills(root: Path) -> "set[str]":
     names = set()
     for path in out.split("\0"):
         parts = path.split("/")
-        if len(parts) >= 4 and parts[0] == "home" and parts[1] == "skills":
+        # Only the tracked SKILL.md itself vets the dir: a tracked sibling
+        # (README, asset) is not "committed means it passed the commit gate"
+        # (ADR 43/44). Exactly 4 parts: home/skills/<name>/SKILL.md.
+        if (
+            len(parts) == 4
+            and parts[0] == "home"
+            and parts[1] == "skills"
+            and parts[3] == "SKILL.md"
+        ):
             names.add(parts[2])
     return names
 

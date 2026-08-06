@@ -1036,3 +1036,25 @@ separate link files rot unread; see ADR 3).
     detect-and-warn only (leaves the legitimate born-dead case to the human when
     git-tracked already proves it safe to auto-fix). Enforcement mix after: force 37,
     half-force 12, steer 34.
+44. **2026-08-06 - Ultrareview remediation: four real findings fixed, each with its
+    planted test.** Trigger: an accidental /ultrareview (free 1 of 3) on the
+    feat/skill-activation -> main diff (the three stacked branches of the day) returned
+    four findings; all four reproduced - 0 confabulated, the calibration datum for
+    trusting the tool. Reproduced then fixed: (1) [normal] stranded-logic readBody ran
+    a brace-free arrow one-liner on to the next block, swallowing siblings and flagging
+    trivial helpers - fixed by breaking at the statement `;` at depth 0 before any
+    block opens, with an arrow regression in selftest.sh Claim 8 (verified: the four
+    arrows now count 0, a real braced stranded fn still counts 1). (2) [normal] the
+    stranded gate, built for .tsx, was never wired into react-starter, the .tsx
+    template - added the script + verify step + copied the gate and budget in the
+    consumption, with a planted .tsx rejection in selftest-react Claim 5. (3) [nit]
+    skill-activation marked a dir vetted when ANY sibling file was tracked, not the
+    SKILL.md itself - tightened to require the tracked SKILL.md, with the sidecar
+    negative case added to selftest-home (the missing direction of the C-127 "seen
+    rejecting" doctrine, on my own hook). (4) [nit] a check_verify_docs comment said
+    "three" for a two-doc loop - one word, ironically in the anti-drift gate itself.
+    No new claim degree - these harden existing gates (C-145 stranded, C-147 react,
+    C-151 skill-activation); the mix stays force 37, half-force 12, steer 34. Deferred
+    (BACKLOG candidate): widen check_verify_docs across every
+    templates/*/package.snippet.json, so cross-template drift - the blind spot that let
+    react-starter lack a gate ts-base had - stops being invisible to the anti-drift gate.

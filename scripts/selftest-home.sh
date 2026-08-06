@@ -334,14 +334,19 @@ echo "==> wiring: settings.json must be valid and reference every hook script"
 echo "==> skill-activation: tracked skill auto-links; untracked only warns; idempotent"
 SA_REPO="$TMP/sa-repo"; SA_HOME="$TMP/sa-home"
 mkdir -p "$SA_REPO/home/skills/tracked-rite" "$SA_REPO/home/skills/foreign-drop" \
-  "$SA_HOME/.claude/skills"
+  "$SA_REPO/home/skills/sidecar-draft" "$SA_HOME/.claude/skills"
 : > "$SA_REPO/home/skills/tracked-rite/SKILL.md"
 : > "$SA_REPO/home/skills/foreign-drop/SKILL.md"
+# sidecar-draft: a sibling file is committed but SKILL.md itself is NOT - it must
+# read as untracked (the ADR 43 invariant is that SKILL.md passed the commit gate).
+: > "$SA_REPO/home/skills/sidecar-draft/README.md"
+: > "$SA_REPO/home/skills/sidecar-draft/SKILL.md"
 git -C "$SA_REPO" init -q
 git -C "$SA_REPO" config user.email selftest@local
 git -C "$SA_REPO" config user.name selftest
 git -C "$SA_REPO" config commit.gpgsign false
 git -C "$SA_REPO" add home/skills/tracked-rite/SKILL.md   # foreign-drop stays untracked
+git -C "$SA_REPO" add home/skills/sidecar-draft/README.md # its SKILL.md stays untracked
 git -C "$SA_REPO" commit -q -m seed
 skill_activation() {
   env HOME="$SA_HOME" AGENTIC_HARNESS_DIR="$SA_REPO" python3 "$BIN/skill-activation.py"
@@ -356,11 +361,19 @@ grep -q "foreign-drop" <<<"$out" || { echo "FAIL: untracked drop not warned" >&2
 if [ -e "$SA_HOME/.claude/skills/foreign-drop" ]; then
   echo "FAIL: untracked drop was auto-activated (the foreign-skill risk)" >&2; exit 1
 fi
-# Vet the drop (commit it): the next run must AUTO-LINK it, since tracked = vetted.
-git -C "$SA_REPO" add home/skills/foreign-drop/SKILL.md
-git -C "$SA_REPO" commit -q -m "vet the drop"
+# Sidecar-tracked case (ultrareview finding, ADR 44): SKILL.md itself is
+# uncommitted, so the dir must read as untracked - warned, never linked, even
+# though a sibling (README) IS tracked. Otherwise "tracked = vetted" is a lie.
+grep -q "sidecar-draft" <<<"$out" || { echo "FAIL: sidecar-tracked dir (SKILL.md uncommitted) not warned" >&2; exit 1; }
+if [ -e "$SA_HOME/.claude/skills/sidecar-draft" ]; then
+  echo "FAIL: a dir with only a sibling tracked was auto-activated - tracked=vetted broke" >&2; exit 1
+fi
+# Vet properly (commit the SKILL.md itself): only then must each AUTO-LINK. The
+# sidecar's tracked README was never enough.
+git -C "$SA_REPO" add home/skills/foreign-drop/SKILL.md home/skills/sidecar-draft/SKILL.md
+git -C "$SA_REPO" commit -q -m "vet the drop and the sidecar"
 skill_activation >/dev/null
-if [ ! -L "$SA_HOME/.claude/skills/foreign-drop" ]; then
+if [ ! -L "$SA_HOME/.claude/skills/foreign-drop" ] || [ ! -L "$SA_HOME/.claude/skills/sidecar-draft" ]; then
   echo "FAIL: a now-tracked skill was not activated on the next run" >&2; exit 1
 fi
 # Idempotent: everything tracked and linked -> silent.

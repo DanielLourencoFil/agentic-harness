@@ -5,7 +5,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "clones": "node scripts/clone-budget-check.mjs",
-    "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm test",
+    "stranded": "node scripts/stranded-logic-check.mjs",
+    "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm stranded && pnpm test",
     "prepare": "husky"
   },
   "lint-staged": {

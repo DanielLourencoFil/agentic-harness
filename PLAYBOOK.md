@@ -23,7 +23,7 @@ tool/test/hook, wire it; only what cannot be reified goes into CLAUDE.md as conv
 ## Layer 0 — UNIVERSAL (every project, no exceptions)
 
 **Enforced (wire these, they must physically block):**
-- `verify` = typecheck + lint + clones + test — on **pre-commit** (Husky) and re-run in **CI**
+- `verify` = typecheck + lint + clones + stranded + test — on **pre-commit** (Husky) and re-run in **CI**
   (local hooks can be bypassed; CI cannot). Green verify on empty scaffold before feature code.
 - **Zero-warning lint.** No warning budgets (that's legacy-debt management, not a fresh project).
 - **Deletion guard** on pre-commit (>80 deleted lines blocked unless `ALLOW_BIG_DELETE=1`).
@@ -31,6 +31,13 @@ tool/test/hook, wire it; only what cannot be reified goes into CLAUDE.md as conv
   is a clone and the count may only fall. This is the wired half of the reuse-scan convention
   below — not a warning budget: nothing is grandfathered in a fresh scaffold, and deliberate
   duplication is raised in the same commit where a reviewer sees the reason (ADR 27).
+- **Stranded-logic budget** in `verify` (ships at 0): a module-scope pure function written
+  inside a `.tsx` renderer is counted, and the count may only fall — the wired half of
+  "components render, `lib` decides". Move it to `src/lib` to lower it; raise the budget for a
+  genuine false positive. `.tsx`-only; `.vue` is a follow-up (ADR 40).
+- **Mutation testing** on the pure core (`src/lib`): `pnpm mutants` (Stryker), opt-in and
+  on-demand, plus a blocking CI job (incremental + cached, cost tracks the diff). The wired
+  half of "every test must fail if the logic breaks"; a surviving mutant fails the build (ADR 38/39).
 - Formatting via Prettier + lint-staged (mechanical, never discussed).
 
 **Convention (CLAUDE.md of the project):**

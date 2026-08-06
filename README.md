@@ -39,9 +39,12 @@ The harness is consumed in exactly three ways — which one applies is decided b
    propagates silent behavior changes to every consumer; see ADR 9).
 2. **My machine → bootstrap, once.** `home/bootstrap.sh` *symlinks* the machine
    layer into `~/.claude`: the constitution (incl. the portable layer-A rules) and
-   seven hooks in four families — write containment, secret hygiene, conversation
-   rituals, and gates that fire at a specific moment (a PR being opened, a
-   recommendation made without evidence, a new file landing on a shared shelf).
+   the `home/bin/` hooks in four families — write containment, secret hygiene,
+   conversation rituals, and gates that fire at a specific moment (a PR being
+   opened, a completion claim with nothing run, a recommendation made without
+   evidence, a new file landing on a shared shelf). The count is not stated on
+   purpose: a number in prose is drift-bait, and the ledger (`docs/CLAIMS.md`) is
+   the enumerated source.
    These must hold in sessions that have no project at all, so they cannot live in
    stamps. Honest limit: they bind the file tools and the permission layer; Bash
    itself is uncontained, measured 2026-08-04 (ADR 29).
@@ -72,12 +75,15 @@ Starting a new project is one instruction to the agent:
 
 The playbook is written **for the AI, not for humans** — layered and imperative:
 
-- **Layer 0 — Universal:** every commit passes typecheck + lint + copy-paste budget
-  + test (pre-commit *and* CI); zero warnings; deletion guard; decisions logged as
-  dated one-line ADRs. The budget counts duplicated blocks and may only fall, which
-  is the wired half of "check whether it already exists before writing it again".
+- **Layer 0 — Universal:** every commit passes `verify` (typecheck + lint + copy-paste
+  budget + stranded-logic budget + test), pre-commit *and* CI; zero warnings; deletion
+  guard; decisions logged as dated one-line ADRs. Two budgets count a result and may only
+  fall: duplicated blocks (the wired half of "check before you write it again"), and pure
+  functions stranded in a renderer (the wired half of "components render, `lib` decides").
 - **Layer 1 — Language (TypeScript):** the `ts-base` template — strict tsconfig,
-  `no-explicit-any` / `no-floating-promises` / complexity caps as errors.
+  `no-explicit-any` / `no-floating-promises` / complexity caps as errors, plus mutation
+  testing on the pure core (`pnpm mutants`, opt-in and as a blocking CI gate) — the wired
+  half of "every test must fail if the logic breaks".
 - **Layer 2 — Framework (Vue / React / Nest):** the enforceable rule subset per
   framework, plus the conventions linters can't catch (e.g. *derived state is
   `computed`, never a watcher* — the anti-pattern AIs inherit from their training data).

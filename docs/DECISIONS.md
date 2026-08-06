@@ -996,3 +996,23 @@ separate link files rot unread; see ADR 3).
     checking every doc claim (most is prose, unverifiable); leaving the docs as prose
     to fix by hand each time (the rot returns, which is the complaint). Enforcement
     mix after: force 35, half-force 12, steer 34.
+42. **2026-08-06 - Absorbed two imported catalog skills; one force gap closed, the
+    rest already-have or frozen.** Trigger: the owner dropped `api-and-interface-design`
+    and `frontend-ui-engineering` into `home/skills/` for reflection and asked whether
+    analyzing skills this way improves the harness. Ran `/absorb` on both (testimony,
+    ADR 23). The one force gap: the React path forced no accessibility linter while the
+    Vue path forces `eslint-plugin-vuejs-accessibility`. Adopted (force): `eslint-plugin-jsx-a11y`
+    in react-starter — its recommended set plus `alt-text` pinned to error (the harness
+    has no warning level), seen rejecting an image with no alt in `selftest-react.sh`
+    (the "seen rejecting" doctrine, C-127). Deferred to the post-lab queue under the ADR 25
+    freeze: Hyrum's Law (C-149, pure judgment) and AI-aesthetic avoidance (C-148, the
+    highest-value un-forceable kernel; its forceable slice — ban raw hex / arbitrary
+    pixels — is a separate force candidate). Everything else was already-have (Layer 3
+    surface packs, forced eslint rules, C-117) or rejected (tutorial technique, ADR-14
+    self-answered checklists). The lot yielded 1 non-forced-frozen adoption, below the
+    sweep's own 2-adoption floor, so catalog absorption ends as a routine: the honest
+    finding is that generic best-practice skills are low-yield because they are mostly
+    what a mature harness already forces plus un-forceable judgment the freeze holds;
+    forceable gaps come from tooling insight and real pain, not best-practice prose.
+    The two source skills stay quarry, not vendored (WATCH stance). Enforcement mix
+    after: force 36, half-force 12, steer 34.

@@ -4,8 +4,9 @@
 #   1. `pnpm verify` is green on the stripped scaffold;
 #   2. commit #1 passes the pre-commit hook;
 #   3. the gate REJECTS violations: any, ==, non-exhaustive switch, import cycle,
-#      max-depth, a hook called conditionally, a lying dependency array, a
-#      duplicated block (copy-paste budget), and React inside the pure core.
+#      max-depth, a hook called conditionally, a lying dependency array, an image
+#      with no alt text, a duplicated block (copy-paste budget), and React inside
+#      the pure core.
 # Also a canary: create-vite is fetched fresh, so upstream drift breaks THIS job
 # before it breaks a real kickoff.
 set -euo pipefail
@@ -142,6 +143,13 @@ export function Bad({ flag, id }: { flag: boolean; id: string }) {
   return <p>{name}</p>;
 }
 EOF
+# An image with no alt text: the most canonical accessibility failure, and the
+# parity check with the Vue path, which forces eslint-plugin-vuejs-accessibility.
+cat > src/A11y.tsx <<'EOF'
+export function A11y() {
+  return <img src="logo.png" />;
+}
+EOF
 if pnpm lint > lint.log 2>&1; then
   echo "FAIL: lint accepted violating code" >&2
   cat lint.log >&2
@@ -149,7 +157,7 @@ if pnpm lint > lint.log 2>&1; then
 fi
 for rule in "no-explicit-any" "eqeqeq" "switch-exhaustiveness-check" "import-x/no-cycle" \
             "max-depth" "react-hooks/rules-of-hooks" "react-hooks/exhaustive-deps" \
-            "no-restricted-imports"; do
+            "jsx-a11y/alt-text" "no-restricted-imports"; do
   grep -q "$rule" lint.log || {
     echo "FAIL: rule '$rule' did not fire on a deliberate violation (wired-but-blind)" >&2
     cat lint.log >&2
@@ -158,7 +166,7 @@ for rule in "no-explicit-any" "eqeqeq" "switch-exhaustiveness-check" "import-x/n
 done
 
 echo "==> Claim 4: the copy-paste budget must reject a pasted block"
-rm -f src/Bad.tsx src/lib/bad.ts src/lib/cycle-a.ts src/lib/cycle-b.ts src/lib/impure.ts
+rm -f src/Bad.tsx src/A11y.tsx src/lib/bad.ts src/lib/cycle-a.ts src/lib/cycle-b.ts src/lib/impure.ts
 for name in first second; do
   cat > "src/lib/clone-$name.ts" <<'EOF'
 export function summarize(rows: readonly number[]): string {
@@ -179,4 +187,4 @@ if pnpm clones > clones.log 2>&1; then
 fi
 grep -q "Copy-paste budget exceeded" clones.log || { cat clones.log >&2; exit 1; }
 
-echo "SELFTEST-REACT OK — stripped scaffold verifies green, hook fires, gate rejects all eight."
+echo "SELFTEST-REACT OK — stripped scaffold verifies green, hook fires, gate rejects all nine."

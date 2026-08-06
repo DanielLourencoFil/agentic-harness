@@ -127,8 +127,10 @@ do not rebuild (its README is the consumption recipe; `scripts/selftest-vue.sh` 
 Packaged as `templates/react-starter` (overlay on `create-vite react-ts`), consumed end
 to end by `scripts/selftest-react.sh` in CI.
 **Enforce:** `eslint-plugin-react-hooks` (`rules-of-hooks`, `exhaustive-deps` as **errors** —
-the plugin ships the second as a warning) · pure-core import ban (`src/lib/**` may not
-import `react`) · the whole ts-base validity set.
+the plugin ships the second as a warning) · `eslint-plugin-jsx-a11y` (accessibility parity
+with the Vue path — its recommended set, plus `alt-text` pinned to error since the harness
+has no warning level) · pure-core import ban (`src/lib/**` may not import `react`) · the
+whole ts-base validity set.
 **Convention:** derived state computed during render — **no `useEffect` for deriving state**
 ("You Might Not Need an Effect"); effects = external sync only, each carrying a one-line
 comment naming the system it syncs with; event logic in handlers; server state in a query

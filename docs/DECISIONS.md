@@ -1016,3 +1016,23 @@ separate link files rot unread; see ADR 3).
     forceable gaps come from tooling insight and real pain, not best-practice prose.
     The two source skills stay quarry, not vendored (WATCH stance). Enforcement mix
     after: force 36, half-force 12, steer 34.
+43. **2026-08-06 - A SessionStart hook activates git-tracked skills and warns on
+    untracked drops, so a committed skill can no longer be born dead.** Trigger: the
+    /plan rite sat tracked-but-unlinked for 17 days (2026-07-20 to 2026-08-06),
+    invisible to every gate because activation depended on re-running bootstrap.sh by
+    hand and CI cannot see the user's live ~/.claude symlinks. Adopted:
+    home/bin/skill-activation.py runs the link step for git-tracked skills only (force
+    - committed means vetted by the commit gate, so auto-linking is safe) and warns on
+    untracked home/skills dirs (half-force - a foreign drop is vetted+committed or
+    deleted, never auto-activated, which keeps the boundary the /absorb quarry deletion
+    set: present in home/skills is not should-be-active). Idempotent; never clobbers a
+    real dir squatting a link slot (anti-destruction). Seen in selftest-home linking a
+    tracked skill, warning + refusing an untracked one, activating it once vetted, and
+    going silent when all are linked. Honest limit: like every home/ hook it is
+    machine-local, so its live behaviour is only ever exercised against planted inputs,
+    never the real ~/.claude, and CI still cannot observe the actual activation state.
+    Rejected: convention/re-run-bootstrap (memory, the failure being fixed); auto-link
+    everything (re-opens the foreign activation risk closed in the quarry deletion);
+    detect-and-warn only (leaves the legitimate born-dead case to the human when
+    git-tracked already proves it safe to auto-fix). Enforcement mix after: force 37,
+    half-force 12, steer 34.

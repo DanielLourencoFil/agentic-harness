@@ -24,6 +24,12 @@
             "type": "command",
             "command": "{ echo \"== BACKLOG (~/Dev/BACKLOG.md): fonte de verdade das pendencias cross-project. Consulte antes de propor rumo; todo novo 'depois' entra la antes da sessao acabar. ==\"; cat \"$HOME/Dev/BACKLOG.md\"; } 2>/dev/null || true",
             "timeout": 10
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/Dev/agentic-harness/home/bin/skill-activation.py\"",
+            "timeout": 10,
+            "statusMessage": "skill-activation: linking tracked skills"
           }
         ]
       }

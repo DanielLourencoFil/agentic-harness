@@ -326,9 +326,50 @@ out="$(evidence "Está feito, funciona." "$FAKE_T" 1)"
 test -z "$out" || { echo "FAIL: blocked twice on the same turn (stop_hook_active ignored)" >&2; exit 1; }
 
 echo "==> wiring: settings.json must be valid and reference every hook script"
+# ---------------------------------------------------------------------------
+# skill-activation: a git-tracked skill missing its ~/.claude link is auto-linked
+# (force); an untracked dir in home/skills is warned, never auto-activated
+# (half-force). CI cannot see a real ~/.claude, so this planted repo is the only
+# place the behaviour is exercised (ADR 43).
+echo "==> skill-activation: tracked skill auto-links; untracked only warns; idempotent"
+SA_REPO="$TMP/sa-repo"; SA_HOME="$TMP/sa-home"
+mkdir -p "$SA_REPO/home/skills/tracked-rite" "$SA_REPO/home/skills/foreign-drop" \
+  "$SA_HOME/.claude/skills"
+: > "$SA_REPO/home/skills/tracked-rite/SKILL.md"
+: > "$SA_REPO/home/skills/foreign-drop/SKILL.md"
+git -C "$SA_REPO" init -q
+git -C "$SA_REPO" config user.email selftest@local
+git -C "$SA_REPO" config user.name selftest
+git -C "$SA_REPO" config commit.gpgsign false
+git -C "$SA_REPO" add home/skills/tracked-rite/SKILL.md   # foreign-drop stays untracked
+git -C "$SA_REPO" commit -q -m seed
+skill_activation() {
+  env HOME="$SA_HOME" AGENTIC_HARNESS_DIR="$SA_REPO" python3 "$BIN/skill-activation.py"
+}
+out="$(skill_activation)"
+link="$SA_HOME/.claude/skills/tracked-rite"
+if ! { [ -L "$link" ] && [ "$(readlink -f "$link")" = "$(readlink -f "$SA_REPO/home/skills/tracked-rite")" ]; }; then
+  echo "FAIL: tracked skill was not auto-linked" >&2; echo "$out" >&2; exit 1
+fi
+grep -q "tracked-rite" <<<"$out" || { echo "FAIL: activation not reported" >&2; exit 1; }
+grep -q "foreign-drop" <<<"$out" || { echo "FAIL: untracked drop not warned" >&2; exit 1; }
+if [ -e "$SA_HOME/.claude/skills/foreign-drop" ]; then
+  echo "FAIL: untracked drop was auto-activated (the foreign-skill risk)" >&2; exit 1
+fi
+# Vet the drop (commit it): the next run must AUTO-LINK it, since tracked = vetted.
+git -C "$SA_REPO" add home/skills/foreign-drop/SKILL.md
+git -C "$SA_REPO" commit -q -m "vet the drop"
+skill_activation >/dev/null
+if [ ! -L "$SA_HOME/.claude/skills/foreign-drop" ]; then
+  echo "FAIL: a now-tracked skill was not activated on the next run" >&2; exit 1
+fi
+# Idempotent: everything tracked and linked -> silent.
+out3="$(skill_activation)"
+[ -z "$out3" ] || { echo "FAIL: not silent when all tracked and linked" >&2; echo "$out3" >&2; exit 1; }
+
 python3 -c 'import json; json.load(open("'"$SETTINGS"'"))' \
   || { echo "FAIL: home/claude/settings.json is not valid JSON" >&2; exit 1; }
-for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py evidence-gate.py; do
+for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py evidence-gate.py skill-activation.py; do
   grep -q "$script" "$SETTINGS" || { echo "FAIL: $script not wired in settings.json" >&2; exit 1; }
   test -x "$BIN/$script" || { echo "FAIL: $BIN/$script missing or not executable" >&2; exit 1; }
   # The mode GIT records, not the one on disk. This machine has core.fileMode

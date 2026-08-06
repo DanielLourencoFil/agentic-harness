@@ -1,6 +1,7 @@
 import js from "@eslint/js";
 import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
 import importX from "eslint-plugin-import-x";
+import jsxA11y from "eslint-plugin-jsx-a11y";
 import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -48,6 +49,22 @@ export default tseslint.config(
     rules: {
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "error",
+    },
+  },
+
+  {
+    // Layer 2 (React) accessibility: parity with the Vue path, which forces
+    // eslint-plugin-vuejs-accessibility. AI-written UI drops alt text, labels and
+    // keyboard handlers by default — legal requirements the linter catches the
+    // mechanical half of. jsx-a11y ships several rules as warnings and the harness
+    // has no warning level, so `alt-text` (the negative-tested rule) is pinned to
+    // error; the rest of the recommended set rides along.
+    name: "harness/react-a11y",
+    files: ["**/*.{jsx,tsx}"],
+    plugins: { "jsx-a11y": jsxA11y },
+    rules: {
+      ...jsxA11y.configs.recommended.rules,
+      "jsx-a11y/alt-text": "error",
     },
   },
 

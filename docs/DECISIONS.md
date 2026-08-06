@@ -1110,3 +1110,10 @@ separate link files rot unread; see ADR 3).
     the doc update is FLAGGED for the owner rather than silently rewritten, since the rite
     is load-bearing. Rejected: keeping the leaky string denies (false confidence). No mix
     change - project-layer permission config, not a ledger claim.
+48. **2026-08-06 - Git rite doc aligned to the ask-on-push posture (owner-approved
+    follow-up to ADR 46/47).** The constitution's git rite no longer claims "push work
+    branches without asking": push now ASKS (ADR 47) and the machine push-guard DENIES any
+    push reaching the default branch (ADR 46). Commit stays automatic (verify-gated); the
+    merge stays the human's act. Closes the doc/mechanism contradiction ADR 47 flagged, now
+    that the owner chose "update" over "leave as override" - the same fix-the-doc-to-match
+    discipline as ADR 45, applied to the constitution itself.

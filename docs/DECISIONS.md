@@ -1074,3 +1074,24 @@ separate link files rot unread; see ADR 3).
     planted cwds, never the real ~/.claude. Rejected: deleting the BACKLOG (over-correction
     - throws away the index to fix the delivery); leaving it unconditional (the leak caught
     live). Enforcement mix after: force 38, half-force 12, steer 34.
+46. **2026-08-06 - A machine-layer push-guard denies any git push that reaches the
+    default branch, by resolving the target instead of matching strings.** Trigger: a
+    rehearsal agent pushed a work branch without asking (the git rite, intended), but
+    the owner saw that the ts-base blocklist protecting main is leaky - it allows
+    `git push:*` and denies only `git push origin main` / `HEAD:main`, so a bare
+    `git push` on main, `git push -u origin main`, `git push origin +main`, and
+    `git push origin HEAD` all slip through and reach the default branch unasked; and a
+    fresh repo (this rehearsal, or any kickoff before branch protection lands) has no
+    server-side ruleset, so the leaky client blocklist is the only barrier. Adopted:
+    home/bin/push-guard.py (PreToolUse on Bash) resolves the ACTUAL push target - DENY
+    if a destination names a default branch in any form, or the push carries the current
+    branch while HEAD is a default branch; ASK if the target cannot be resolved; else
+    silent (a work-branch push, the rite preserved). It lives at the machine layer, so it
+    protects EVERY repo, including a foreign interview repo with no branch protection -
+    the exact case the blocklist misses. Seen in selftest-home denying all the leaked
+    forms (bare push on main, -u origin main, +main, HEAD:main, origin HEAD, feature:master)
+    and allowing clean work-branch pushes. Honest limit: parsing a push command string is
+    heuristic and fails SAFE (ask on doubt); the true guarantee is still the server-side
+    ruleset the kickoff applies at repo creation. Rejected: tightening the string blocklist
+    (leaky by construction); flipping every push to ask (kills the rite's work-branch
+    convenience). Enforcement mix after: force 39, half-force 12, steer 34.

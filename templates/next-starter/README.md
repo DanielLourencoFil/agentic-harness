@@ -22,7 +22,9 @@ this repo's CI.
 - tsconfig extends Next's own with the ts-base strictness
   (`noUncheckedIndexedAccess`, `noImplicitOverride`, `verbatimModuleSyntax`,
   `noFallthroughCasesInSwitch`), keeping the `next` plugin, the `.next/types` includes
-  and `jsx: react-jsx`.
+  and `jsx: react-jsx`. **`typecheck` runs `next typegen` before `tsc --noEmit`**: real Next
+  code uses generated types (`LayoutProps`/`PageProps`) that a fresh clone or CI lacks until
+  typegen writes them to `.next/types`, so a bare `tsc` would fail there.
 - Vitest via `vitest.config.mts` (`.mts` so the ESM config loads clean without
   `"type": "module"`, which Next does not set); node env, `passWithNoTests`, coverage as
   diagnostic; tests target the pure core.

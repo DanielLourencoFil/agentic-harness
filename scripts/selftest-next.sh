@@ -41,11 +41,12 @@ export default function Home() {
 }
 EOF
 cat > src/app/layout.tsx <<'EOF'
-import type { ReactNode } from "react";
-
 import "./globals.css";
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+// LayoutProps is a Next-GENERATED type (.next/types); a fresh clone has none until
+// `next typegen` runs. Using it here makes the scaffold representative of real Next code
+// and forces the typecheck script to generate types, not just run tsc (see the typegen claim).
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en">
       <body>{children}</body>
@@ -85,6 +86,19 @@ EOF
 echo "==> Step 7 (README): install + verify green on the stripped scaffold"
 pnpm install >/dev/null 2>&1
 pnpm verify
+
+echo "==> Claim (fresh-clone): the typecheck script GENERATES Next types, not just runs tsc"
+# Real Next code uses LayoutProps/PageProps (generated into .next/types). A fresh clone or CI
+# has no .next, so a bare `tsc --noEmit` fails; the typecheck script must run `next typegen`
+# first. Prove both halves: bare tsc fails on the missing type, the real script passes.
+rm -rf .next
+if pnpm exec tsc --noEmit > typegen.log 2>&1; then
+  echo "FAIL: tsc passed with no .next/types — the layout is not exercising a generated type, so the gate is blind to the fresh-clone case" >&2
+  cat typegen.log >&2
+  exit 1
+fi
+grep -q "LayoutProps" typegen.log || { echo "FAIL: the fresh-clone failure was not the missing generated type" >&2; cat typegen.log >&2; exit 1; }
+pnpm typecheck  # next typegen && tsc --noEmit: regenerates types, must be green
 
 echo "==> Claim 2: the guardrails commit passes the hook"
 git add -A

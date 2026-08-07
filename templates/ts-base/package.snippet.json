@@ -24,6 +24,7 @@
     "prettier": "^3",
     "vitest": "^4",
     "@vitest/coverage-v8": "^4",
+    "@vitest/eslint-plugin": "^1",
     "@stryker-mutator/core": "^9",
     "@stryker-mutator/vitest-runner": "^9",
     "husky": "^9",

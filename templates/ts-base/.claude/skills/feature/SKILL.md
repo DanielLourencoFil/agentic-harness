@@ -38,7 +38,9 @@ the logic. Commit and push per the repo conventions.
 ## 5. Evidence and closeout
 
 "Done" requires shown command output: verify green, plus the feature actually
-exercised. No evidence = report status as "IMPLEMENTED - NOT VERIFIED" with
+exercised, plus the SPEC's riskiest-assumption kill test ADDRESSED - a real test that is green
+(the assumption holds) or a skip carrying a reason and an ADR (explicitly deferred). A kill test
+still living as a dated prose reminder means the risk shipped untested. No evidence = report status as "IMPLEMENTED - NOT VERIFIED" with
 the exact command the human should run. If the project keeps a plan or
 execution doc, update its matching entry now (the doc is a view over the
 tests, never a parallel source of truth). Remind the human that a completed

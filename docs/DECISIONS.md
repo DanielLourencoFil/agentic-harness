@@ -1196,3 +1196,16 @@ separate link files rot unread; see ADR 3).
     (the defect recurs). Enforcement: steer (a better prompt at the exact skip point plus a
     routing rite); the reifiable half is the reframed question, the "did it elicit" half stays
     the human's replica. Enforcement mix after: force 40, half-force 12, steer 37 (C-157).
+53. **2026-08-07 - next-starter typecheck generates Next types first; the selftest stops being
+    blind to it.** Trigger: cloning an exercise-2 (real Next 16) repo fresh to build a brownfield
+    fixture, `pnpm verify` failed with "Cannot find name 'LayoutProps'" - the app's layout uses
+    Next's GENERATED types (`LayoutProps`/`PageProps`, written to `.next/types` by a build),
+    which a fresh clone or CI does not have, and `tsc --noEmit` alone cannot see them. The
+    next-starter selftest passed green while blind to this, because the minimal layout it
+    scaffolds typed `children` by hand instead of using a generated type (wired-but-blind, the
+    recurring lesson). Adopted: `typecheck` runs `next typegen && tsc --noEmit`; the selftest's
+    scaffold layout now uses `LayoutProps<"/">`, and a negative case asserts a bare `tsc` fails
+    on the missing generated type while the real script passes - so the gate is seen catching the
+    fresh-clone case it was blind to. Rejected: leaving typecheck as bare tsc (green only after a
+    manual build, red on a fresh clone or CI). A next-starter consumer bug (ADR 51), surfaced by
+    the exercise-3 setup. Enforcement mix after: force 41, half-force 12, steer 37 (C-158).

@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
     "clones": "node scripts/clone-budget-check.mjs",

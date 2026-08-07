@@ -362,7 +362,10 @@ No scaffold, no install, no code before the human approves the spec.
    bots — even if local settings fail. (Free on public repos; private needs a paid plan.)
    Agent may **open** PRs; merging to the default branch is always the human's act.
 7. Skills — three tiers (ADR 9). **Universal-personal** skills live in the user dir
-   (`~/.claude/skills/`) and are never copied into the repo. **Stack-family** rite skills
+   (`~/.claude/skills/`) and are never copied into the repo. This is also where the kickoff
+   rites (`/start`, `/greenfield`, `/brownfield`) belong: they birth a project and must be
+   invocable before the new repo has any skills of its own (`/absorb` is the exception that
+   stays project-scoped, since it edits the harness's own ledger). **Stack-family** rite skills
    ship with the template (`/feature`, `/audit` + the read-only `auditor` agent) and are
    copied at kickoff, each carrying its `source: agentic-harness@<sha>` provenance stamp.
    **Project-specific** skills are created only when a heavy recurring procedure with a

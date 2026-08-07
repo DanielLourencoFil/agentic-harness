@@ -1141,3 +1141,22 @@ separate link files rot unread; see ADR 3).
     updated (README, PLAYBOOK, plan skill); the append-only history (CLAIMS/DECISIONS/
     briefs) naming /kickoff is left as dated snapshots. Enforcement mix after: force 39,
     half-force 12, steer 35 (the C-154 steer row; the rename moved no row).
+50. **2026-08-07 - Kickoff skills re-tiered from harness-project-scope to user-tier.**
+    Trigger: /start (and /greenfield, /brownfield) lived in `agentic-harness/.claude/skills`
+    (project-scoped), so they were unreachable from a fresh project folder - the exact place
+    you invoke them. A skill that births a project cannot be project-scoped to a DIFFERENT
+    project; by definition the new repo has no skills yet. Confirmed independently by a second
+    session whose start-menu contained no birth skill and which drove its kickoff by executing
+    the PLAYBOOK checklist by hand. Root cause: the tiering rule (PLAYBOOK step 7) classified
+    universal-personal, stack-family and project-specific skills but never the kickoff skill
+    itself, so it defaulted next to /absorb (which correctly IS project-scoped - it edits the
+    harness ledger). Adopted: move /start, /greenfield, /brownfield to `home/skills` (bootstrap
+    symlinks them to `~/.claude/skills` = universal); /absorb stays; PLAYBOOK step 7 now
+    classifies them explicitly. Rejected: symlinking `.claude/skills` into `~/.claude` (fixes
+    this machine but leaves a local-located, universal-reach file - the anti-pattern being
+    fixed - and is not reproducible, since bootstrap only globs `home/skills`). Positive proof
+    the three-tier system is otherwise sound: the ts-base skills appeared in the menu the moment
+    they were copied into the consuming project, and /feature plus the auditor ran. Follow-up
+    (deferred): a selftest assertion that the kickoff skills are user-tier, so this cannot
+    regress. Enforcement mix after: force 39, half-force 12, steer 36 (C-155 supersedes C-154's
+    location anchor).

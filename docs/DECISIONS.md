@@ -1160,3 +1160,23 @@ separate link files rot unread; see ADR 3).
     (deferred): a selftest assertion that the kickoff skills are user-tier, so this cannot
     regress. Enforcement mix after: force 39, half-force 12, steer 36 (C-155 supersedes C-154's
     location anchor).
+51. **2026-08-07 - Next.js Layer 2 template (next-starter), gated.** Trigger: the target
+    role's stack is React/Next.js + Supabase + Tailwind (confirmed from the job posting),
+    so Next.js is a confirmed, imminent, repeated need, not speculation (C-144: certain
+    growth is not YAGNI; overrides ADR 18's "first real use" defer). The harness had only a
+    stale `eslint.next.mjs` overlay (written against an older Next eslint shape), no recipe,
+    no gate. Adopted: `templates/next-starter` as an overlay on create-next-app (App Router +
+    Tailwind), composing `eslint-config-next` with typescript-eslint `strictTypeChecked` + the
+    ts-base validity rules + `--max-warnings 0` (Next ships core-web-vitals at warn; the
+    harness has no warning level), the pure-core import ban extended to `next`, and the ts-base
+    tsconfig strictness layered onto Next's own (keeping the next plugin, `.next/types` and
+    `jsx: react-jsx`). Proven by `scripts/selftest-next.sh`: it consumes the template exactly
+    as the README instructs, asserts empty-scaffold verify green, then plants violations (nine
+    lint rules + the next/* ban, a clone, stranded .tsx logic) and asserts the gate rejects
+    each; wired into CI as a blocking job. Rejected: reusing the stale `eslint.next.mjs` (wrong
+    Next version); a recipe-only doc (a paper template the harness condemns); `"type":
+    "module"` for the vitest config (Next does not set it, so the config is `.mts`). Findings
+    while building: create-next-app derives the npm name from the dir (mktemp capitals fail, so
+    the selftest scaffolds into a lowercase subdir); create-next-app commits its demo, so the
+    selftest resets git for a clean commit #1. Enforcement mix after: force 40, half-force 12,
+    steer 36 (C-156).

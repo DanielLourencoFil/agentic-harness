@@ -47,6 +47,19 @@ jobs:
         with:
           node-version: 22
       - run: bash scripts/selftest-react.sh
+  selftest-next:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: bash scripts/selftest-next.sh
   selftest-home:
     if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest

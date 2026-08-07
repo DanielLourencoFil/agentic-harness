@@ -1223,3 +1223,15 @@ separate link files rot unread; see ADR 3).
     understand-vs-change scopes, the ADR 52 lesson); committing the map (contaminates a guest
     repo with personal, candid notes). Enforcement: steer (a comprehension rite; its depth is
     the human's). Enforcement mix after: force 41, half-force 12, steer 38 (C-159).
+55. **2026-08-07 - /onboard treats code as the source of truth and docs as testimony verified
+    against it; doc-vs-code divergence is a health signal.** Trigger: onboarding a doc-heavy real
+    project (calendar-app, 50+ docs) risks buying stale docs as ground truth and mapping a system
+    that no longer exists - the Kinous doc-rot failure (ADR 41) at read time. The rite as first
+    written (ADR 54) did not say this. Adopted: an explicit principle in /onboard - derive the map
+    from the code, use docs as hints and for the WHY the code cannot state, and spot-check
+    load-bearing claims against the code to calibrate trust in the rest; plus a finding - where
+    docs match the code the team keeps them honest (a virtue), where they rot the zone is
+    neglected (a vice), so the divergence map charts what is cared for and feeds the questions for
+    the team. This is the anchoring law and ADR 23 (input is testimony) applied to a codebase's
+    own docs. Enforcement: steer (part of the /onboard rite, C-159); no mix change (force 41,
+    half-force 12, steer 38).

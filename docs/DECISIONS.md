@@ -1209,3 +1209,60 @@ separate link files rot unread; see ADR 3).
     fresh-clone case it was blind to. Rejected: leaving typecheck as bare tsc (green only after a
     manual build, red on a fresh clone or CI). A next-starter consumer bug (ADR 51), surfaced by
     the exercise-3 setup. Enforcement mix after: force 41, half-force 12, steer 37 (C-158).
+54. **2026-08-07 - /onboard: a rite to deeply understand a codebase, distinct from changing or
+    auditing it.** Trigger: /brownfield's archaeology maps a repo only as far as safe change
+    needs; real onboarding (day one at a job, or entering a third-party repo) needs deeper,
+    personal understanding - purpose, architecture, the repo's actual conventions, its health
+    and history, its character, and the tribal knowledge only a human can answer. Adopted: a
+    universal-tier /onboard skill (home/skills, like /start per ADR 50) producing a PERSONAL
+    onboarding map in seven sections, git-excluded via `.git/info/exclude` so it never touches
+    the (possibly guest) repo. Rite principle, explicit: onboarding does NOT optimise for tokens
+    or time - the first-hour understanding recapitalises into all later work. The harness-
+    comparison section is descriptive only, for situational awareness, never a day-one fix-list
+    (guest mode: adapt to their repo). Rejected: expanding /brownfield's archaeology (conflates
+    understand-vs-change scopes, the ADR 52 lesson); committing the map (contaminates a guest
+    repo with personal, candid notes). Enforcement: steer (a comprehension rite; its depth is
+    the human's). Enforcement mix after: force 41, half-force 12, steer 38 (C-159).
+55. **2026-08-07 - /onboard treats code as the source of truth and docs as testimony verified
+    against it; doc-vs-code divergence is a health signal.** Trigger: onboarding a doc-heavy real
+    project (calendar-app, 50+ docs) risks buying stale docs as ground truth and mapping a system
+    that no longer exists - the Kinous doc-rot failure (ADR 41) at read time. The rite as first
+    written (ADR 54) did not say this. Adopted: an explicit principle in /onboard - derive the map
+    from the code, use docs as hints and for the WHY the code cannot state, and spot-check
+    load-bearing claims against the code to calibrate trust in the rest; plus a finding - where
+    docs match the code the team keeps them honest (a virtue), where they rot the zone is
+    neglected (a vice), so the divergence map charts what is cared for and feeds the questions for
+    the team. This is the anchoring law and ADR 23 (input is testimony) applied to a codebase's
+    own docs. Enforcement: steer (part of the /onboard rite, C-159); no mix change (force 41,
+    half-force 12, steer 38).
+56. **2026-08-07 - /onboard wired into the entry flow: understanding precedes change.** Trigger:
+    /onboard (ADR 54) and /brownfield were logically related (ADR 54 said /brownfield leans on
+    /onboard) but not linked - /brownfield's step 1 did its own lean archaeology with no reference
+    to /onboard, and /start did not name /onboard at all. Adopted: /brownfield step 1 now runs
+    /onboard first (the deep, personal, git-excluded understanding) and then distills the SHAREABLE
+    part the change needs (AGENTS.md conventions, danger-zones, baseline) - the onboarding map is
+    personal, the AGENTS.md is what the team inherits; and /start's brown branch names the intent
+    fork (here to UNDERSTAND, run /onboard; entering to CHANGE, run /brownfield, which onboards
+    first). So understanding always precedes changing, and /onboard is either the first move (pure
+    understanding, /start not needed) or the first phase of the change flow. Rejected: an explicit
+    understand-vs-change fork inside /start (a light note suffices; a heavy fork is over-engineering
+    until a test shows confusion); folding /onboard into /brownfield (different artifacts, a
+    personal map vs a shared AGENTS.md, and /onboard stands alone for pure onboarding). Enforcement:
+    steer (rite wiring); no mix change (force 41, half-force 12, steer 38).
+57. **2026-08-07 - /onboard's card reified the good behaviours its first real run demonstrated;
+    maximised steer, honestly labelled.** Trigger: /onboard's first consumption (calendar-app /
+    Kinous, a 1570-file doc-heavy project) produced an exceptional map - a doc-vs-code TRUST
+    TOPOLOGY (honest zones vs seven verified drifts), file:line anchors on every claim, the
+    baseline executed with output, and a read-only slip (a lint --fix write) caught and reverted -
+    but all of that was execution luck, not carded. Adopted: bake those into the card as explicit,
+    non-optional instructions - the trust topology ends section 5, load-bearing claims carry a
+    file:line or a shown command, the baseline is RUN not inferred, any tool-write is reverted and
+    the tree confirmed clean, and the Verifiable output is a strict checklist. Honest ceiling,
+    stated plainly: /onboard writes a personal git-excluded doc in a guest repo, where no harness
+    gate reaches, and map quality is semantic - so the ceiling is STEER, not force or half-force;
+    a sharper card raises the odds without a gate, and calling it semi-enforcement would be a lie
+    (the anchoring behaviour alone gets incidental half-force from the machine-layer
+    recommendation-anchor hook that fires in any session). Rejected: a selftest asserting the
+    card's text (brittle text-matching, the trap the harness warns against); claiming a gate on
+    the output (none can exist for a guest-repo personal doc). Enforcement: steer (maximised card,
+    C-159); no mix change (force 41, half-force 12, steer 38).

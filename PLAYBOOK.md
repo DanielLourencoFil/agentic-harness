@@ -16,7 +16,7 @@ everything downstream.
 ```
 Layer 0  UNIVERSAL        → always, every project
 Layer 1  LANGUAGE         → TypeScript
-Layer 2  FRAMEWORK        → Vue | React | Node/NestJS
+Layer 2  FRAMEWORK        → Vue | React | Next.js | Node/NestJS
 Layer 3  SURFACE PACKS    → DB, auth, money, queues, public API, secrets/PII, user content
 Layer 4  CONTEXTUAL       → decision table (use-when / skip-when)
 ```
@@ -144,9 +144,15 @@ comment naming the system it syncs with; event logic in handlers; server state i
 library, never effects+setState; keys are stable identity from the data, never the index.
 
 ### Next.js (App Router)
-**Enforce:** `@next/eslint-plugin-next` `core-web-vitals` with **every rule pinned to
-error** (Next ships most as warnings; the harness has no warning level). The one
-server/client mistake a linter can catch is `no-async-client-component`.
+**Template: `~/Dev/agentic-harness/templates/next-starter/` - an overlay on `create-next-app`
+(App Router + Tailwind), do not rebuild (its README is the consumption recipe;
+`scripts/selftest-next.sh` enforces it end to end in CI).**
+**Enforce:** `eslint-config-next` composed with `strictTypeChecked` + the ts-base validity set,
+plus `--max-warnings 0` so Next's core-web-vitals warnings become failures (the harness has no
+warning level) · `react-hooks/exhaustive-deps` and `jsx-a11y/alt-text` pinned to error ·
+pure-core import ban extended to `next` (`src/lib/**` may not import `react`, `react-dom` or
+`next`) · ts-base tsconfig strictness layered onto Next's own. The one server/client mistake a
+linter catches is `no-async-client-component` (in `core-web-vitals`).
 **Convention:** components are Server Components by default and `"use client"` is a
 **boundary in the tree, not a decoration on a file** — push it down to the interactive
 leaf, never up to the page, or the whole subtree ships to the browser. Fetch on the
@@ -156,8 +162,9 @@ browser-only: those components still render server-side for the first paint, so
 module-scope `window` breaks the build. Route handlers and server actions are trust
 boundaries — validate with a schema exactly as an API endpoint would; colocation with the
 UI does not make the caller trustworthy.
-Honest limit: the Next path has no selftest job — the Vite path is proven end to end, the
-Next overlay is verified only as far as the plugin's config shape (ADR 32).
+Proven end to end by `scripts/selftest-next.sh` (ADR 51), which consumes the template as its
+README instructs and is seen rejecting nine lint rules, the next/* pure-core ban, a clone and
+stranded .tsx logic - superseding the earlier "no selftest job" limitation (ADR 32).
 
 ### Node / NestJS (backend)
 **Enforce:** schema-first validation at every boundary (`nestjs-zod` / Zod) — `class-validator`

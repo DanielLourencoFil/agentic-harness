@@ -1249,3 +1249,20 @@ separate link files rot unread; see ADR 3).
     until a test shows confusion); folding /onboard into /brownfield (different artifacts, a
     personal map vs a shared AGENTS.md, and /onboard stands alone for pure onboarding). Enforcement:
     steer (rite wiring); no mix change (force 41, half-force 12, steer 38).
+57. **2026-08-07 - /onboard's card reified the good behaviours its first real run demonstrated;
+    maximised steer, honestly labelled.** Trigger: /onboard's first consumption (calendar-app /
+    Kinous, a 1570-file doc-heavy project) produced an exceptional map - a doc-vs-code TRUST
+    TOPOLOGY (honest zones vs seven verified drifts), file:line anchors on every claim, the
+    baseline executed with output, and a read-only slip (a lint --fix write) caught and reverted -
+    but all of that was execution luck, not carded. Adopted: bake those into the card as explicit,
+    non-optional instructions - the trust topology ends section 5, load-bearing claims carry a
+    file:line or a shown command, the baseline is RUN not inferred, any tool-write is reverted and
+    the tree confirmed clean, and the Verifiable output is a strict checklist. Honest ceiling,
+    stated plainly: /onboard writes a personal git-excluded doc in a guest repo, where no harness
+    gate reaches, and map quality is semantic - so the ceiling is STEER, not force or half-force;
+    a sharper card raises the odds without a gate, and calling it semi-enforcement would be a lie
+    (the anchoring behaviour alone gets incidental half-force from the machine-layer
+    recommendation-anchor hook that fires in any session). Rejected: a selftest asserting the
+    card's text (brittle text-matching, the trap the harness warns against); claiming a gate on
+    the output (none can exist for a guest-repo personal doc). Enforcement: steer (maximised card,
+    C-159); no mix change (force 41, half-force 12, steer 38).

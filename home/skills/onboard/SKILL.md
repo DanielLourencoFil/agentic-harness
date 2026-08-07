@@ -7,7 +7,9 @@ description: Deeply understand an existing codebase before, or independent of, c
 
 The highest-leverage hour on any codebase is the first one: what you understand now
 recapitalises into every later change. So this rite does NOT optimise for tokens or time.
-Read deeply; depth is the feature, not the cost. Read-only: understand, do not change.
+Read deeply; depth is the feature, not the cost. Read-only: understand, do not change - and if
+any command (a linter, a formatter, a build) writes to the working tree, revert it and confirm
+`git status` is clean before moving on.
 
 **The code is the source of truth; docs are testimony verified against it, never inherited.**
 Docs (READMEs, architecture notes, ADRs) are claims about the code, and they rot - the classic
@@ -21,8 +23,9 @@ accuses.
 
 ## The map (write it as you go, one navigable doc)
 
-Section by section, reading the code AND the git history, never guessing. State what you find;
-mark what you could not determine as an open question, never an invention.
+Section by section, reading the code AND the git history, never guessing. Every load-bearing
+claim carries a `file:line` (or the command whose output proves it); what you could not
+determine is marked an open question, never an invention.
 
 1. **Purpose and domain.** What does this project do, and for whom? Infer it from the code and
    any README when there are no docs. Name the domain in plain language.
@@ -31,14 +34,16 @@ mark what you could not determine as an open question, never an invention.
 3. **Conventions (the repo's ACTUAL style).** Naming, patterns, test style, error handling, how
    state and effects are organised - so your code will look like the repo, not like your
    training data. The guest-mode contract: their conventions win.
-4. **State, health, and history.** Does it build and test (run the baseline, show the output)?
+4. **State, health, and history.** Does it build and test? RUN the baseline and show its output,
+   executed, never inferred from a doc or a CI badge.
    Where are the gaps? Which files churn most (`git log`)? And the WHY behind the load-bearing
    files (`git log` and blame - history carries the reasons the docs do not).
 5. **Character: virtues and vices.** Descriptive, never a bug hunt: what is clean and well
    tested, what is tangled or unpinned, where to tread carefully. Honest, not adversarial.
-   Doc-vs-code divergence is itself a health signal: where docs match the code the team keeps
-   them honest (a virtue); where they rot, that zone is neglected and its docs lie. Mapping
-   where they agree, drift, or go silent charts what is cared for.
+   Doc-vs-code divergence is itself a health signal, so END this section with a TRUST TOPOLOGY:
+   the zones where docs are honest (trust them) versus the verified drifts (each checked against
+   the code today, stating the claim and the reality). Where docs match, the team keeps them
+   honest; where they rot, the zone is neglected - the topology charts what is cared for.
 6. **Harness comparison.** Their discipline vs this harness - what they enforce and what they
    lack (tests, CI, types, hooks, budgets). For YOUR situational awareness only. Guest mode:
    you adapt to their repo on day one, you do not arrive with a list of what is wrong with it.
@@ -57,7 +62,11 @@ their history.
 
 ## Verifiable output
 
-- One personal onboarding map, git-excluded, with the seven sections filled from observation
-  (open questions marked as such, never invented).
-- The baseline shown: the build and test command run, with its output.
+The map is done only when ALL of these hold. Treat it as a checklist, not a suggestion:
+
+- One personal onboarding map, git-excluded, with all seven sections filled from observation.
+- Every load-bearing claim anchored to a `file:line` or a shown command; the rest marked open.
+- The baseline executed, with its output shown (not inferred).
+- Section 5 ends with the trust topology: honest zones vs verified drifts.
+- The working tree left clean (any tool-write reverted).
 - The "questions for the team" list: the things the code could not tell you.

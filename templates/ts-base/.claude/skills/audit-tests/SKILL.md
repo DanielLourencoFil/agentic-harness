@@ -1,6 +1,6 @@
 ---
 name: audit-tests
-description: Fresh-context audit of a unit's TESTS — missing, wrong-level, or too weak to fail. Use after a feature is tested, or on demand for a named scope. Phase 1 of ADR 35; the mutation reify arm is Phase 2.
+description: Fresh-context audit of a unit's TESTS — missing, wrong-level, or too weak to fail. Use after a feature is tested, or on demand for a named scope. Phase 1 is the fresh-context find; Phase 2 is a named-list mutation probe that settles weak-assertion findings (ADR 35 + 59).
 ---
 
 # /audit-tests <scope: directory, module, or diff>
@@ -18,24 +18,30 @@ dilute each other.
      - *missing test over broken code* — the test is red now; that is the signal.
      - *missing test over CORRECT code* (the common brownfield case: the rule
        works, it just has no test) — the test PASSES on the first run, so redness
-       proves nothing. Write it, name the mutation that must kill it, and leave it
-       OPEN for Phase 2. Do not mark it resolved because a new green test exists.
+       proves nothing. Write it, name the mutation that must kill it, then run the
+       PROBE (Phase 2): the named mutant must now DIE against the new test. A green
+       test alone does not resolve it; the mutant dying does.
        (Verified against the first real run, 2026-08-05: six Criticals were
        missing tests over correct code; Phase 1 alone closed zero.)
      A "missing test" finding that a written test proves already covered was
      confabulated: discard it.
    - **Wrong level:** structural. Name the move (test the endpoint, not the
      service; drop the mock of the unit under test). Do not rewrite unasked.
-   - **Weak assertion:** this is the one only mutation can settle, and mutation is
-     Phase 2 (not yet wired). Until then, flag it and let the human decide; do not
-     dismiss it because the test is green — green is exactly the symptom.
+   - **Weak assertion:** only mutation settles this, and Phase 2 wires it. Run the
+     PROBE: apply the exact mutation the auditor named to the production code, run the
+     suite, report live/dead. A surviving mutant IS the finding, proven; a dead one
+     closes it with measurement. Do not dismiss on a green run — green is the symptom.
+     The probe is a named list, not a full mutation run: it mutates only the flagged
+     lines, so it is fast (seconds) and reaches code Stryker's src/lib scope does not
+     (UI, route handlers) — where the ex-3 audit measured 16 survivors the reified tests
+     then killed (ADR 59, refuting ADR 38's "UI is the least reward").
 3. **The authoring session RESPONDS; it does not judge.** This session wrote the
    tests and will rationalize them. State agreement or disagreement per finding
-   WITH a reason, and leave the verdict to the human. Where Phase 2 is wired, a
-   surviving mutant is the tiebreaker; until then, an unresolved weak-assertion
-   finding stays open, not closed.
-4. Log in `AGENT-LOG.md`: N findings, N reified-real, N confabulated, N left open
-   for mutation. The ratio calibrates trust in future test audits.
+   WITH a reason, and leave the verdict to the human. A surviving mutant from the probe
+   is the tiebreaker that settles a weak-assertion finding; a finding is closed only
+   when its named mutant dies.
+4. Log in `AGENT-LOG.md`: N findings, N reified-real, N confabulated, N closed by the
+   probe (named mutant killed). The ratio calibrates trust in future test audits.
 
 ## Rationalizations this rite refuses
 
@@ -54,4 +60,6 @@ Replies are statements, never open questions.
   concrete gap (test `file:line`, the forbidden input or surviving mutation).
 - One test per reified missing-case finding, shown red, or discarded as confabulated.
 - The authoring session's per-finding response, with reasons, verdict left to the human.
-- The `AGENT-LOG.md` line: findings, reified-real, confabulated, open-for-mutation.
+- The `AGENT-LOG.md` line: findings, reified-real, confabulated, closed-by-probe.
+- For each weak-assertion finding: the named mutation shown surviving, then killed by the
+  reifying test (or left surviving, which keeps the finding open).

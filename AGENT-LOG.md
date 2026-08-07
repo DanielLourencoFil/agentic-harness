@@ -143,3 +143,26 @@ explicitly SKIPS husky/CI/stryker/ratchets, each skip carrying the one-line
 justification the PLAYBOOK already asks for. Trigger fired: the 2026-08-06 rehearsal
 did the full stamp for want of it.
 
+## 2026-08-07 — The kickoff rite never asks anything about UI design
+
+Driving the exercise-2 dashboard (Next + Tailwind), a fresh session reached the UI slice
+and found the harness had elicited nothing about how the UI should look or behave. The
+rites force UI VALIDITY (jsx-a11y alt-text, the stranded-logic budget, the server/client
+boundary) but the spec interview and the feature loop ask only correctness/behaviour
+questions — problem, scope, invariants, abuse. Not one asks about layout, interaction
+states, error-vs-blocked feedback, loading/pending, or aria-live announcements. For a
+front-end role (Next + Tailwind, UI/UX in the JD), a rite that never asks anything about
+UI is a gap with consequences: the design decisions get defaulted, not made.
+
+The distinction that bounds the fix: the harness deliberately does not FORCE UI quality
+(semantic, closed by review — the PLAYBOOK scope note). What is missing is ELICITATION —
+surfacing the UI decisions so the human makes them. That is process-rite, admissible, and
+it is the UI-content of the design-decision pass ADR 52 just built: the pass exists, the
+UI cues do not.
+
+harness-candidate: add UI-decision cues to the ADR 52 design-decision pass (layout,
+outcome feedback, blocked-vs-error, pending/double-click coupling to idempotency,
+aria-live). The exact set is extracted from which questions the dashboard slice shows were
+load-bearing (ADR 18), not guessed now; and it stays elicitation, never a UI-quality gate
+(that would be ADR 25 frozen quality-doctrine, C-148's neighbourhood).
+

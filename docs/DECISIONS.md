@@ -1235,3 +1235,17 @@ separate link files rot unread; see ADR 3).
     the team. This is the anchoring law and ADR 23 (input is testimony) applied to a codebase's
     own docs. Enforcement: steer (part of the /onboard rite, C-159); no mix change (force 41,
     half-force 12, steer 38).
+56. **2026-08-07 - /onboard wired into the entry flow: understanding precedes change.** Trigger:
+    /onboard (ADR 54) and /brownfield were logically related (ADR 54 said /brownfield leans on
+    /onboard) but not linked - /brownfield's step 1 did its own lean archaeology with no reference
+    to /onboard, and /start did not name /onboard at all. Adopted: /brownfield step 1 now runs
+    /onboard first (the deep, personal, git-excluded understanding) and then distills the SHAREABLE
+    part the change needs (AGENTS.md conventions, danger-zones, baseline) - the onboarding map is
+    personal, the AGENTS.md is what the team inherits; and /start's brown branch names the intent
+    fork (here to UNDERSTAND, run /onboard; entering to CHANGE, run /brownfield, which onboards
+    first). So understanding always precedes changing, and /onboard is either the first move (pure
+    understanding, /start not needed) or the first phase of the change flow. Rejected: an explicit
+    understand-vs-change fork inside /start (a light note suffices; a heavy fork is over-engineering
+    until a test shows confusion); folding /onboard into /brownfield (different artifacts, a
+    personal map vs a shared AGENTS.md, and /onboard stands alone for pure onboarding). Enforcement:
+    steer (rite wiring); no mix change (force 41, half-force 12, steer 38).

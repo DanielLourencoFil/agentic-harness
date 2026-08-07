@@ -29,7 +29,9 @@ event did not earn it yet).
 ## 2. Route
 
 - **Greenfield** run `/greenfield`: spec interview, layer selection, kickoff checklist.
-- **Brownfield** run `/brownfield`: archaeology, zero-cost gates, baseline and ratchet.
+- **Brownfield** if you are only here to UNDERSTAND, run `/onboard` (deep, personal); if you
+  are entering to CHANGE, run `/brownfield`, which starts by onboarding, then the change-safe
+  steps (zero-cost gates, baseline and ratchet).
 
 Do nothing else here. This rite owns the fork and the handoff, nothing downstream.
 

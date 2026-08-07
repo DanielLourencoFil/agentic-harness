@@ -10,12 +10,15 @@ Reached via /start (brownfield branch). If this is an empty scaffold, stop and u
 repo to a ratchet. The gate cannot demand retroactive perfection. (Full spec: the
 BROWNFIELD section in `PLAYBOOK.md`.)
 
-## 1. Archaeology before any change (read-only)
+## 1. Understand before any change (read-only)
 
-Map the system first. Write the story bible from observation: `AGENTS.md` with the
-codebase's ACTUAL conventions (new code looks like the repo, not the model's training
-data); `docs/DECISIONS.md` started now, decisions recorded as discovered, never
-invented; a danger-zones list (money, auth, undocumented invariants).
+Understand deeply first: run `/onboard` (a personal, git-excluded map of purpose, structure,
+conventions, health and character - the code is the source of truth, docs are verified against
+it). Then distill from that the SHAREABLE part the change needs: an `AGENTS.md` with the
+codebase's ACTUAL conventions (new code looks like the repo, not the model's training data);
+`docs/DECISIONS.md` started now, decisions recorded as discovered, never invented; a
+danger-zones list (money, auth, undocumented invariants). The onboarding map is yours; the
+`AGENTS.md` is what the team inherits.
 
 ## 2. Wire the zero-cost gates day one
 

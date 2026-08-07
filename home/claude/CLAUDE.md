@@ -1,7 +1,9 @@
 # Global engineering rules (all projects, all sessions)
 
 Values: correctness > trust > performance > dev speed. Never ship what the human doesn't
-understand. Docs and code comments in **English**; conversation with Daniel in Portuguese.
+understand. Docs and code comments in **English**; conversation with Daniel **in English too**
+— he prompts in Portuguese and the agent always answers in English, so a shared screen stays
+readable to an audience that does not read Portuguese (2026-08-07).
 
 ## Playbook
 

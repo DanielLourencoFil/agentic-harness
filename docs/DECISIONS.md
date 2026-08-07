@@ -1209,3 +1209,17 @@ separate link files rot unread; see ADR 3).
     fresh-clone case it was blind to. Rejected: leaving typecheck as bare tsc (green only after a
     manual build, red on a fresh clone or CI). A next-starter consumer bug (ADR 51), surfaced by
     the exercise-3 setup. Enforcement mix after: force 41, half-force 12, steer 37 (C-158).
+54. **2026-08-07 - /onboard: a rite to deeply understand a codebase, distinct from changing or
+    auditing it.** Trigger: /brownfield's archaeology maps a repo only as far as safe change
+    needs; real onboarding (day one at a job, or entering a third-party repo) needs deeper,
+    personal understanding - purpose, architecture, the repo's actual conventions, its health
+    and history, its character, and the tribal knowledge only a human can answer. Adopted: a
+    universal-tier /onboard skill (home/skills, like /start per ADR 50) producing a PERSONAL
+    onboarding map in seven sections, git-excluded via `.git/info/exclude` so it never touches
+    the (possibly guest) repo. Rite principle, explicit: onboarding does NOT optimise for tokens
+    or time - the first-hour understanding recapitalises into all later work. The harness-
+    comparison section is descriptive only, for situational awareness, never a day-one fix-list
+    (guest mode: adapt to their repo). Rejected: expanding /brownfield's archaeology (conflates
+    understand-vs-change scopes, the ADR 52 lesson); committing the map (contaminates a guest
+    repo with personal, candid notes). Enforcement: steer (a comprehension rite; its depth is
+    the human's). Enforcement mix after: force 41, half-force 12, steer 38 (C-159).

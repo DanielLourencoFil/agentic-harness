@@ -1,9 +1,12 @@
 ---
-name: kickoff
-description: From idea to project - spec interview, harness layer selection, then the PLAYBOOK kickoff checklist. Use when starting a brand-new project from nothing but an idea.
+name: greenfield
+description: Greenfield branch of kickoff - spec interview, layer selection, then the PLAYBOOK kickoff checklist. Routed to by /start for a fresh scaffold; use when starting a brand-new project from an idea.
 ---
 
-# /kickoff <one-line idea>
+# /greenfield <one-line idea>
+
+Reached via /start (greenfield branch). If there is existing code here, stop and
+use /brownfield - this rite assumes an empty scaffold.
 
 The playbook's kickoff checklist assumes a project plan exists. This rite
 produces it. No scaffolding, no `pnpm install`, no code before step 3.

@@ -32,7 +32,7 @@ agentic-harness/
 The harness is consumed in exactly three ways — which one applies is decided by
 **whose git it is**, never by preference:
 
-1. **My project → stamp.** `/kickoff` *copies* the template into the new repo
+1. **My project → stamp.** `/start` routes to `/greenfield`, which *copies* the template into the new repo
    (`templates/`, dotfiles included). The project becomes self-sufficient and
    carries its own law, versioned with its own git; the catalog is never
    referenced at coding time (vendoring beats reference — a referenced catalog

@@ -81,17 +81,25 @@ flow rule is the only protection there.
 ## Backlog rite
 
 `~/Dev/BACKLOG.md` is the single source of truth for cross-project pending work (a
-SessionStart hook injects it). Any "do later" born in a session lands there before the
-session ends; agent memory only points at it. When closing an item, mark it done there.
+SessionStart hook injects it **only at the `~/Dev` desk** — project sessions stay
+isolated, so the cross-project index and its career PII never leak into a repo or a
+screen-shared interview session; ADR 45). Any "do later" born in a session lands there
+before the session ends; agent memory only points at it. When closing an item, mark it
+done there.
 
-## Git rite (automatic — never ask)
+## Git rite
 
-- Commit atomically (gated by `verify`) and push work branches **without asking**.
-  After any push, watch the CI run in the background; on failure, read the failed log
-  (`gh run view --log-failed`) and fix — don't wait for the human to report it.
+- Commit atomically (gated by `verify`) **without asking** — a verify-gated commit on a
+  work branch has no irreversible consequence.
+- **Push asks** (ADR 47), and a machine-wide push-guard **denies** any push that reaches
+  the default branch by resolving the target, not by matching strings (ADR 46) — so a
+  work-branch push is safe to confirm, and main is walled even on a fresh or foreign repo
+  with no server-side protection. The owner chose a confirm over a silent auto-push (a bad
+  look on a shared screen; unsafe in someone else's repo). After a push, watch the CI run
+  in the background; on failure, read the failed log (`gh run view --log-failed`) and fix —
+  don't wait for the human to report it.
 - Never: merge to the default branch (human's act), force-push, `--no-verify`, `[skip ci]`.
-- In repos where the default branch auto-deploys and has no branch protection, pushing to
-  it still requires confirmation.
+- The agent opens the PR; the **merge** stays the human's act.
 
 ## Enforcement over prompts
 

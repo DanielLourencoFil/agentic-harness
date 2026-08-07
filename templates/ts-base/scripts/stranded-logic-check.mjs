@@ -75,6 +75,12 @@ function readBody(lines, start) {
     }
     end = j;
     if (started && depth <= 0) break;
+    // Expression-body form (an arrow returning an expression, no block): the
+    // statement ends at the first `;` at depth 0, before any `{` opens. Without
+    // this, a brace-free arrow one-liner runs the walker on to the next unrelated
+    // `{...}`, swallowing sibling code and inflating a 1-line body past the
+    // `< 4` one-liner filter (found by ultrareview; ADR 44).
+    if (!started && depth === 0 && /;\s*$/.test(lines[j])) break;
   }
   return { body, end };
 }

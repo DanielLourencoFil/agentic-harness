@@ -346,7 +346,7 @@ check_verify_docs() { # $1 = harness dir
   # The step names are the words after each `pnpm`, minus `verify` itself.
   steps="$(grep -oE 'pnpm [a-z:]+' <<<"$verify" | sed 's/pnpm //' | grep -vx verify)"
   # Docs that ENUMERATE the verify contents in script-name form. A doc that only
-  # says "run verify" is not on this list; these three spell the steps out.
+  # says "run verify" is not on this list; these two spell the steps out.
   for doc in "PLAYBOOK.md" "templates/ts-base/README.md"; do
     line="$(grep -iE 'verify.*(typecheck|=)' "$dir/$doc" | head -1)"
     while IFS= read -r step; do

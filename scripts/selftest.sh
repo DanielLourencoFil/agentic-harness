@@ -320,6 +320,23 @@ EOF
 pnpm stranded > stranded-ok.log 2>&1 || { echo "FAIL: after moving to src/lib (impure canvas fn skipped), the budget still failed" >&2; cat stranded-ok.log >&2; exit 1; }
 rm -f src/components/setup-hub.tsx src/components/image-tools.tsx src/lib/setup.ts
 
+# Regression (ultrareview, ADR 44): expression-body arrow one-liners are NOT
+# stranded logic. readBody once ran past a brace-free arrow to the next `{...}`,
+# inflating a 1-line body past the `< 4` filter and flagging trivial helpers.
+mkdir -p src/components
+cat > src/components/arrows.tsx <<'EOF'
+const isPositive = (n: number) => n > 0;
+const isNegative = (n: number) => n < 0;
+const isZero = (n: number) => n === 0;
+
+export function Arrows() {
+  return null;
+}
+EOF
+pnpm stranded > arrows.log 2>&1 \
+  || { echo "FAIL: trivial arrow one-liners were flagged as stranded (readBody swallowed siblings)" >&2; cat arrows.log >&2; exit 1; }
+rm -f src/components/arrows.tsx
+
 # The blocking CI job must ship, or a future edit drops the standing gate silently.
 grep -q "^  mutation:" .github/workflows/ci.yml \
   || { echo "FAIL: ci.yml ships no mutation job — the standing gate is gone (ADR 39)" >&2; exit 1; }

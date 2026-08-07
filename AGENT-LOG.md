@@ -119,3 +119,27 @@ name of a dumping command. It matches command names appearing as data, which is
 the false positive `audit-reminder.py` already fixed for `gh pr create` and has a
 regression case for. Same bug, unfixed sibling.
 
+## 2026-08-06 — The live-coding subset was designed in conversation, never reified
+
+Prepping a 70-minute live-coding rehearsal, the owner and the agent worked out a
+"live-coding subset" of the harness: stamp the config (strict tsconfig, eslint,
+vitest, CLAUDE.md) but NOT the blocking machinery (husky pre-commit, CI, stryker,
+the budget ratchets), because in 70 minutes those cost setup time and never fire.
+It was reasoned carefully and agreed.
+
+It was never written down. So when the rehearsal agent ran the kickoff, it followed
+the only documented mode — the full PLAYBOOK stamp — and installed husky, `.github`,
+stryker, the budgets, everything: the full cage in the one context where the cage is
+the wrong tool. The husky pre-commit fired on commit #1 (reformatting files), proving
+the machinery is live where it should not be.
+
+Lesson, sharper than the usual: documented-but-not-wired is a prayer; designed-only-
+in-conversation is worse — it does not exist when it is needed. A mode worked out and
+agreed in a session, but never committed to a file, is not a mode.
+
+harness-candidate: reify the live-coding subset as a real, selectable mode — a
+`/kickoff` variant or a PLAYBOOK layer-selection row that stamps config + skills and
+explicitly SKIPS husky/CI/stryker/ratchets, each skip carrying the one-line
+justification the PLAYBOOK already asks for. Trigger fired: the 2026-08-06 rehearsal
+did the full stamp for want of it.
+

@@ -1036,3 +1036,127 @@ separate link files rot unread; see ADR 3).
     detect-and-warn only (leaves the legitimate born-dead case to the human when
     git-tracked already proves it safe to auto-fix). Enforcement mix after: force 37,
     half-force 12, steer 34.
+44. **2026-08-06 - Ultrareview remediation: four real findings fixed, each with its
+    planted test.** Trigger: an accidental /ultrareview (free 1 of 3) on the
+    feat/skill-activation -> main diff (the three stacked branches of the day) returned
+    four findings; all four reproduced - 0 confabulated, the calibration datum for
+    trusting the tool. Reproduced then fixed: (1) [normal] stranded-logic readBody ran
+    a brace-free arrow one-liner on to the next block, swallowing siblings and flagging
+    trivial helpers - fixed by breaking at the statement `;` at depth 0 before any
+    block opens, with an arrow regression in selftest.sh Claim 8 (verified: the four
+    arrows now count 0, a real braced stranded fn still counts 1). (2) [normal] the
+    stranded gate, built for .tsx, was never wired into react-starter, the .tsx
+    template - added the script + verify step + copied the gate and budget in the
+    consumption, with a planted .tsx rejection in selftest-react Claim 5. (3) [nit]
+    skill-activation marked a dir vetted when ANY sibling file was tracked, not the
+    SKILL.md itself - tightened to require the tracked SKILL.md, with the sidecar
+    negative case added to selftest-home (the missing direction of the C-127 "seen
+    rejecting" doctrine, on my own hook). (4) [nit] a check_verify_docs comment said
+    "three" for a two-doc loop - one word, ironically in the anti-drift gate itself.
+    No new claim degree - these harden existing gates (C-145 stranded, C-147 react,
+    C-151 skill-activation); the mix stays force 37, half-force 12, steer 34. Deferred
+    (BACKLOG candidate): widen check_verify_docs across every
+    templates/*/package.snippet.json, so cross-template drift - the blind spot that let
+    react-starter lack a gate ts-base had - stops being invisible to the anti-drift gate.
+45. **2026-08-06 - The BACKLOG SessionStart injection is gated to the ~/Dev desk;
+    project sessions stay isolated.** Trigger: the owner opened a coding-rehearsal
+    session and a career dossier (a named CTO of an unrelated company) had bled into it
+    - the SessionStart hook cat-ed the ENTIRE cross-project BACKLOG into every session
+    unconditionally, contradicting the constitution's own "one project, one session, one
+    cwd" rule and forming a real PII leak on a screen-shared interview (the contamination
+    was demonstrated live: the rehearsal agent reasoned from the injected ECENT dossier).
+    Adopted: home/bin/backlog-inject.py reads the SessionStart cwd and injects the BACKLOG
+    only when cwd == ~/Dev (the desk, where cross-project context is the whole point); in
+    any project subfolder it stays silent. The file remains the durable cross-project
+    index; only its delivery is gated, which resolves the isolation-vs-rite contradiction
+    the owner found. Seen in selftest-home injecting at the desk and staying silent in a
+    project subfolder. Honest limit: machine-local like every home/ hook, tested against
+    planted cwds, never the real ~/.claude. Rejected: deleting the BACKLOG (over-correction
+    - throws away the index to fix the delivery); leaving it unconditional (the leak caught
+    live). Enforcement mix after: force 38, half-force 12, steer 34.
+46. **2026-08-06 - A machine-layer push-guard denies any git push that reaches the
+    default branch, by resolving the target instead of matching strings.** Trigger: a
+    rehearsal agent pushed a work branch without asking (the git rite, intended), but
+    the owner saw that the ts-base blocklist protecting main is leaky - it allows
+    `git push:*` and denies only `git push origin main` / `HEAD:main`, so a bare
+    `git push` on main, `git push -u origin main`, `git push origin +main`, and
+    `git push origin HEAD` all slip through and reach the default branch unasked; and a
+    fresh repo (this rehearsal, or any kickoff before branch protection lands) has no
+    server-side ruleset, so the leaky client blocklist is the only barrier. Adopted:
+    home/bin/push-guard.py (PreToolUse on Bash) resolves the ACTUAL push target - DENY
+    if a destination names a default branch in any form, or the push carries the current
+    branch while HEAD is a default branch; ASK if the target cannot be resolved; else
+    silent (a work-branch push, the rite preserved). It lives at the machine layer, so it
+    protects EVERY repo, including a foreign interview repo with no branch protection -
+    the exact case the blocklist misses. Seen in selftest-home denying all the leaked
+    forms (bare push on main, -u origin main, +main, HEAD:main, origin HEAD, feature:master)
+    and allowing clean work-branch pushes. Honest limit: parsing a push command string is
+    heuristic and fails SAFE (ask on doubt); the true guarantee is still the server-side
+    ruleset the kickoff applies at repo creation. Rejected: tightening the string blocklist
+    (leaky by construction); flipping every push to ask (kills the rite's work-branch
+    convenience). Enforcement mix after: force 39, half-force 12, steer 34.
+47. **2026-08-06 - ts-base flips git push from allow to ask, and drops the leaky
+    main-push string denies (now the machine push-guard's job).** Trigger: with the
+    push-guard (ADR 46) walling the default branch robustly, the ts-base settings'
+    `allow: git push:*` (which overrode the machine's `ask` and let a rehearsal agent
+    push a work branch silently) plus its `git push origin main` denies were both
+    redundant and misleading - a string blocklist implies main is protected by strings
+    when the guard is what protects it. Adopted: remove `git push:*` from the ts-base
+    allow, so push ASKS by default (the owner's chosen posture over silent auto-push - a
+    bad look on a shared screen, unsafe on an unprotected foreign repo), and remove the
+    two `git push origin main` / `HEAD:main` denies (redundant with the guard's target
+    resolution). Kept as hard denies: force-push, --no-verify, -n, merge. Honest tension:
+    this contradicts the constitution's git rite ("push work branches without asking");
+    the doc update is FLAGGED for the owner rather than silently rewritten, since the rite
+    is load-bearing. Rejected: keeping the leaky string denies (false confidence). No mix
+    change - project-layer permission config, not a ledger claim.
+48. **2026-08-06 - Git rite doc aligned to the ask-on-push posture (owner-approved
+    follow-up to ADR 46/47).** The constitution's git rite no longer claims "push work
+    branches without asking": push now ASKS (ADR 47) and the machine push-guard DENIES any
+    push reaching the default branch (ADR 46). Commit stays automatic (verify-gated); the
+    merge stays the human's act. Closes the doc/mechanism contradiction ADR 47 flagged, now
+    that the owner chose "update" over "leave as override" - the same fix-the-doc-to-match
+    discipline as ADR 45, applied to the constitution itself.
+49. **2026-08-06 - Project entry split into three skills: a neutral /start routes the
+    greenfield/brownfield fork; /greenfield (renamed from /kickoff) and /brownfield are
+    the two branches.** Trigger: the fork that inverts the whole harness posture was
+    UNROUTED. /kickoff assumed greenfield (its description said "brand-new project"),
+    BROWNFIELD lived only as prose in the PLAYBOOK (366-405) with no skill, so the
+    classification was made implicitly by which path the human happened to invoke - and a
+    greenfield gate on legacy demands retroactive perfection while a brownfield ratchet on
+    a fresh repo grandfathers debt, so choosing wrong poisons every downstream gate.
+    Adopted: /start asks the human green-or-brown before any scaffold/install/edit and
+    routes to /greenfield or /brownfield; /kickoff renamed to /greenfield (content intact,
+    plus a one-line guard redirecting to /brownfield if code exists); /brownfield wraps the
+    PLAYBOOK BROWNFIELD checklist. The classification is a human decision, never detected
+    mechanically - a just-copied template already has files, so a file count misreads a
+    fresh scaffold as legacy (the "100% of the decision human" rule, and the git ls-files
+    idea died on this confound). Rejected: two peer skills (the human self-routes by
+    picking one = the implicit classification we were removing); /kickoff-as-router (an
+    overloaded name); mechanical detection (a decision, not a datum). Enforcement: /start
+    is steer - it forces the question only if invoked, so a SessionStart/PreToolUse
+    hard-force hook stays a deferred option (a once-per-project event did not earn it).
+    This overrides ADR 18's "extract on first real use" defer, whose trigger is now met: a
+    brownfield rehearsal is imminent and Kinous was already one. Only live references were
+    updated (README, PLAYBOOK, plan skill); the append-only history (CLAIMS/DECISIONS/
+    briefs) naming /kickoff is left as dated snapshots. Enforcement mix after: force 39,
+    half-force 12, steer 35 (the C-154 steer row; the rename moved no row).
+50. **2026-08-07 - Kickoff skills re-tiered from harness-project-scope to user-tier.**
+    Trigger: /start (and /greenfield, /brownfield) lived in `agentic-harness/.claude/skills`
+    (project-scoped), so they were unreachable from a fresh project folder - the exact place
+    you invoke them. A skill that births a project cannot be project-scoped to a DIFFERENT
+    project; by definition the new repo has no skills yet. Confirmed independently by a second
+    session whose start-menu contained no birth skill and which drove its kickoff by executing
+    the PLAYBOOK checklist by hand. Root cause: the tiering rule (PLAYBOOK step 7) classified
+    universal-personal, stack-family and project-specific skills but never the kickoff skill
+    itself, so it defaulted next to /absorb (which correctly IS project-scoped - it edits the
+    harness ledger). Adopted: move /start, /greenfield, /brownfield to `home/skills` (bootstrap
+    symlinks them to `~/.claude/skills` = universal); /absorb stays; PLAYBOOK step 7 now
+    classifies them explicitly. Rejected: symlinking `.claude/skills` into `~/.claude` (fixes
+    this machine but leaves a local-located, universal-reach file - the anti-pattern being
+    fixed - and is not reproducible, since bootstrap only globs `home/skills`). Positive proof
+    the three-tier system is otherwise sound: the ts-base skills appeared in the menu the moment
+    they were copied into the consuming project, and /feature plus the auditor ran. Follow-up
+    (deferred): a selftest assertion that the kickoff skills are user-tier, so this cannot
+    regress. Enforcement mix after: force 39, half-force 12, steer 36 (C-155 supersedes C-154's
+    location anchor).

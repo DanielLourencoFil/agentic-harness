@@ -334,14 +334,19 @@ echo "==> wiring: settings.json must be valid and reference every hook script"
 echo "==> skill-activation: tracked skill auto-links; untracked only warns; idempotent"
 SA_REPO="$TMP/sa-repo"; SA_HOME="$TMP/sa-home"
 mkdir -p "$SA_REPO/home/skills/tracked-rite" "$SA_REPO/home/skills/foreign-drop" \
-  "$SA_HOME/.claude/skills"
+  "$SA_REPO/home/skills/sidecar-draft" "$SA_HOME/.claude/skills"
 : > "$SA_REPO/home/skills/tracked-rite/SKILL.md"
 : > "$SA_REPO/home/skills/foreign-drop/SKILL.md"
+# sidecar-draft: a sibling file is committed but SKILL.md itself is NOT - it must
+# read as untracked (the ADR 43 invariant is that SKILL.md passed the commit gate).
+: > "$SA_REPO/home/skills/sidecar-draft/README.md"
+: > "$SA_REPO/home/skills/sidecar-draft/SKILL.md"
 git -C "$SA_REPO" init -q
 git -C "$SA_REPO" config user.email selftest@local
 git -C "$SA_REPO" config user.name selftest
 git -C "$SA_REPO" config commit.gpgsign false
 git -C "$SA_REPO" add home/skills/tracked-rite/SKILL.md   # foreign-drop stays untracked
+git -C "$SA_REPO" add home/skills/sidecar-draft/README.md # its SKILL.md stays untracked
 git -C "$SA_REPO" commit -q -m seed
 skill_activation() {
   env HOME="$SA_HOME" AGENTIC_HARNESS_DIR="$SA_REPO" python3 "$BIN/skill-activation.py"
@@ -356,20 +361,70 @@ grep -q "foreign-drop" <<<"$out" || { echo "FAIL: untracked drop not warned" >&2
 if [ -e "$SA_HOME/.claude/skills/foreign-drop" ]; then
   echo "FAIL: untracked drop was auto-activated (the foreign-skill risk)" >&2; exit 1
 fi
-# Vet the drop (commit it): the next run must AUTO-LINK it, since tracked = vetted.
-git -C "$SA_REPO" add home/skills/foreign-drop/SKILL.md
-git -C "$SA_REPO" commit -q -m "vet the drop"
+# Sidecar-tracked case (ultrareview finding, ADR 44): SKILL.md itself is
+# uncommitted, so the dir must read as untracked - warned, never linked, even
+# though a sibling (README) IS tracked. Otherwise "tracked = vetted" is a lie.
+grep -q "sidecar-draft" <<<"$out" || { echo "FAIL: sidecar-tracked dir (SKILL.md uncommitted) not warned" >&2; exit 1; }
+if [ -e "$SA_HOME/.claude/skills/sidecar-draft" ]; then
+  echo "FAIL: a dir with only a sibling tracked was auto-activated - tracked=vetted broke" >&2; exit 1
+fi
+# Vet properly (commit the SKILL.md itself): only then must each AUTO-LINK. The
+# sidecar's tracked README was never enough.
+git -C "$SA_REPO" add home/skills/foreign-drop/SKILL.md home/skills/sidecar-draft/SKILL.md
+git -C "$SA_REPO" commit -q -m "vet the drop and the sidecar"
 skill_activation >/dev/null
-if [ ! -L "$SA_HOME/.claude/skills/foreign-drop" ]; then
+if [ ! -L "$SA_HOME/.claude/skills/foreign-drop" ] || [ ! -L "$SA_HOME/.claude/skills/sidecar-draft" ]; then
   echo "FAIL: a now-tracked skill was not activated on the next run" >&2; exit 1
 fi
 # Idempotent: everything tracked and linked -> silent.
 out3="$(skill_activation)"
 [ -z "$out3" ] || { echo "FAIL: not silent when all tracked and linked" >&2; echo "$out3" >&2; exit 1; }
 
+# ---------------------------------------------------------------------------
+# backlog-inject: the cross-project BACKLOG is injected ONLY at the desk
+# (cwd == ~/Dev). In any project subfolder it stays silent, so the index and its
+# career PII never leak into a project or a screen-shared interview (ADR 45).
+echo "==> backlog-inject: injects at the ~/Dev desk, silent in a project subfolder"
+mkdir -p "$FAKEHOME/Dev/proj-x"
+printf '# BACKLOG\nSENTINEL-BACKLOG-LINE\n' > "$FAKEHOME/Dev/BACKLOG.md"
+backlog_inject() { printf '%s' "$1" | env HOME="$FAKEHOME" python3 "$BIN/backlog-inject.py"; }
+out="$(backlog_inject '{"cwd":"'"$FAKEHOME"'/Dev"}')"
+grep -q "SENTINEL-BACKLOG-LINE" <<<"$out" || { echo "FAIL: backlog not injected at the desk" >&2; echo "$out" >&2; exit 1; }
+out="$(backlog_inject '{"cwd":"'"$FAKEHOME"'/Dev/proj-x"}')"
+[ -z "$out" ] || { echo "FAIL: backlog injected in a project session (the PII leak)" >&2; echo "$out" >&2; exit 1; }
+
+# ---------------------------------------------------------------------------
+# push-guard: a git push that REACHES the default branch is denied by resolving
+# the actual target (not string-matching), closing the forms that slipped the
+# project blocklist; a clear work-branch push passes silently (ADR 46).
+echo "==> push-guard: denies pushes reaching the default branch, allows work branches"
+PG="$TMP/pg-repo"; mkdir -p "$PG"
+git -C "$PG" init -q -b main
+git -C "$PG" config user.email selftest@local; git -C "$PG" config user.name selftest
+git -C "$PG" config commit.gpgsign false
+git -C "$PG" commit -q --allow-empty -m seed
+push_guard() { ( cd "$PG" && printf '%s' "$1" | python3 "$BIN/push-guard.py" ); }
+pg_deny() { grep -q '"permissionDecision": "deny"' <<<"$2" || { echo "FAIL: $1 was NOT denied" >&2; echo "$2" >&2; exit 1; }; }
+pg_allow() { if grep -q 'permissionDecision' <<<"$2"; then echo "FAIL: $1 was gated but must pass" >&2; echo "$2" >&2; exit 1; fi; }
+# The exact forms the blocklist missed, all reaching a default branch -> deny:
+pg_deny "push origin main"          "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push origin main"}}')"
+pg_deny "push -u origin main"       "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push -u origin main"}}')"
+pg_deny "push origin +main"         "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push origin +main"}}')"
+pg_deny "push origin HEAD:main"     "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push origin HEAD:main"}}')"
+pg_deny "push origin feature:master" "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push origin feature:master"}}')"
+pg_deny "bare push on main"         "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push"}}')"
+pg_deny "push origin (on main)"     "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push origin"}}')"
+pg_deny "push origin HEAD (on main)" "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push origin HEAD"}}')"
+# Work-branch pushes must pass silently (the git rite is preserved):
+git -C "$PG" checkout -q -b feat/x
+pg_allow "bare push on work branch" "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push"}}')"
+pg_allow "push origin work branch"  "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push origin feat/x"}}')"
+pg_allow "push -u origin work"      "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push -u origin feat/x"}}')"
+pg_allow "not a git push"           "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git status"}}')"
+
 python3 -c 'import json; json.load(open("'"$SETTINGS"'"))' \
   || { echo "FAIL: home/claude/settings.json is not valid JSON" >&2; exit 1; }
-for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py evidence-gate.py skill-activation.py; do
+for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py evidence-gate.py skill-activation.py backlog-inject.py push-guard.py; do
   grep -q "$script" "$SETTINGS" || { echo "FAIL: $script not wired in settings.json" >&2; exit 1; }
   test -x "$BIN/$script" || { echo "FAIL: $BIN/$script missing or not executable" >&2; exit 1; }
   # The mode GIT records, not the one on disk. This machine has core.fileMode

@@ -53,9 +53,9 @@ echo "==> Step 4 (README): shared files from ts-base"
 cp -r "$TSB/.husky" .
 mkdir -p scripts .github/workflows
 cp "$TSB/scripts/deletion-guard.mjs" "$TSB/scripts/clone-budget-check.mjs" \
-   "$TSB/scripts/clone-detect.mjs" scripts/
-cp "$TSB/.prettierrc.json" "$TSB/.clonebudget.json" "$TSB/AGENTS.md" \
-   "$TSB/CLAUDE.md" "$TSB/GEMINI.md" .
+   "$TSB/scripts/clone-detect.mjs" "$TSB/scripts/stranded-logic-check.mjs" scripts/
+cp "$TSB/.prettierrc.json" "$TSB/.clonebudget.json" "$TSB/.strandedbudget.json" \
+   "$TSB/AGENTS.md" "$TSB/CLAUDE.md" "$TSB/GEMINI.md" .
 cp "$TSB/.github/workflows/ci.yml" "$TSB/.github/workflows/audit.yml" .github/workflows/
 cp -r "$TSB/.claude" .
 cat "$TSB/.gitignore" >> .gitignore
@@ -187,4 +187,28 @@ if pnpm clones > clones.log 2>&1; then
 fi
 grep -q "Copy-paste budget exceeded" clones.log || { cat clones.log >&2; exit 1; }
 
-echo "SELFTEST-REACT OK — stripped scaffold verifies green, hook fires, gate rejects all nine."
+echo "==> Claim 5: the stranded-logic budget rejects pure logic in a .tsx renderer"
+# The gate built for .tsx (ADR 40) must actually run on the .tsx template
+# (ultrareview finding, ADR 44): pure logic in a component is stranded.
+mkdir -p src/components
+cat > src/components/hub.tsx <<'EOF'
+function deriveItems(hasA: boolean, hasB: boolean): string[] {
+  const items: string[] = [];
+  if (hasA) items.push("a");
+  if (hasB) items.push("b");
+  return items;
+}
+export function Hub() {
+  return <div>{deriveItems(true, false).length}</div>;
+}
+EOF
+if pnpm stranded > stranded.log 2>&1; then
+  echo "FAIL: the stranded-logic budget accepted pure logic inside a .tsx (wired-but-blind)" >&2
+  cat stranded.log >&2
+  exit 1
+fi
+grep -q "Stranded-logic budget exceeded" stranded.log || { cat stranded.log >&2; exit 1; }
+grep -q "deriveItems" stranded.log || { echo "FAIL: the failure did not name the stranded function" >&2; cat stranded.log >&2; exit 1; }
+rm -f src/components/hub.tsx
+
+echo "SELFTEST-REACT OK — stripped scaffold verifies green, hook fires, gate rejects all nine, stranded budget rejects .tsx logic."

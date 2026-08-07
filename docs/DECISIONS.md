@@ -1266,3 +1266,24 @@ separate link files rot unread; see ADR 3).
     card's text (brittle text-matching, the trap the harness warns against); claiming a gate on
     the output (none can exist for a guest-repo personal doc). Enforcement: steer (maximised card,
     C-159); no mix change (force 41, half-force 12, steer 38).
+58. **2026-08-07 - A pre-registered kill test is a TEST (skip-with-reason at worst), never a dated
+    prose line; a lint gate keeps a disabled test visible.** Trigger: the ex-3 brownfield exercise
+    shipped a feature whose SPEC named the riskiest assumption AND wrote the exact kill test, but
+    as a dated reminder ("Pre-registered: to be run at the review session of 2026-08-07"). Nothing
+    executes a date; it ran only because the human caught a mal-formed sentence and asked. The
+    concurrency lost-update it would have proven was live in production, past a green suite (164
+    tests, 100% mutation on src/lib) - every gate exercises one request at a time, no mutant
+    expresses two calls interleaving, and the SPEC's own prescription ("pre-registered kill
+    criteria, with a date") is the prose-reminder anti-pattern. Adopted: (1) STEER - /greenfield's
+    SPEC and /feature's closeout now say the riskiest-assumption kill test is a NAMED TEST (red if
+    the assumption is false, or a test.skip/test.todo carrying the assertion and a reason if it
+    needs the feature first), never a dated line; "done" requires it addressed. (2) FORCE - ts-base
+    eslint gains @vitest/eslint-plugin's no-focused-tests (bans .only, which silently disables the
+    suite) and no-disabled-tests (a .skip/.todo must carry an eslint-disable with a reason), so a
+    skipped kill test is visible in lint, not silent in a green run; seen rejecting a planted .only
+    and a bare .skip in selftest.sh Claim 4b. Rejected: a new verify step + script (heavier, drags
+    the doc-rot gate; the eslint rules ride in the existing lint); forcing "the prose became a
+    test" (unforceable, stays steer, the card). Honest limit: this does NOT make the suite catch
+    concurrency (inherent - a lost update is the absence of coordination, not a line); it makes the
+    kill test that WOULD catch it impossible to forget. Enforcement mix after: force 42, half-force
+    12, steer 38 (C-160).

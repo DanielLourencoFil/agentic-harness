@@ -1,4 +1,5 @@
 import js from "@eslint/js";
+import vitest from "@vitest/eslint-plugin";
 import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript";
 import importX from "eslint-plugin-import-x";
 import globals from "globals";
@@ -52,6 +53,18 @@ export default tseslint.config(
     files: ["scripts/**/*.{js,mjs,cjs}"],
     languageOptions: { globals: globals.node },
     rules: { "no-console": "off" },
+  },
+  {
+    // Test hygiene (force): a silently disabled or focused test is a hole in a green suite.
+    // `.only` disables every other test; `.skip`/`.todo` must be a DECISION carrying a reason
+    // (an eslint-disable comment), not silent drift - this is how a pre-registered kill test
+    // for the riskiest assumption stays visible instead of a dated prose reminder nobody runs.
+    files: ["**/*.test.{ts,tsx}", "tests/**/*.{ts,tsx}"],
+    plugins: { vitest },
+    rules: {
+      "vitest/no-focused-tests": "error",
+      "vitest/no-disabled-tests": "error",
+    },
   },
   { ignores: ["dist/", "coverage/", "node_modules/", "**/*.config.*"] },
 );

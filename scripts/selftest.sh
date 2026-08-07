@@ -126,6 +126,37 @@ for rule in "no-explicit-any" "eqeqeq" "switch-exhaustiveness-check" "import-x/n
   }
 done
 
+# Clear Claim 4's violations so the next check sees only the test-hygiene rules fire, isolated.
+rm -f src/violations.ts src/cycle-a.ts src/cycle-b.ts
+echo "==> Claim 4b: test-hygiene rules reject .only and a bare .skip (the kill-test gate, ADR 58)"
+mkdir -p src/lib
+cat > src/lib/hygiene.test.ts <<'EOF'
+import { describe, it, test, expect } from "vitest";
+
+describe.only("focused", () => {
+  it("runs", () => {
+    expect(1).toBe(1);
+  });
+});
+
+test.skip("a silently disabled kill test", () => {
+  expect(1).toBe(2);
+});
+EOF
+if pnpm lint > hygiene.log 2>&1; then
+  echo "FAIL: lint accepted .only and a bare .skip — a kill test could hide in a green suite" >&2
+  cat hygiene.log >&2
+  exit 1
+fi
+for rule in "vitest/no-focused-tests" "vitest/no-disabled-tests"; do
+  grep -q "$rule" hygiene.log || {
+    echo "FAIL: rule '$rule' did not fire on a deliberate test-hygiene violation (wired-but-blind)" >&2
+    cat hygiene.log >&2
+    exit 1
+  }
+done
+rm -f src/lib/hygiene.test.ts
+
 echo "==> Claim 5: the copy-paste budget must block a pasted block and pass when it shrinks"
 rm -f src/violations.ts src/cycle-a.ts src/cycle-b.ts
 # Eight significant lines, which is the window: shorter and the gate is blind by

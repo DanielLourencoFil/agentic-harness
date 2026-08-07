@@ -15,8 +15,10 @@ produces it. No scaffolding, no `pnpm install`, no code before step 3.
 
 - What problem, whose problem, and how do they solve it today?
 - What is IN scope for v1? What is explicitly OUT?
-- What is the riskiest assumption, and what is the cheapest way to kill it?
-  (pre-registered kill criteria, with a date)
+- What is the riskiest assumption, and what is the cheapest way to kill it? The kill criteria
+  are a NAMED TEST - red if the assumption is false; if it needs the feature built first, a
+  `test.skip`/`test.todo` carrying the assertion and a reason. NEVER a dated prose line, which
+  is a reminder nothing runs (the lint gate keeps a skipped kill test visible, not silent).
 - How will we know it worked? (a real-world metric, not a vanity metric)
 - Which surfaces AND effects exist (selects the Layer 3 packs): DB? auth? public API?
   secrets/PII? queues? and, by effect not noun, any operation that must not double-apply

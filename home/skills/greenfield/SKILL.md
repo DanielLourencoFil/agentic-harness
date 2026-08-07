@@ -18,8 +18,11 @@ produces it. No scaffolding, no `pnpm install`, no code before step 3.
 - What is the riskiest assumption, and what is the cheapest way to kill it?
   (pre-registered kill criteria, with a date)
 - How will we know it worked? (a real-world metric, not a vanity metric)
-- Which surfaces exist: DB? auth? money? queues? public API? secrets/PII?
-  (selects the Layer 3 packs)
+- Which surfaces AND effects exist (selects the Layer 3 packs): DB? auth? public API?
+  secrets/PII? queues? and, by effect not noun, any operation that must not double-apply
+  (idempotency), any critical state mutation, any concurrent-write contention (atomicity)?
+  A state-mutating action a user can repeat is a critical mutation even with no money in
+  sight - ask by effect, or the noun-shaped question skips the pack that guards an invariant.
 - Which stack? (selects the Layer 1/2 template)
 
 ## 2. Write the spec, propose the harness
@@ -43,9 +46,22 @@ where `<sha>` = `git -C ~/Dev/agentic-harness rev-parse --short HEAD`. The stamp
 is what a future drift report compares against; a copy may diverge deliberately —
 the stamp keeps the divergence visible instead of silent.
 
+## 4. Before the first feature: /plan, not straight to code
+
+The kickoff assembles the harness; it does not design the feature. Before writing any
+interface, hand the first unit of work to `/plan` (one proposal per round, the human's
+verdict each time), surfacing the design decisions that are the human's - especially the
+ones that LOCK an interface (a persistence signature, an HTTP status map, a client/server
+boundary), which cannot be deferred. For a genuinely single-feature project, run that
+decision pass inline here before touching code rather than hopping to `/plan`. Proposing
+layers or writing a signature before these are answered is the atropelo this step exists
+to stop (ADR 52).
+
 ## Verifiable output
 
 - `docs/SPEC.md` written: what / why / scope in-out / kill criteria / metric.
 - The proposed harness subset, one justification line per layer.
 - Empty-scaffold `pnpm verify` output shown green before any feature code.
 - Every copied skill carrying its `source: agentic-harness@<sha>` stamp.
+- The human-owned design decisions surfaced one per round, each interface-locking one
+  answered (or routed to `/plan`) before its interface is written.

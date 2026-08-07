@@ -1180,3 +1180,19 @@ separate link files rot unread; see ADR 3).
     the selftest scaffolds into a lowercase subdir); create-next-app commits its demo, so the
     selftest resets git for a clean commit #1. Enforcement mix after: force 40, half-force 12,
     steer 36 (C-156).
+52. **2026-08-07 - Greenfield elicits human-owned design decisions before mechanical
+    commitment, closing the "atropelo" a live exercise exposed.** Trigger: /greenfield reached
+    layer selection and interface-writing before the human's design decisions, proposing the
+    layer subset on incomplete input (skipped the critical-mutation/idempotency pack by reading
+    "no payments") and writing an interface (the save signature) the human had not decided.
+    Adopted: (1) reframe the spec-interview surfaces question from nouns to effects (operations
+    that must not double-apply, critical state mutations, concurrent-write contention) so the
+    pack that guards an invariant is selected from the effect, not the noun; (2) the kickoff
+    ends by routing non-trivial features through /plan (the one-proposal-per-round rite) before
+    any interface is written, with a single-feature project running that pass inline in
+    /greenfield. Rejected: folding all feature design into /greenfield (bloats it past the
+    150-line skill cap, conflates project birth with feature design); a hook gate (whether the
+    human decided is semantic, unforceable, a gameable proxy = false confidence); do nothing
+    (the defect recurs). Enforcement: steer (a better prompt at the exact skip point plus a
+    routing rite); the reifiable half is the reframed question, the "did it elicit" half stays
+    the human's replica. Enforcement mix after: force 40, half-force 12, steer 37 (C-157).

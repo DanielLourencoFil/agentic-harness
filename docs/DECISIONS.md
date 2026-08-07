@@ -1287,3 +1287,21 @@ separate link files rot unread; see ADR 3).
     concurrency (inherent - a lost update is the absence of coordination, not a line); it makes the
     kill test that WOULD catch it impossible to forget. Enforcement mix after: force 42, half-force
     12, steer 38 (C-160).
+59. **2026-08-07 - /audit-tests Phase 2 (the mutation reify arm) is wired as a named-list probe;
+    ADR 38's "UI is the least reward" premise is refuted by measurement, but full Stryker-on-UI
+    stays rejected on cost.** Trigger: the ex-3 /audit-tests MEASURED 16 mutants surviving in
+    src/components and src/app (several load-bearing: a sale debiting the wrong ticket type, the
+    ADR-9 refuse/fail distinction erasable with no test failing); after the reified tests the same
+    16 died, in a ~90s named-list probe. /audit-tests (ADR 35) had reserved "Phase 2" for exactly
+    this and marked it "not yet wired", leaving weak-assertion findings open. Adopted: wire Phase 2
+    into the /audit-tests card - a weak-assertion or missing-test-over-correct-code finding is
+    settled by the PROBE (apply the auditor's named mutation to the production code, run the suite,
+    report live/dead); a surviving mutant is the finding proven, a dead one closes it with
+    measurement, and the log counts closed-by-probe. Rejected: widening Stryker's mutate to
+    src/components (verified - the UI templates ship no mutation and no jsdom/testing-library, so
+    full component mutation is a multi-hour infra build the ex-3 measurement did not need; the
+    named-list probe reaches the same code, fast and targeted and proven); doing nothing (the 16
+    survivors refute ADR 38's reward premise). Honest limit: the probe is steer (a rite mechanism,
+    ad-hoc per finding, not a shipped generic script - the mutations are per-finding), but the rite
+    runs and now MEASURES (16 survived, 16 killed). Enforcement mix after: force 42, half-force 12,
+    steer 39 (C-161).

@@ -1305,3 +1305,23 @@ separate link files rot unread; see ADR 3).
     ad-hoc per finding, not a shipped generic script - the mutations are per-finding), but the rite
     runs and now MEASURES (16 survived, 16 killed). Enforcement mix after: force 42, half-force 12,
     steer 39 (C-161).
+
+60. 2026-08-07 - Automated Stryker mutation widened to src/components in next-starter. Trigger:
+    ADR 59 wired the named-list probe as the manual reach into UI, but its cost premise ("full
+    component mutation is a multi-hour infra build") was itself a hypothesis; a spike MEASURED
+    Stryker mutating a .tsx component through the vitest + jsdom runner in 9s, exit-coding on the
+    survivor. The infra ex-3 added for jsdom (3 devDeps + a per-file `// @vitest-environment jsdom`
+    directive) is cheap, not multi-hour - only the belief was expensive. Adopted: next-starter ships
+    stryker.config.mjs with mutate = src/lib + src/components (src/app excluded), break 100,
+    allowEmpty; package.snippet adds the mutants/mutants:ci scripts and the jsdom + testing-library
+    + @stryker devDeps; next-conventions.md states components are mutation-tested so a test asserts
+    behaviour not presence; selftest-next Claim 6 plants a component with a WEAK test (survivor,
+    mutants fails), then a STRONG test (all die, mutants passes), and passes empty first (allowEmpty).
+    Rejected: leaving mutation at ADR 59's manual probe only (the spike refuted its cost premise, so
+    the automated gate is now cheap enough to ship - the probe stays as the brownfield/ad-hoc reach
+    where no Stryker config exists); widening to src/app (Server Components and pages are the
+    integration/e2e case ADR 38 correctly named expensive). Relationship to ADR 59: complementary,
+    not replacing - shipped scaffolds get the automated gate, foreign/brownfield diffs get the probe.
+    Honest limit: break 100 on a fresh scaffold is a live gate; a brownfield adopter raises the
+    budget or ratchets as ADR 38 does for the pure core. Enforcement mix after: force 43, half-force
+    12, steer 39 (C-162). Follow-up (BACKLOG): port the same config to react-starter and vue-starter.

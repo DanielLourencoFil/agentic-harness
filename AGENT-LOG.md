@@ -166,3 +166,24 @@ aria-live). The exact set is extracted from which questions the dashboard slice 
 load-bearing (ADR 18), not guessed now; and it stays elicitation, never a UI-quality gate
 (that would be ADR 25 frozen quality-doctrine, C-148's neighbourhood).
 
+## 2026-08-07 — The rite forces evidence for logic, never for the rendered artifact
+
+Exercise-2's dashboard passed `verify` (typecheck, lint, clones, stranded, tests), a 100%
+mutation score, and the agent's own review — while carrying four defects a human catches in
+ten seconds with the browser open: an ambiguous "Sold" label, negative quantities the input
+accepted, a table that reflowed wrong, and a file the agent had dispensed from tests in
+writing. None left an automated gate, because no gate opens a browser and looks.
+
+This is the "shown evidence" rule (compiles is not works; show the output) with a hole: it
+forces command-output evidence for LOGIC, but there is no equivalent for the RENDERED,
+INTERACTIVE artifact. "It renders" is not "it works", and nothing in the rite makes the agent
+prove the second. Distinct from the UI-design gap above: that one is about ASKING what to
+build; this is about VERIFYING what was built. Design before, inspection after.
+
+harness-candidate: extend the evidence rule to the rendered artifact. The reifiable half is a
+component/interaction test layer (Testing Library + user-event, or Playwright) asserting that a
+click produces the outcome and the displayed number changes — a real gate, force, not frozen by
+ADR 25 (it is evidence, not taste). The steer half is the inspection step itself: open it, click
+it, look at what you claim is done. The exact shape is extracted from which of exercise-2's four
+defects a component test would have caught vs which needed a human eye (ADR 18).
+

@@ -68,7 +68,7 @@ cat "$TSB/.gitignore" >> .gitignore
 chmod +x .husky/pre-commit
 
 echo "==> Step 5 (README): next-starter overrides + conventions appended"
-cp "$NEXT/eslint.config.mjs" "$NEXT/tsconfig.json" "$NEXT/vitest.config.mts" .
+cp "$NEXT/eslint.config.mjs" "$NEXT/tsconfig.json" "$NEXT/vitest.config.mts" "$NEXT/stryker.config.mjs" .
 printf '\n' >> AGENTS.md
 cat "$NEXT/next-conventions.md" >> AGENTS.md
 
@@ -225,4 +225,54 @@ fi
 grep -q "Stranded-logic budget exceeded" stranded.log || { cat stranded.log >&2; exit 1; }
 grep -q "deriveItems" stranded.log || { echo "FAIL: the failure did not name the stranded function" >&2; cat stranded.log >&2; exit 1; }
 
-echo "SELFTEST-NEXT OK — stripped scaffold verifies green, hook fires, gate rejects all nine plus the next/* pure-core ban, copy-paste and stranded .tsx budgets reject."
+echo "==> Claim 6: mutation covers src/components — a weak component test leaves a mutant alive (ADR 60)"
+rm -f src/components/hub.tsx
+mkdir -p src/components
+# Empty scope must pass (allowEmpty), so a fresh scaffold is not held hostage before any component.
+pnpm mutants > mut-empty.log 2>&1 || { echo "FAIL: mutants must pass on an empty scope (allowEmpty)" >&2; cat mut-empty.log >&2; exit 1; }
+cat > src/components/badge.tsx <<'EOF'
+export function Badge({ remaining }: { remaining: number }) {
+  return <span>{remaining === 0 ? "Sold out" : "Available"}</span>;
+}
+EOF
+# WEAK: renders but never asserts the text, so the string-swap and condition mutants survive.
+cat > src/components/badge.test.tsx <<'EOF'
+// @vitest-environment jsdom
+import { render } from "@testing-library/react";
+import { expect, test } from "vitest";
+
+import { Badge } from "./badge";
+
+test("renders", () => {
+  const { container } = render(<Badge remaining={0} />);
+  expect(container).toBeTruthy();
+});
+EOF
+if pnpm mutants > mut-weak.log 2>&1; then
+  echo "FAIL: mutation passed a weak component test — a survivor went unpunished (blind to components)" >&2
+  cat mut-weak.log >&2
+  exit 1
+fi
+grep -qi "surviv" mut-weak.log || { echo "FAIL: the weak component test did not leave a surviving mutant" >&2; cat mut-weak.log >&2; exit 1; }
+# STRONG: pins the behaviour in both branches, so every mutant dies.
+cat > src/components/badge.test.tsx <<'EOF'
+// @vitest-environment jsdom
+import { render, screen } from "@testing-library/react";
+import { expect, test } from "vitest";
+
+import { Badge } from "./badge";
+
+test("shows Sold out when nothing remains", () => {
+  render(<Badge remaining={0} />);
+  expect(screen.getByText("Sold out")).toBeTruthy();
+});
+
+test("shows Available when tickets remain", () => {
+  render(<Badge remaining={5} />);
+  expect(screen.getByText("Available")).toBeTruthy();
+});
+EOF
+pnpm mutants > mut-strong.log 2>&1 || { echo "FAIL: a strong component test still failed mutation (score < 100)" >&2; cat mut-strong.log >&2; exit 1; }
+rm -f src/components/badge.tsx src/components/badge.test.tsx
+
+echo "SELFTEST-NEXT OK — stripped scaffold verifies green, hook fires, gate rejects all nine plus the next/* pure-core ban, copy-paste and stranded .tsx budgets reject, and mutation catches a weak component test."

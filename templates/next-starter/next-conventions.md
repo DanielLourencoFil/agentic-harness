@@ -13,3 +13,8 @@
 - **Async Server Components are integration-tested, not unit-tested**: keep the
   unit-tested logic pure in `src/lib`, which the node-env Vitest suite covers without a
   browser.
+- **Component tests opt into jsdom per file** with `// @vitest-environment jsdom` at the top
+  (the suite is node-env by default); render with `@testing-library/react`. Components ARE
+  mutation-tested (`src/components` is in the Stryker scope, ADR 60), so a component test that
+  only checks "it renders" leaves the mutant that swaps its behaviour alive: assert the
+  behaviour, not the presence.

@@ -6,6 +6,8 @@
     "clones": "node scripts/clone-budget-check.mjs",
     "stranded": "node scripts/stranded-logic-check.mjs",
     "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm stranded && pnpm test",
+    "mutants": "stryker run",
+    "mutants:ci": "stryker run --incremental",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -20,6 +22,11 @@
     "prettier": "^3",
     "vitest": "^4",
     "@vitest/coverage-v8": "^4",
+    "jsdom": "^30",
+    "@testing-library/react": "^16",
+    "@testing-library/user-event": "^14",
+    "@stryker-mutator/core": "^9",
+    "@stryker-mutator/vitest-runner": "^9",
     "husky": "^9",
     "lint-staged": "^17"
   }

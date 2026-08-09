@@ -1369,3 +1369,23 @@ separate link files rot unread; see ADR 3).
     selftest-proven (Claim 10), but the map's fidelity stays the adopter's replica. Enforcement mix
     after: force 45, half-force 12, steer 39 (C-164). Follow-up (BACKLOG): the override ships in
     ts-base; propagate it to the next/react/vue starters alongside the ADR 60/61 ports.
+
+63. 2026-08-09 - Brownfield baseline gains a fourth state (already-ratcheted) via an adopter-declared
+    gate nature in .harness/gates.sh. Trigger: the Kinous baseline run (second finding, session
+    calendar-app-fb) showed lint and clones passing because their ceilings were pinned to the floor
+    two hours earlier (38/38, 749/749), which brownfield-baseline.sh labeled zero-cost-day-1 "wire it
+    as blocking today" - to gates already wired - and the summary read "0 to ratchet" as if the repo
+    carried no debt. The two-bucket model (pass -> zero-cost / fail -> ratchet) fits a virgin day-one
+    repo but false-cleans a partially-adopted day-N one. Adopted: A - .harness/gates.sh declares each
+    gate's nature (a RATCHETED_GATES list); a ratcheted gate that passes reads "already-ratcheted
+    (wired at its pinned ceiling: carries debt, not clean)" instead of zero-cost, and the summary
+    counts a fourth bucket; unmarked gates keep the ADR 62 behavior; selftest Claim 11 marks a gate
+    ratcheted, has it pass, and asserts it reads already-ratcheted while an undeclared passing gate
+    stays zero-cost. Rejected: B count-based auto-detect (guessed counts/ceilings are a false
+    Verificado, worse than none - trust > dev speed, same as ADR 62's B); C require raw-count commands
+    (breaks on the many repos with only pass/fail budgets, and answers "how many" not "already
+    ratcheted"); D do nothing (false-clean on every day-N repo, shown on Kinous). Honest limit:
+    half-force - the label is honest only if the adopter declares the nature truthfully; a
+    mis-declaration restores the false-clean and the tool cannot verify it. Enforcement mix after:
+    force 46, half-force 12, steer 39 (C-165). Follow-up (BACKLOG): the fourth state ships in ts-base;
+    carry it to the next/react/vue starters with the ADR 60/61/62 ports.

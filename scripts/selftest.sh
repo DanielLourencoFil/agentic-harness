@@ -416,4 +416,18 @@ grep -qE "^ +stranded +absent" baseline-override.log || { echo "FAIL: an empty G
 grep -qE "^ +mutation +absent" baseline-override.log || { echo "FAIL: an empty GATE_mutation must read 'absent'" >&2; cat baseline-override.log >&2; exit 1; }
 rm -rf src .harness
 
-echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone + stranded budgets hold, diff-size nudge warns, mutation kills a weak test, brownfield baseline classifies every gate and adapts to a per-repo override."
+echo "==> Claim 11: a gate declared already-ratcheted reads 'already-ratcheted', not zero-cost (ADR 63)"
+# On a partially-adopted repo a gate can already be wired as a ratchet, sitting at its pinned
+# ceiling: it PASSES but is not clean. RATCHETED_GATES in .harness/gates.sh declares that, so the
+# baseline does not false-clean it as zero-cost-day-1. Here lint passes on the scaffold, but declared
+# ratcheted it must read 'already-ratcheted', while an undeclared passing gate stays zero-cost.
+rm -rf src .harness && mkdir -p src/lib .harness
+cat > .harness/gates.sh <<'EOF'
+RATCHETED_GATES="lint"
+EOF
+pnpm baseline > baseline-ratcheted.log 2>&1 || { echo "FAIL: baseline must exit 0 with a ratcheted gate declared" >&2; cat baseline-ratcheted.log >&2; exit 1; }
+grep -qE "^ +lint +already-ratcheted" baseline-ratcheted.log || { echo "FAIL: a declared-ratcheted passing gate must read 'already-ratcheted', not zero-cost (false-clean)" >&2; cat baseline-ratcheted.log >&2; exit 1; }
+grep -qE "^ +types +zero-cost-day-1" baseline-ratcheted.log || { echo "FAIL: an undeclared passing gate must still read zero-cost-day-1" >&2; cat baseline-ratcheted.log >&2; exit 1; }
+rm -rf src .harness
+
+echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone + stranded budgets hold, diff-size nudge warns, mutation kills a weak test, brownfield baseline classifies every gate, adapts to a per-repo override, and does not false-clean an already-ratcheted gate."

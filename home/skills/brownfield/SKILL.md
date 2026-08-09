@@ -32,7 +32,9 @@ Run `pnpm baseline` first: it runs the FULL gate set once against the untouched 
 read-only, and classifies each by result - types, lint, clones, stranded, mutation.
 On a repo whose gate names differ, or that lacks a gate, map each to its real command in
 `.harness/gates.sh` (one `GATE_<name>` per line, empty = absent); with no file the ts-base
-names apply (ADR 62). Classify by RUNNING, never from memory: which bucket a gate falls in
+names apply (ADR 62). If some gates are already wired as ratchets (a partially-adopted repo),
+list them in `RATCHETED_GATES` so a passing ratchet reads `already-ratcheted`, not a false-clean
+`zero-cost` (ADR 63). Classify by RUNNING, never from memory: which bucket a gate falls in
 is repo-specific, and a gate left out of the baseline is a gate that never gets a ratchet
 (permanently ungated in brownfield). For each gate the baseline FAILS, snapshot the count; the gate
 is: counts may only fall, CI fails on any increase. As a rule reaches zero in a

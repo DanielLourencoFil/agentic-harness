@@ -16,6 +16,12 @@
 #   GATE_stranded=""               # absent: this repo has no stranded gate yet
 # With no such file, the ts-base defaults apply and the ts-base selftest is unchanged.
 #
+# A partially-adopted repo has gates already WIRED as a ratchet, sitting at a pinned
+# ceiling: they PASS but are not clean (they carry debt). List them in RATCHETED_GATES so
+# the baseline reads them "already-ratcheted", not "zero-cost-day-1 wire it today" - a
+# passing ratchet is not a clean gate, and calling it zero-cost false-cleans the repo (ADR 63):
+#   RATCHETED_GATES="lint clones"  # already wired here, at their ceilings
+#
 # Mutation runs Stryker over the whole repo and may take minutes on a large codebase;
 # it is deliberately last. This script never fails the build: the report is the product.
 set -u
@@ -26,15 +32,20 @@ GATE_lint="pnpm lint"
 GATE_clones="pnpm clones"
 GATE_stranded="pnpm stranded"
 GATE_mutation="pnpm mutants"
+# Gates already wired as a ratchet in THIS repo (space-separated); a virgin repo has none.
+RATCHETED_GATES=""
 if [ -f .harness/gates.sh ]; then
   # shellcheck disable=SC1091
   . .harness/gates.sh
 fi
 
 zero_cost=0
+already=0
 ratchet=0
 absent=0
 notconf=0
+
+is_ratcheted() { case " $RATCHETED_GATES " in *" $1 "*) return 0 ;; *) return 1 ;; esac; }
 
 run_gate() {
   local name="$1"
@@ -42,18 +53,23 @@ run_gate() {
   local cmd="${!var-}"
   local log="baseline-${name}.log"
   if [ -z "$cmd" ]; then
-    printf '  %-10s  absent           (this repo has no %s gate - a candidate to add later)\n' "$name" "$name"
+    printf '  %-10s  absent            (this repo has no %s gate - a candidate to add later)\n' "$name" "$name"
     absent=$((absent + 1))
     return
   fi
   if $cmd > "$log" 2>&1; then
-    printf '  %-10s  zero-cost-day-1  (passes now via `%s`: wire it as blocking today)\n' "$name" "$cmd"
-    zero_cost=$((zero_cost + 1))
+    if is_ratcheted "$name"; then
+      printf '  %-10s  already-ratcheted (wired at its pinned ceiling via `%s`: carries debt, not clean - keep it falling)\n' "$name" "$cmd"
+      already=$((already + 1))
+    else
+      printf '  %-10s  zero-cost-day-1   (passes clean now via `%s`: wire it as blocking today)\n' "$name" "$cmd"
+      zero_cost=$((zero_cost + 1))
+    fi
   elif grep -qiE 'missing script|cannot find module|no such file|command ".*" not found' "$log"; then
-    printf '  %-10s  not-configured   (`%s` did not resolve: fix the command in .harness/gates.sh)\n' "$name" "$cmd"
+    printf '  %-10s  not-configured    (`%s` did not resolve: fix the command in .harness/gates.sh)\n' "$name" "$cmd"
     notconf=$((notconf + 1))
   else
-    printf '  %-10s  RATCHET          (fails now via `%s`: record the count in %s as a ceiling that may only fall)\n' "$name" "$cmd" "$log"
+    printf '  %-10s  RATCHET           (fails now via `%s`: record the count in %s as a ceiling that may only fall)\n' "$name" "$cmd" "$log"
     ratchet=$((ratchet + 1))
   fi
 }
@@ -67,7 +83,7 @@ run_gate clones
 run_gate stranded
 run_gate mutation
 echo
-echo "Summary: ${zero_cost} zero-cost-day-1, ${ratchet} to ratchet, ${absent} absent, ${notconf} not-configured."
-echo "Next (PLAYBOOK BROWNFIELD step 2-3): wire the zero-cost gates as blocking now;"
-echo "record each RATCHET count as a CI ceiling that may only fall; treat 'absent' as a gate to"
-echo "add later. The diff stays greenfield."
+echo "Summary: ${zero_cost} zero-cost-day-1, ${already} already-ratcheted, ${ratchet} to ratchet, ${absent} absent, ${notconf} not-configured."
+echo "Next (PLAYBOOK BROWNFIELD step 2-3): wire the zero-cost gates as blocking now; record each"
+echo "RATCHET count as a CI ceiling that may only fall; confirm each already-ratcheted gate's ceiling"
+echo "can still only fall (it is debt, not clean); treat 'absent' as a gate to add later. The diff stays greenfield."

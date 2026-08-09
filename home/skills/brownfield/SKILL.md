@@ -18,7 +18,12 @@ it). Then distill from that the SHAREABLE part the change needs: an `AGENTS.md` 
 codebase's ACTUAL conventions (new code looks like the repo, not the model's training data);
 `docs/DECISIONS.md` started now, decisions recorded as discovered, never invented; a
 danger-zones list (money, auth, undocumented invariants). The onboarding map is yours; the
-`AGENTS.md` is what the team inherits.
+`AGENTS.md` is what the team inherits. Direction matters in brownfield: if a vendor file
+(CLAUDE.md, GEMINI.md, .cursorrules) is ALREADY the de-facto canonical - referenced beyond the
+repo's mass-refactor threshold - canonicalizing away from it is the forbidden drive-by (Layer A).
+Invert instead: make `AGENTS.md` a thin pointer to that file (the inverse of the greenfield
+template, where CLAUDE.md points to AGENTS.md), leaving its references intact. Below the
+threshold, canonicalize as greenfield. (ADR 64)
 
 ## 2. Wire the zero-cost gates day one
 

@@ -16,7 +16,7 @@ blast radius (data migration, public API change, production deploy).
 
 ## The five steps, in order
 
-1. **Problem, no jargon (English).** What is being decided, which constraint or
+1. **Problem, no jargon (Portuguese).** What is being decided, which constraint or
    invariant is at stake, and what happens if nothing is decided.
 2. **Real alternatives (2-4).** Always include the boring default and, when honest,
    "do nothing". For each: what it buys, what it costs, where it breaks. No strawmen:
@@ -30,7 +30,8 @@ blast radius (data migration, public API change, production deploy).
 
 ## Rules
 
-- Conversation in English, like the ADR line (2026-08-07; was Portuguese, see CLAUDE.md).
+- Conversation in Portuguese; the ADR line in English (2026-08-09; the English-for-screen
+  rule of 2026-08-07 was dropped, see CLAUDE.md).
 - If the decision touches auth, billing, guards, or a core algorithm: stop after step 4
   and ask for confirmation before implementing anything (standing rule).
 - If the alternatives cannot be compared honestly with what is known, say exactly what

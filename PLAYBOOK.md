@@ -395,11 +395,15 @@ standard; hold the repo to a ratchet.**
 2. **Wire the zero-cost gates on day one** — they never touch legacy: prettier via
    lint-staged (staged files only), deletion guard, commit conventions, secrets
    read-block, CI running whatever is already green.
-3. **Baseline + ratchet for everything else.** Snapshot current violation counts
-   (lint errors, type errors). The gate: **counts may only fall** — CI fails on any
-   increase. Zero-warnings remains the greenfield rule; in brownfield the budget
-   exists, but only as a ratchet. As a rule's count reaches zero in a directory,
-   flip it to `error` there — permanently.
+3. **Baseline + ratchet for everything else.** Run `pnpm baseline` first: it runs the
+   FULL gate set once against the untouched repo, read-only, and classifies each by
+   result (types, lint, clones, stranded, mutation). Classify by running, never from
+   memory: which bucket a gate falls in is repo-specific, and a gate left out of the
+   baseline is a gate that never gets a ratchet (permanently ungated in brownfield).
+   For each gate the baseline fails, snapshot the count; the gate is: **counts may only
+   fall** and CI fails on any increase. Zero-warnings remains the greenfield rule; in
+   brownfield the budget exists, but only as a ratchet. As a rule's count reaches zero
+   in a directory, flip it to `error` there, permanently.
 4. **The diff is greenfield.** New and changed code meets the full standard: strict
    rules on staged files, tests ship in the same commit, evidence gate as always.
 5. **Characterization before modification.** Untested legacy about to be touched

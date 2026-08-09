@@ -378,4 +378,25 @@ grep -q "stryker-incremental.json" .github/workflows/ci.yml \
 grep -q "\"mutants:ci\": \"stryker run --incremental\"" package.json \
   || { echo "FAIL: the mutants:ci script is missing or not incremental" >&2; exit 1; }
 
-echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone + stranded budgets hold, diff-size nudge warns, mutation kills a weak test."
+echo "==> Claim 9: brownfield baseline enumerates EVERY gate and classifies by running (ADR 61)"
+# The operational half of the brownfield rite's "snapshot violation counts": pnpm baseline
+# runs the FULL gate set read-only and labels each PASS->zero-cost / FAIL->ratchet. A gate
+# left out of the baseline never gets a ratchet, so pin that all five appear, that a clean
+# scaffold classifies them all zero-cost, and that a planted type error flips its gate to
+# RATCHET (the label tracks the run, not a hardcoded banner).
+rm -rf src && mkdir -p src/lib
+pnpm baseline > baseline-clean.log 2>&1 || { echo "FAIL: baseline must exit 0 (read-only measurement, never a gate)" >&2; cat baseline-clean.log >&2; exit 1; }
+for gate in types lint clones stranded mutation; do
+  grep -qE "^ +${gate} " baseline-clean.log || { echo "FAIL: baseline did not enumerate the '${gate}' gate" >&2; cat baseline-clean.log >&2; exit 1; }
+  grep -qE "^ +${gate} +zero-cost-day-1" baseline-clean.log || { echo "FAIL: on a clean scaffold '${gate}' should be zero-cost-day-1" >&2; cat baseline-clean.log >&2; exit 1; }
+done
+# A real violation must flip its gate from zero-cost to RATCHET, proving the label tracks
+# the run and is not a static list.
+cat > src/lib/bad-type.ts <<'EOF'
+export const wrong: number = "not a number";
+EOF
+pnpm baseline > baseline-dirty.log 2>&1 || { echo "FAIL: baseline must still exit 0 even when a gate fails" >&2; cat baseline-dirty.log >&2; exit 1; }
+grep -qE "^ +types +RATCHET" baseline-dirty.log || { echo "FAIL: a type error did not flip the 'types' gate to RATCHET" >&2; cat baseline-dirty.log >&2; exit 1; }
+rm -rf src
+
+echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone + stranded budgets hold, diff-size nudge warns, mutation kills a weak test, brownfield baseline classifies every gate."

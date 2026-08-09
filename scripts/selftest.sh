@@ -399,4 +399,21 @@ pnpm baseline > baseline-dirty.log 2>&1 || { echo "FAIL: baseline must still exi
 grep -qE "^ +types +RATCHET" baseline-dirty.log || { echo "FAIL: a type error did not flip the 'types' gate to RATCHET" >&2; cat baseline-dirty.log >&2; exit 1; }
 rm -rf src
 
-echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone + stranded budgets hold, diff-size nudge warns, mutation kills a weak test, brownfield baseline classifies every gate."
+echo "==> Claim 10: the baseline reads a per-repo gate override and labels absent gates absent (ADR 62)"
+# A real brownfield repo maps gates to its own command names in .harness/gates.sh, or marks a
+# gate absent (empty) - distinct from a misconfigured one. Without the file the ts-base defaults
+# apply (Claim 9). Here: a gate mapped to a real command still classifies by running; stranded
+# and mutation set empty read as 'absent', not zero-cost and not not-configured.
+rm -rf src .harness && mkdir -p src/lib .harness
+cat > .harness/gates.sh <<'EOF'
+GATE_types="pnpm typecheck"
+GATE_stranded=""
+GATE_mutation=""
+EOF
+pnpm baseline > baseline-override.log 2>&1 || { echo "FAIL: baseline must exit 0 with an override present" >&2; cat baseline-override.log >&2; exit 1; }
+grep -qE "^ +types +zero-cost-day-1" baseline-override.log || { echo "FAIL: a gate mapped to a real command must still classify by running" >&2; cat baseline-override.log >&2; exit 1; }
+grep -qE "^ +stranded +absent" baseline-override.log || { echo "FAIL: an empty GATE_stranded must read 'absent', not not-configured or zero-cost" >&2; cat baseline-override.log >&2; exit 1; }
+grep -qE "^ +mutation +absent" baseline-override.log || { echo "FAIL: an empty GATE_mutation must read 'absent'" >&2; cat baseline-override.log >&2; exit 1; }
+rm -rf src .harness
+
+echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone + stranded budgets hold, diff-size nudge warns, mutation kills a weak test, brownfield baseline classifies every gate and adapts to a per-repo override."

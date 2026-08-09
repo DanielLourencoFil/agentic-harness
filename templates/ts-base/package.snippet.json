@@ -9,6 +9,7 @@
     "verify": "pnpm typecheck && pnpm lint && pnpm clones && pnpm stranded && pnpm test",
     "mutants": "stryker run",
     "mutants:ci": "stryker run --incremental",
+    "baseline": "bash scripts/brownfield-baseline.sh",
     "prepare": "husky"
   },
   "lint-staged": {

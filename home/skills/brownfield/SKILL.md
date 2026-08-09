@@ -23,13 +23,19 @@ danger-zones list (money, auth, undocumented invariants). The onboarding map is 
 ## 2. Wire the zero-cost gates day one
 
 They never touch legacy: prettier via lint-staged (staged files only), deletion guard,
-commit conventions, secrets read-block, CI running whatever is already green.
+commit conventions, secrets read-block, CI running whatever is already green. Plus every
+gate the baseline (step 3) shows PASSING today: those become blocking now, for free.
 
 ## 3. Baseline + ratchet for everything else
 
-Snapshot current violation counts (lint, type errors). The gate: counts may only fall,
-CI fails on any increase. As a rule reaches zero in a directory, flip it to error there
-permanently. Zero-warnings stays the greenfield rule; in brownfield it is a ratchet.
+Run `pnpm baseline` first: it runs the FULL gate set once against the untouched repo,
+read-only, and classifies each by result - types, lint, clones, stranded, mutation.
+Classify by RUNNING, never from memory: which bucket a gate falls in is repo-specific,
+and a gate left out of the baseline is a gate that never gets a ratchet (permanently
+ungated in brownfield). For each gate the baseline FAILS, snapshot the count; the gate
+is: counts may only fall, CI fails on any increase. As a rule reaches zero in a
+directory, flip it to error there permanently. Zero-warnings stays the greenfield rule;
+in brownfield it is a ratchet.
 
 ## 4. The diff is greenfield
 
@@ -62,5 +68,6 @@ trailer on agent commits, the PR provenance section).
 
 - `AGENTS.md` written from the repo's actual conventions, plus a danger-zones list.
 - The zero-cost gates wired and CI green on the existing tree.
-- A baseline snapshot of violation counts, with the ratchet (counts may only fall) in CI.
+- A `pnpm baseline` snapshot classifying every gate (types, lint, clones, stranded,
+  mutation), with the ratchet (counts may only fall) in CI for each one it failed.
 - Characterization tests pinning any legacy touched, before it is modified.

@@ -1325,3 +1325,27 @@ separate link files rot unread; see ADR 3).
     Honest limit: break 100 on a fresh scaffold is a live gate; a brownfield adopter raises the
     budget or ratchets as ADR 38 does for the pure core. Enforcement mix after: force 43, half-force
     12, steer 39 (C-162). Follow-up (BACKLOG): port the same config to react-starter and vue-starter.
+
+61. 2026-08-07 - Brownfield baseline enumerates the FULL gate set and classifies by running.
+    Trigger: a hypothetical (using the harness in full on a mature repo, Kinous) exposed that the
+    brownfield rite's "snapshot current violation counts" step named only "lint, type errors"
+    (skill:30, PLAYBOOK:398) while the harness now ships five gates (types, lint, clones, stranded,
+    mutation, the last widened to src/components by ADR 60 the same day). A gate left out of the
+    baseline is a gate that never enters the ratchet - permanently ungated in brownfield. The step
+    was also prose: nothing produced the snapshot and the classification (zero-cost-day-1 vs ratchet)
+    was assumed known, though which bucket a gate falls in is repo-specific and only the run knows.
+    Adopted: ts-base ships scripts/brownfield-baseline.sh (pnpm baseline) that runs every gate once
+    read-only and labels each PASS -> zero-cost-day-1 / FAIL -> ratchet / missing -> not-configured,
+    never failing the build (the report is the product); the brownfield skill (sections 2-3) and
+    PLAYBOOK item 3 now list the full gate set and require classify-by-running; selftest Claim 9
+    plants a clean scaffold (all five classify zero-cost) and a type error (its gate flips to
+    RATCHET), proving the label tracks the run, not a static banner. Rejected: a bespoke per-repo
+    protocol doc handed to each brownfield (the need for one was itself the smell that the rite was
+    not operational - the procedure belongs in the rite, the filled-in numbers are an output of
+    running it in the target repo's own session); leaving it prose (a gate never snapshotted is
+    never ratcheted). Relationship to ADR 38/60: the baseline is where the mutation gate (now
+    covering components) actually enters a brownfield repo's ratchet. Honest limit: the classify
+    half is force (exit code is the label, seen in Claim 9); deciding each ratchet ceiling stays the
+    human's steer. Enforcement mix after: force 44, half-force 12, steer 39 (C-163). Follow-up
+    (BACKLOG): the baseline script ships in ts-base; propagate the pnpm baseline wiring to
+    next/react/vue starters alongside the ADR 60 port.

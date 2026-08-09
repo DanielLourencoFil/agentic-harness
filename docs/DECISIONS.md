@@ -1349,3 +1349,23 @@ separate link files rot unread; see ADR 3).
     human's steer. Enforcement mix after: force 44, half-force 12, steer 39 (C-163). Follow-up
     (BACKLOG): the baseline script ships in ts-base; propagate the pnpm baseline wiring to
     next/react/vue starters alongside the ADR 60 port.
+
+62. 2026-08-09 - Brownfield baseline adapts to the target repo's gate commands via an optional
+    .harness/gates.sh override, defaulting to the ts-base names. Trigger: the first real /brownfield
+    run (Kinous, session calendar-app-fb) measured that brownfield-baseline.sh hardcodes
+    pnpm typecheck|lint|clones|stranded|mutants (brownfield-baseline.sh:37-41 as shipped by ADR 61),
+    which resolve to nothing on a repo using type-check via turbo and its own budget scripts - the
+    selftest was green on ts-base shape while the script was useless on the one thing it exists for;
+    the not-configured label also could not tell an absent gate from a renamed one. Adopted: A - the
+    script sources an optional per-repo .harness/gates.sh (one GATE_<name> var per gate, empty =
+    absent), falls back to the ts-base defaults when the file is absent so Claim 9 is unchanged, and
+    reports three states (present-passing / present-failing / absent, plus not-configured for a set
+    but unresolvable command); the brownfield skill section 3 documents the override; selftest Claim
+    10 plants a .harness/gates.sh and proves a mapped gate still classifies by running while an
+    explicitly-empty gate reads absent (not zero-cost, not not-configured). Rejected: B auto-detect
+    from package.json/turbo.json (a guessed map is a false Verificado, worse than none - trust > dev
+    speed); C template-to-adapt (retreats force back to steer); D do nothing (selftest theater, it
+    already broke on Kinous). Honest limit: half-force - the run and its honest labels are wired and
+    selftest-proven (Claim 10), but the map's fidelity stays the adopter's replica. Enforcement mix
+    after: force 45, half-force 12, steer 39 (C-164). Follow-up (BACKLOG): the override ships in
+    ts-base; propagate it to the next/react/vue starters alongside the ADR 60/61 ports.

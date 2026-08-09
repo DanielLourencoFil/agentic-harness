@@ -30,9 +30,11 @@ gate the baseline (step 3) shows PASSING today: those become blocking now, for f
 
 Run `pnpm baseline` first: it runs the FULL gate set once against the untouched repo,
 read-only, and classifies each by result - types, lint, clones, stranded, mutation.
-Classify by RUNNING, never from memory: which bucket a gate falls in is repo-specific,
-and a gate left out of the baseline is a gate that never gets a ratchet (permanently
-ungated in brownfield). For each gate the baseline FAILS, snapshot the count; the gate
+On a repo whose gate names differ, or that lacks a gate, map each to its real command in
+`.harness/gates.sh` (one `GATE_<name>` per line, empty = absent); with no file the ts-base
+names apply (ADR 62). Classify by RUNNING, never from memory: which bucket a gate falls in
+is repo-specific, and a gate left out of the baseline is a gate that never gets a ratchet
+(permanently ungated in brownfield). For each gate the baseline FAILS, snapshot the count; the gate
 is: counts may only fall, CI fails on any increase. As a rule reaches zero in a
 directory, flip it to error there permanently. Zero-warnings stays the greenfield rule;
 in brownfield it is a ratchet.

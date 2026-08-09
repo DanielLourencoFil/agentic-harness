@@ -1389,3 +1389,25 @@ separate link files rot unread; see ADR 3).
     mis-declaration restores the false-clean and the tool cannot verify it. Enforcement mix after:
     force 46, half-force 12, steer 39 (C-165). Follow-up (BACKLOG): the fourth state ships in ts-base;
     carry it to the next/react/vue starters with the ADR 60/61/62 ports.
+
+64. 2026-08-09 - Brownfield rite: the vendor-neutral entry point inverts to a thin pointer when the
+    existing vendor file is already deeply referenced. Trigger: the first real /brownfield run
+    (Kinous, third finding, session calendar-app-fb) hit a collision inside the rite - step 1 ("write
+    an AGENTS.md") imports the greenfield model (AGENTS.md canonical, CLAUDE.md = @AGENTS.md, ts-base),
+    but CLAUDE.md was already referenced 72 times across 45 files, so canonicalizing to AGENTS.md
+    would be the exact mass refactor the rite's own no-drive-by-cleanup item and the repo STOP gate
+    forbid. Step 1 collided with item 7. Adopted: A - in brownfield, if canonicalizing to AGENTS.md
+    would touch more files than the repo's mass-refactor threshold, invert: AGENTS.md becomes a thin
+    pointer to the existing canonical vendor file (CLAUDE.md stays canonical, its refs stay valid),
+    the inverse of the greenfield adapter direction; below the threshold, do the greenfield
+    canonicalization; with several vendor files, point at the most-referenced. The trigger is the
+    repo's own refactor limit, not an arbitrary count. Rejected: B full canonicalization now (the
+    forbidden 45-file sweep); C ratchet the refs (reaches the pure end-state but leaves a lingering
+    half-migrated state and changes the meaning of 72 refs the moment CLAUDE.md becomes a stub - kept
+    as the when-NOT for a team that wants true canonicalization); D no AGENTS.md (non-Claude agents
+    get training conventions, the failure the rite prevents). Honest limit: steer - a judgment about
+    when the existing canonical is entrenched enough to invert, plus the asymmetry of shipping two
+    opposite structures (greenfield canonical vs brownfield pointer); admitted under the ADR 25 freeze
+    as process-rite steer (it clarifies an existing rite step to stop self-colliding with layer-A item
+    7, not a new quality doctrine). Change is docs only (brownfield SKILL.md + PLAYBOOK step 1), no
+    code or selftest. Enforcement mix after: force 46, half-force 12, steer 40 (C-166).

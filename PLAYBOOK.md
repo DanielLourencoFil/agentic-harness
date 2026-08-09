@@ -391,7 +391,12 @@ standard; hold the repo to a ratchet.**
    the initial story bible from observation: `AGENTS.md` with the codebase's *actual*
    conventions (new code must look like the repo, not like the agent's training
    data); `docs/DECISIONS.md` started now — decisions recorded as discovered, never
-   invented; a danger-zones list (money, auth, undocumented invariants).
+   invented; a danger-zones list (money, auth, undocumented invariants). Direction
+   matters: if a vendor file (CLAUDE.md, GEMINI.md, .cursorrules) is already the
+   de-facto canonical, referenced beyond the repo's mass-refactor threshold,
+   canonicalizing away from it is the forbidden sweep (item 7). Invert instead: make
+   `AGENTS.md` a thin pointer to that file (the inverse of the greenfield template),
+   its references left intact. Below the threshold, canonicalize as greenfield (ADR 64).
 2. **Wire the zero-cost gates on day one** — they never touch legacy: prettier via
    lint-staged (staged files only), deletion guard, commit conventions, secrets
    read-block, CI running whatever is already green.

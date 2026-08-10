@@ -216,3 +216,31 @@ test that cannot distinguish "correctly quiet" from "dead" is not a test.
 harness-candidate: the filename-grep blindness is not specific to this hook. Ten other hooks are
 still asserted by name only, and the fix here is scoped to the one this PR shipped. Generalizing
 the event+matcher assertion to the whole wiring loop belongs in its own round (ADR 18).
+
+## 2026-08-10 — the guard that denied its own documentation, and allowed the thing it guards
+
+Writing a demo of the hook-wiring gap, push-guard blocked the Bash call because the sentence being
+written contained the phrase for pushing to the default branch, inside an echo. That is the same
+false positive audit-reminder fixed for itself on 2026-07-20; the lesson had not travelled.
+
+Probing the mirror direction is what mattered. The hook read only the FIRST occurrence of the
+phrase anywhere in the command string, so a mention BEFORE the real invocation moved the analysis
+onto the mention's trailing tokens. On a work branch, a status echo followed by a real push to the
+default branch was allowed. No adversarial intent needed: that is a shape an agent composes by
+habit. C-153 claimed the hook "denies ANY git push that reaches the default branch by resolving
+the actual target"; three reproductions said otherwise.
+
+Reviewing the fix found a third hole and, importantly, one I nearly attributed to myself: a quoted
+refspec was compared as a raw token, so it never equalled the branch name. Checking the ORIGINAL
+file out of HEAD before writing the ADR showed it was pre-existing. Blaming your own diff for a
+bug it did not introduce is as wrong as missing it.
+
+Method note worth keeping. Five mutations were planted; four were rejected and one SURVIVED —
+dropping the early return that lets a deny outrank an earlier ask. The suite had no case where an
+ask precedes a deny, reachable only outside a git repo. A surviving mutation is a missing test,
+never a harmless change; the case was added and the mutation now fails.
+
+harness-candidate: heredoc bodies still read as command text, so a commit message mentioning a
+default-branch push is denied — measured while writing that very commit. Deliberately not fixed in
+the same round: a mis-parsed heredoc blanks real command text and HIDES a push, the unsafe
+direction, while today's behaviour only over-blocks. Own round, own tests (ADR 18).

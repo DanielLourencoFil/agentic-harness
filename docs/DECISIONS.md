@@ -1551,3 +1551,38 @@ separate link files rot unread; see ADR 3).
     recorded about its own governance rows: a superseding row is appended, never edited over, so
     the mix ticks up by one half-force while the number of distinct guarantees is unchanged - the
     count measures ledger rows, not promises, and a re-assertion reads like growth.
+70. 2026-08-10 - push-guard judges every push in a compound command, not the first substring, and
+    a quoted refspec stops hiding the default branch. Trigger: while writing a demo of the hook
+    wiring gap, the guard DENIED the sentence documenting it, because the phrase sat inside an
+    echo. The cause was push_args doing re.search(r"\bgit\s+push\b(.*)") over the raw command,
+    matching any occurrence including data - the same false positive audit-reminder had already
+    fixed for itself on 2026-07-20, whose lesson this hook did not inherit. Probing the mirror
+    direction found the serious one: because only the FIRST occurrence was read, a decoy mention
+    moved the analysis onto the mention's trailing tokens, so on a work branch
+    `echo 'a git push' && git push origin main` was ALLOWED, as were the unquoted and
+    shell-comment variants. That contradicts C-153, which claims the hook "denies ANY git push
+    that reaches the default branch by resolving the actual target", and it needs no adversarial
+    intent - a status echo before a push is a shape an agent composes naturally. Reviewing the fix
+    surfaced a third, PRE-EXISTING hole, confirmed against HEAD before blaming the fix: a quoted
+    refspec (`git push origin "main"`) was compared as a raw token, so it never equalled main and
+    was allowed. Adopted: scrub_data blanks quoted regions and comments while PRESERVING offsets,
+    so invocations are located in the scrubbed copy while arguments are read from the original and
+    then unquoted per token; every occurrence is judged, not the first; the strictest verdict wins,
+    deny over ask over silence. Rejected: denying on any unresolvable compound command (the owner
+    chose ASK, the fail-safe branch the hook already had - and DENY would have blocked the very
+    sentence that found the bug); anchoring the match to command start or a shell operator (the
+    audit-reminder approach, which misses `if true; then git push origin main` and other forms
+    where the invocation follows a keyword). Honest limits: splitting the argument chunk on
+    [;&|newline] can truncate an argument that legally contains one of those inside quotes, which
+    errs toward carries-current and therefore toward deny or ask, the safe direction; unbalanced
+    quotes return the command unscrubbed, analysing too much rather than too little; and Bash
+    itself remains uncontained (ADR 29), so this is a safety net over a hole, never a boundary.
+    HEREDOC bodies still read as command text, so a commit message mentioning a default-branch
+    push is denied - measured while writing this very commit. Left unfixed deliberately: a
+    mis-parsed heredoc blanks real command text and HIDES a push, the unsafe direction, whereas
+    the current behaviour only over-blocks, so it earns its own round with its own tests rather
+    than a rushed addition here (harness-candidate, AGENT-LOG).
+    Method note: a fifth planted mutation SURVIVED the suite (dropping the early deny return), which
+    is how the missing ordering test was found - a surviving mutation means a missing test, never a
+    harmless change. Enforcement mix after: force 48, half-force 14, steer 44 (C-174 supersedes
+    C-153).

@@ -571,21 +571,120 @@ grep -q '"Write|Edit|MultiEdit|NotebookEdit"' "$SETTINGS" \
 # bound to the wrong one is as dead as a hook that is absent. Measured by the
 # fresh-context audit of 2026-08-10: swapping decision-nudge's matcher to "Bash"
 # — where the payload never carries file_path, so the hook is structurally
-# unable to fire — left this whole selftest green (ADR 69).
-python3 - "$SETTINGS" <<'PY' || exit 1
-import json, sys
+# unable to fire — left this whole selftest green (ADR 69). Generalised to every
+# hook after two more mutations passed the same way: push-guard moved to the
+# Write block (the default branch loses its wall) and write-containment swapped
+# with shelf-inventory (an Edit escapes the project root), both green (ADR 71).
+#
+# Matchers are compared by INCLUSION, not string equality: widening a matcher
+# with a new tool is safe and must not fail, while dropping a tool the hook needs
+# must. Exact-string comparison would have rejected the safe direction.
+cat > "$TMP/check-wiring.py" <<'PY'
+import json, re, sys
+
+# script -> (event, tools whose payload the hook needs). Empty set = the event
+# carries no matcher (SessionStart, UserPromptSubmit, Stop).
+REQUIRED = {
+    "backlog-inject.py":       ("SessionStart",     set()),
+    "skill-activation.py":     ("SessionStart",     set()),
+    "secret-scan.py":          ("UserPromptSubmit", set()),
+    "deliberation-nudge.py":   ("UserPromptSubmit", set()),
+    "env-dump-guard.py":       ("PreToolUse",       {"Bash"}),
+    "audit-reminder.py":       ("PreToolUse",       {"Bash"}),
+    "push-guard.py":           ("PreToolUse",       {"Bash"}),
+    "write-containment.py":    ("PreToolUse",       {"Write", "Edit", "NotebookEdit"}),
+    "shelf-inventory.py":      ("PreToolUse",       {"Write"}),
+    "decision-nudge.py":       ("PreToolUse",       {"Write", "Edit"}),
+    "recommendation-anchor.py":("Stop",             set()),
+    "evidence-gate.py":        ("Stop",             set()),
+}
+
+def tools(matcher):
+    """Tools a matcher covers. A matcher that is not a plain alternation cannot be
+    verified by splitting, and silently mis-parsing one is how a gate goes blind:
+    say so instead."""
+    if re.search(r"[^\w|]", matcher):
+        return None
+    return set(matcher.split("|"))
+
 settings = json.load(open(sys.argv[1]))
-# hook script -> (event, exact matcher) it must be bound to for its input to exist.
-REQUIRED = {"decision-nudge.py": ("PreToolUse", "Write|Edit")}
-for script, (event, matcher) in REQUIRED.items():
-    found = [b.get("matcher") for b in settings.get("hooks", {}).get(event, [])
-             if any(script in h.get("command", "") for h in b.get("hooks", []))]
-    if not found:
-        sys.exit(f"FAIL: {script} is not wired under {event} at all")
-    if matcher not in found:
-        sys.exit(f"FAIL: {script} is wired under {event} with matcher {found},"
-                 f" expected {matcher!r} — it reads tool_input.file_path, so any"
-                 f" other matcher makes it structurally unable to fire")
+problems = []
+for script, (event, needed) in sorted(REQUIRED.items()):
+    blocks = [b for b in settings.get("hooks", {}).get(event, [])
+              if any(script in h.get("command", "") for h in b.get("hooks", []))]
+    if not blocks:
+        problems.append(f"{script} is not wired under {event} at all")
+        continue
+    if not needed:
+        continue
+    covered = set()
+    for b in blocks:
+        matcher = b.get("matcher", "")
+        got = tools(matcher)
+        if got is None:
+            problems.append(f"{script} has matcher {matcher!r}, which this check "
+                            f"cannot verify by splitting on '|' - widen the check "
+                            f"deliberately rather than leaving it blind")
+            continue
+        covered |= got
+    missing = needed - covered
+    if missing:
+        problems.append(f"{script} is wired under {event} covering {sorted(covered)}, "
+                        f"missing {sorted(missing)} - its payload never arrives for "
+                        f"those tools, so it is as dead as an absent hook")
+for p in problems:
+    print(f"  {p}")
+sys.exit(1 if problems else 0)
 PY
+
+echo "==> wiring: every hook bound to the event AND tools whose payload it needs (ADR 71)"
+if ! out="$(python3 "$TMP/check-wiring.py" "$SETTINGS")"; then
+  echo "FAIL: a hook is wired where its input never arrives" >&2; echo "$out" >&2; exit 1
+fi
+
+echo "==> Negative cases: a misbound hook must be seen rejected, a widened matcher must pass"
+mutate_wiring() { # $1 = python mutation body operating on `s`; stdout = check output
+  python3 - "$SETTINGS" "$TMP/bad-settings.json" <<PY
+import json, sys
+s = json.load(open(sys.argv[1]))
+pre = s["hooks"]["PreToolUse"]
+$1
+json.dump(s, open(sys.argv[2], "w"))
+PY
+  python3 "$TMP/check-wiring.py" "$TMP/bad-settings.json" || true
+}
+# 1. push-guard moved off the Bash block: it never sees a command again.
+out="$(mutate_wiring '
+bash_blk = next(b for b in pre if b.get("matcher") == "Bash")
+write_blk = next(b for b in pre if b.get("matcher") == "Write")
+pg = next(h for h in bash_blk["hooks"] if "push-guard" in h["command"])
+bash_blk["hooks"].remove(pg); write_blk["hooks"].append(pg)')"
+grep -q "push-guard.py" <<<"$out" \
+  || { echo "FAIL: push-guard moved off the Bash block and the check stayed silent" >&2; exit 1; }
+# 2. containment narrowed to Write: an Edit escapes the project root.
+out="$(mutate_wiring '
+full = next(b for b in pre if "Edit" in (b.get("matcher") or ""))
+full["matcher"] = "Write"')"
+grep -q "write-containment.py" <<<"$out" \
+  || { echo "FAIL: containment narrowed to Write and the check stayed silent" >&2; exit 1; }
+# 3. a hook dropped from settings entirely.
+out="$(mutate_wiring '
+for b in pre:
+    b["hooks"] = [h for h in b["hooks"] if "decision-nudge" not in h["command"]]')"
+grep -q "not wired under PreToolUse at all" <<<"$out" \
+  || { echo "FAIL: a hook removed from settings was not reported" >&2; exit 1; }
+# 4. The mirror: WIDENING a matcher is safe and must NOT fail, or the check
+#    punishes the direction it wants. Exact-string comparison failed this.
+out="$(mutate_wiring '
+dn = next(b for b in pre if b.get("matcher") == "Write|Edit")
+dn["matcher"] = "Write|Edit|MultiEdit"')"
+test -z "$out" \
+  || { echo "FAIL: widening a matcher was rejected - inclusion, not equality" >&2; echo "$out" >&2; exit 1; }
+# 5. A matcher this check cannot split must say so, never pass silently.
+out="$(mutate_wiring '
+dn = next(b for b in pre if b.get("matcher") == "Write|Edit")
+dn["matcher"] = "Write.*"')"
+grep -q "cannot verify by splitting" <<<"$out" \
+  || { echo "FAIL: an unparseable matcher passed as verified" >&2; exit 1; }
 
 echo "SELFTEST-HOME OK — containment blocks escapes (plain, ../, symlink), allowlist holds, secret gates fire, deliberation + audit nudges fire and stay silent correctly, wiring intact."

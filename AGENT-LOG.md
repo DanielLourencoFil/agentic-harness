@@ -187,3 +187,32 @@ ADR 25 (it is evidence, not taste). The steer half is the inspection step itself
 it, look at what you claim is done. The exact shape is extracted from which of exercise-2's four
 defects a component test would have caught vs which needed a human eye (ADR 18).
 
+
+## 2026-08-10 — /audit on ADR 68 (PR #64): the gate that could not see its own wiring
+
+Ran the fresh-context audit rite at the completed-unit boundary, on the decision-nudge hook this
+session had just written. Ratio, recorded to calibrate how much to trust future audits:
+**9 raised · 7 real · 1 partly confabulated · 1 unreachable.**
+
+The confabulated one is instructive: the auditor listed "adding a devDependency fires" and
+"pinning engines fires" as over-fire, when both are the designed target — AGENTS.md calls a new
+dependency a decision, not a reflex. Judging a gate as too eager requires knowing what it is for,
+and a fresh context does not have that; three of that finding's four cases were the hook working.
+The unreachable one (a relative node_modules path) came from reasoning about the code rather than
+about the tool layer that feeds it, which never produces relative paths.
+
+The real one was worth the whole run. The selftest validated every hook's wiring with
+`grep -q "$script" settings.json` — proving the filename appears in the file, not that the hook is
+bound to an event where its input exists. Swapping the matcher to `Bash`, where the payload never
+carries `file_path`, left the selftest green. So the session that built a gate against
+"documented-but-not-wired governance" shipped a test that could not tell wired from mentioned, and
+its ledger row said "wired in CI". The writing session did not see it; the fresh context did,
+which is the entire argument for step 1 of the rite.
+
+Second real one, same shape: five silence assertions written as `test -z "$out"` were all satisfied
+by a hook crashing on every input — a traceback goes to stderr and stdout stays empty. A silence
+test that cannot distinguish "correctly quiet" from "dead" is not a test.
+
+harness-candidate: the filename-grep blindness is not specific to this hook. Ten other hooks are
+still asserted by name only, and the fix here is scoped to the one this PR shipped. Generalizing
+the event+matcher assertion to the whole wiring loop belongs in its own round (ADR 18).

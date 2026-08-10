@@ -22,7 +22,7 @@ Anchored findings that make this a real gap and not a preference:
    checked: backlog-inject, skill-activation, secret-scan, deliberation-nudge,
    env-dump-guard, audit-reminder, push-guard, write-containment, shelf-inventory,
    recommendation-anchor, evidence-gate. None targets a decision's shape. By the
-   repo's own anti-pattern list (`PLAYBOOK.md:503-516`) that is
+   repo's own anti-pattern list (`PLAYBOOK.md:516-517`) that is
    "documented-but-not-wired governance ... a prayer, not a gate".
 2. `deliberation-nudge.py` catches the human's *wording* ("faz sentido"), which is the
    wrong signal: it fires when he asks, not when the decision happens.

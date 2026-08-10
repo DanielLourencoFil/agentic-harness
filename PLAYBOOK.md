@@ -399,7 +399,11 @@ standard; hold the repo to a ratchet.**
    its references left intact. Below the threshold, canonicalize as greenfield (ADR 64).
 2. **Wire the zero-cost gates on day one** — they never touch legacy: prettier via
    lint-staged (staged files only), deletion guard, commit conventions, secrets
-   read-block, CI running whatever is already green.
+   read-block, CI running whatever is already green. The gate code is code too: each
+   gate runs against a planted violation and must reject (as `gate-selftest` does), and
+   the gate code sits inside the test and CI perimeter. A glob or path filter that
+   excludes it lets a gate read zero forever, and that exclusion is C-097's exemption
+   outliving its reason (ADR 65).
 3. **Baseline + ratchet for everything else.** Run `pnpm baseline` first: it runs the
    FULL gate set once against the untouched repo, read-only, and classifies each by
    result (types, lint, clones, stranded, mutation). Classify by running, never from

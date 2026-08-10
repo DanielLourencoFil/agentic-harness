@@ -501,6 +501,52 @@ pg_allow "push origin work branch"  "$(push_guard '{"tool_name":"Bash","tool_inp
 pg_allow "push -u origin work"      "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push -u origin feat/x"}}')"
 pg_allow "not a git push"           "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git status"}}')"
 
+# COMPOUND COMMANDS (ADR 70). Every case above is a push ALONE on the command
+# line. The shipped guard read only the FIRST `git push` occurrence anywhere in
+# the string, so a mention before the real invocation moved the analysis onto
+# the mention's trailing tokens and the real push to the default branch was
+# allowed. Found 2026-08-10 while writing a demo whose own prose tripped the
+# guard: the same false-positive/false-negative pair audit-reminder fixed for
+# itself on 2026-07-20 (see its docstring). These are the shapes an agent
+# composes without any adversarial intent - a status echo before a push.
+echo "==> push-guard: a decoy mention must not hide a real push to the default branch"
+pg_deny "quoted mention, then the real push" \
+  "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"echo '"'"'a git push'"'"' && git push origin main"}}')"
+pg_deny "unquoted mention, then the real push" \
+  "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"echo git push && git push origin main"}}')"
+pg_deny "shell comment, then the real push on the next line" \
+  "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"true # git push aqui\ngit push origin master"}}')"
+pg_deny "a real push after a semicolon" \
+  "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"pnpm verify; git push origin HEAD:main"}}')"
+# A quoted refspec is legal shell and named the default branch all along: the
+# first version compared raw tokens, so `"main"` never equalled `main`. Found
+# 2026-08-10 while reviewing the fix above, and confirmed against HEAD as a
+# PRE-EXISTING hole, not one the fix introduced (ADR 70).
+pg_deny "a double-quoted default-branch refspec" \
+  "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push origin \"main\""}}')"
+pg_deny "a single-quoted default-branch refspec" \
+  "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"git push origin '"'"'master'"'"'"}}')"
+# The mirror: a mention that is only DATA must stay silent. The guard denied the
+# sentence that documented it, which is how the bug was found.
+pg_allow "the phrase inside a quoted echo (prose, not an invocation)" \
+  "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"echo '"'"'nunca ve um git push, a main fica sem muro'"'"'"}}')"
+pg_allow "the phrase inside a shell comment" \
+  "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"true # nota sobre git push origin main"}}')"
+pg_allow "a work-branch push after a real command" \
+  "$(push_guard '{"tool_name":"Bash","tool_input":{"command":"pnpm verify && git push origin feat/x"}}')"
+# Verdict ORDER, not just presence: outside a repo the branch is unresolvable, so
+# the first push asks. A deny found later must still win - otherwise the weaker
+# verdict of an earlier invocation licenses the stronger one. Found by a planted
+# mutation that survived every case above (ADR 70): a surviving mutation means a
+# missing test, never a harmless change.
+echo "==> push-guard: a later deny outranks an earlier ask (strictest verdict wins)"
+NOREPO="$TMP/norepo"; mkdir -p "$NOREPO"
+out="$( ( cd "$NOREPO" && printf '%s' '{"tool_name":"Bash","tool_input":{"command":"git push && git push origin main"}}' \
+  | python3 "$BIN/push-guard.py" ) )"
+grep -q '"permissionDecision": "deny"' <<<"$out" \
+  || { echo "FAIL: an earlier unresolvable push downgraded a later default-branch push to ask" >&2
+       echo "$out" >&2; exit 1; }
+
 python3 -c 'import json; json.load(open("'"$SETTINGS"'"))' \
   || { echo "FAIL: home/claude/settings.json is not valid JSON" >&2; exit 1; }
 for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py decision-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py evidence-gate.py skill-activation.py backlog-inject.py push-guard.py; do

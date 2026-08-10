@@ -1479,3 +1479,39 @@ separate link files rot unread; see ADR 3).
     steer - the rite forces the QUESTION at the right moment (like the deliberation-nudge), but
     whether the answer is honest stays the human's replica; the wired half is only the form gate on
     the card. Enforcement mix after: force 47, half-force 12, steer 43 (C-170).
+68. 2026-08-10 - The /decide rite gets a trigger and an anchoring rule; the harness still ships no
+    design canon. Trigger: asked whether the harness should guide architecture and stack choices,
+    two gaps were found by reading it. (a) decide/SKILL.md:12-15 says the rite "triggers even
+    unprompted" on an irreversible-blast-radius decision, and none of the eleven hooks wired in
+    home/claude/settings.json targets a decision's shape - by PLAYBOOK.md:503-516 that is
+    "documented-but-not-wired governance, a prayer, not a gate", and deliberation-nudge fires on the
+    HUMAN's wording, so it only arms once he is already deliberating. (b) Layer A requires every
+    claim to carry a verified anchor or the label "hypothesis / not verified", while decide step 2
+    asked for "costs" with no such rule, so a number recalled from training read with the authority
+    of one measured in the repo. The premise behind (b), stated because it is the load-bearing one:
+    "trust neither the AI nor the human" only verifies anything if the two error distributions are
+    independent, and they are not - README.md:106-108 calls AI output the statistical center of its
+    training data, and the owner's stated worry is the vices of the same industry corpus. Correlated
+    biases do not audit each other; what breaks the correlation is a third party that is not memory
+    (a named falsifier, an exit cost measured in the repo, a source with a checked-on date).
+    Adopted: home/bin/decision-nudge.py, a PreToolUse(Write|Edit) nudge firing on the DECISION's
+    shape, watching one family (stack and deploy commitments), always for Dockerfile / compose /
+    fly.toml / *.tf / pnpm-workspace.yaml and dependency-gated for package.json; decide step 2
+    binds quantitative claims (cost, scale, latency, effort) to an anchor or the explicit label,
+    structural claims exempt; decide step 4 states the exit cost and the last cheap moment to undo;
+    greenfield step 1 asks operator capacity by capacity and never by identity, and routes stack and
+    deploy target through /decide instead of treating them as a bare template selector. Rejected: a
+    stack or design canon table, POST vs PATCH included - quality-doctrine steer frozen by ADR 25,
+    and the shape ADR 42 measured below the sweep's own adoption floor, which also rots (a 2026
+    stack table is wrong in 2027); labelling every cell of the alternatives table (a label carried by
+    100% of claims stops discriminating, the warning-budget failure); watching data migrations in v1
+    (tooling regenerates them, so it would fire on every regeneration and die socially, the ADR 10
+    lesson); extending deliberation-nudge with decision-shaped prompt markers (cheaper, but it
+    re-arms on the owner's wording, the very dependency this removes); a track for an operator who
+    cannot review the output (no human gate is the headless limit already declared in
+    HARNESS-LAB-SPEC-2026-07-18.md:311-317, and steer is inert without a reader who can refute it).
+    Honest limits: the nudge fires on file shape, so a stack decision taken without touching one of
+    those files is missed entirely; whether a "verified" label is honest stays judgment and nothing
+    checks it; and the exit cost is itself a quantitative claim, bound by the rule that distrusts
+    such claims. Plan persisted at docs/PLAN-DECISION-NUDGE-2026-08-10.md.
+    Enforcement mix after: force 47, half-force 13, steer 44 (C-171, C-172).

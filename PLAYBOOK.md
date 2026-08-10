@@ -319,9 +319,20 @@ the spec interview first (packaged as the `/greenfield` skill, reached via `/sta
 `.claude/skills/`). Ask, one question at a time: problem / whose problem / how they
 solve it today · scope IN and explicitly OUT for v1 · riskiest assumption + the
 cheapest way to kill it (pre-registered kill criteria, dated) · the real-world success
-metric · surfaces present (selects Layer 3) · stack (selects Layer 1/2). Output:
+metric · surfaces present (selects Layer 3) · **operator capacity** (who maintains it
+after v1, who is woken when it breaks and what they can operate, the cost ceiling, what
+must survive a provider change) · stack and deploy target (selects Layer 1/2). Output:
 `docs/SPEC.md` plus a proposed harness subset with a one-line justification per layer.
 No scaffold, no install, no code before the human approves the spec.
+
+Two of those are not selectors. **Operator capacity** is the constraint that decides
+monolith vs services and portable vs managed — asked by capacity, never by identity,
+and consumed by the layer justifications, not filed as prose. **Stack and deploy target**
+LOCK the project (ADR 52), so they run through `/decide` (alternatives, exit cost,
+when-NOT) and land a dated ADR line before the scaffold — picking a template is the
+consequence of that decision, never a substitute for it. Nothing here ships a
+recommendation table: the alternatives come from this project's facts, and the harness
+supplies only the trigger and the format (ADR 68).
 
 ## KICKOFF CHECKLIST (execute at project start, after layers are chosen)
 

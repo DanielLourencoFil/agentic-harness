@@ -12,6 +12,9 @@
 #   3. env-dump-guard denies commands that would dump secrets into context;
 #   4. deliberation-nudge reminds on deliberation markers (nudge, never block)
 #      and stays silent on plain work prompts (ADR 19);
+#   4b. decision-nudge fires the /decide rite on the DECISION's shape — a stack or
+#      deploy commitment — and stays silent on the routine package.json edits
+#      (version bump, script tweak) that would otherwise kill it socially (ADR 68);
 #   5. recommendation-anchor blocks an answer that recommends without declaring
 #      what verified it, accepts an honest "não verificado", stays silent on
 #      plain work, and never blocks twice on one turn (ADR 30);
@@ -175,6 +178,36 @@ out="$(printf '{"prompt":"implementa o item 3 do plano aprovado"}' | python3 "$B
 test -z "$out" || { echo "FAIL: explicit go prompt was nudged" >&2; exit 1; }
 out="$(printf '{"prompt":"corrige o teste vermelho no CI e faz push"}' | python3 "$BIN/deliberation-nudge.py")"
 test -z "$out" || { echo "FAIL: plain work prompt was nudged" >&2; exit 1; }
+
+echo "==> decision-nudge: a stack/deploy commitment must nudge, routine edits stay silent"
+decision() { # $1 = tool_input json body; stdout = hook output
+  printf '%s' "$1" | python3 "$BIN/decision-nudge.py"
+}
+dn_fires() { grep -q "decision-nudge" <<<"$2" || { echo "FAIL: $1 did not nudge" >&2; exit 1; }; }
+dn_silent() { test -z "$2" || { echo "FAIL: $1 was nudged (over-fire)" >&2; echo "$2" >&2; exit 1; }; }
+dn_fires "a new Dockerfile" \
+  "$(decision '{"tool_name":"Write","tool_input":{"file_path":"/p/Dockerfile","content":"FROM node:22"}}')"
+dn_fires "a terraform file" \
+  "$(decision '{"tool_name":"Write","tool_input":{"file_path":"/p/infra/main.tf","content":"x"}}')"
+dn_fires "a compose file" \
+  "$(decision '{"tool_name":"Edit","tool_input":{"file_path":"/p/docker-compose.yml","new_string":"x"}}')"
+dn_fires "a workspace manifest (repo shape)" \
+  "$(decision '{"tool_name":"Write","tool_input":{"file_path":"/p/pnpm-workspace.yaml","content":"packages:"}}')"
+dn_fires "a dependency added to package.json" \
+  "$(decision '{"tool_name":"Edit","tool_input":{"file_path":"/p/package.json","new_string":"    \"zod\": \"^3.23.0\","}}')"
+# The load-bearing pair: package.json is edited constantly. If a release bump or a
+# script tweak nudges, the reader learns to ignore the hook and it dies socially
+# (the ADR 10 lesson) — which is also why migrations are not watched in v1.
+dn_silent "a version bump in package.json" \
+  "$(decision '{"tool_name":"Edit","tool_input":{"file_path":"/p/package.json","new_string":"  \"version\": \"1.0.1\","}}')"
+dn_silent "a script tweak in package.json" \
+  "$(decision '{"tool_name":"Edit","tool_input":{"file_path":"/p/package.json","new_string":"    \"test\": \"vitest run\","}}')"
+dn_silent "an ordinary source edit" \
+  "$(decision '{"tool_name":"Edit","tool_input":{"file_path":"/p/src/foo.ts","new_string":"const a = 1"}}')"
+dn_silent "a docs edit" \
+  "$(decision '{"tool_name":"Write","tool_input":{"file_path":"/p/docs/NOTES.md","content":"prose"}}')"
+dn_silent "a vendored manifest under node_modules" \
+  "$(decision '{"tool_name":"Write","tool_input":{"file_path":"/p/node_modules/x/package.json","content":"{\"dependencies\":{}}"}}')"
 
 echo "==> audit-reminder: a real gh pr create must nudge, everything else silent"
 out="$(printf '{"tool_input":{"command":"gh pr create --title x --body y"}}' | python3 "$BIN/audit-reminder.py")"
@@ -424,7 +457,7 @@ pg_allow "not a git push"           "$(push_guard '{"tool_name":"Bash","tool_inp
 
 python3 -c 'import json; json.load(open("'"$SETTINGS"'"))' \
   || { echo "FAIL: home/claude/settings.json is not valid JSON" >&2; exit 1; }
-for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py evidence-gate.py skill-activation.py backlog-inject.py push-guard.py; do
+for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py decision-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py evidence-gate.py skill-activation.py backlog-inject.py push-guard.py; do
   grep -q "$script" "$SETTINGS" || { echo "FAIL: $script not wired in settings.json" >&2; exit 1; }
   test -x "$BIN/$script" || { echo "FAIL: $BIN/$script missing or not executable" >&2; exit 1; }
   # The mode GIT records, not the one on disk. This machine has core.fileMode

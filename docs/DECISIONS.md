@@ -1437,3 +1437,29 @@ separate link files rot unread; see ADR 3).
     12, steer 41 (C-167 force, C-168 steer). Follow-up (BACKLOG): gate-selftest covers the two counting
     gates (clones, stranded); extend to deletion-guard/diff-size (hook-lifecycle) and to the
     next/react/vue starters with the ADR 60-63 ports.
+
+66. 2026-08-10 - A dedicated /refactor skill encodes the safe-refactoring method: measure the
+    safety-net's blind spots first, then change per unit. Trigger: the Kinous refactoring discussion
+    (session calendar-app-fb) surfaced that the harness refactor doctrine is 14 lines, all commit-level
+    ("refactor commits never mix with behavior commits") or no-gutting, and misses the load-bearing
+    precondition - measuring where the compiler, tests, and call graph are blind before moving a wall.
+    A real /plan run produced a well-formed plan toward the wrong objective, and the danger turned out
+    to be an untyped API-client boundary (173 hand-written twins, 0 derived) that no instrument sees,
+    neither found by a rite. Adopted: A - a universal, symlinked, opt-in /refactor skill (invocable
+    standalone or from /brownfield's change phase, step 5), encoding: (1) measure blind spots first
+    (principle plus examples: any, untested, opaque serialization, dynamic access, untyped boundaries),
+    (2) light the load-bearing blind spot before trusting the instruments there (how is a /decide), (3)
+    per unit characterize (net) -> tidy (navigability, behavior preserved) -> judge (/audit + /decide)
+    -> change (behavior), sequential and commit-separated per unit, interleaved across units, (4) never
+    mix reorganize and re-decide in a commit, (5) mark criterion provenance (repo ADR is authority,
+    where silent the AI is testimony); with the boundary against /brownfield (entering a repo) and
+    /feature (adding one feature) stated on the card, and moment 2 (re-decision) framed as
+    greenfield-native, secondary in brownfield. Rejected: B scatter into brownfield (fragments a
+    coherent method, inflates the always-read brownfield rite, mis-scopes since refactoring is not only
+    brownfield); C a doc not a skill (documented-but-not-routed prayer, does not propagate as guidance);
+    D AGENT-LOG only (does not guide the live Kinous work, the owner's explicit constraint). Honest
+    limit: steer - the skill guides, the human judges; the form gate validates only the card, and the
+    method comes from one use so it may need revision; opt-in, so it carries no always-on context cost.
+    Enforcement mix after: force 47, half-force 12, steer 42 (C-169). Follow-up: the /plan adequacy
+    finding from the same run (validates narrowness, not whether the objective serves the owner's goal)
+    is its own ADR.

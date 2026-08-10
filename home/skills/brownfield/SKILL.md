@@ -59,7 +59,10 @@ in the same commit, evidence gate as always.
 ## 5. Characterization before modification
 
 Untested legacy about to be touched gets characterization tests first - pin what the
-code does, then change. Refactor commits never mix with behavior commits.
+code does, then change. Refactor commits never mix with behavior commits. When the change
+IS a restructuring (splitting a file, extracting a module, re-deciding a choice), run
+`/refactor`: it measures the safety-net's blind spots before you move a wall, then works
+per unit (characterize, tidy, judge, change) - the full rite for this activity (ADR 66).
 
 ## 6. Audit-on-touch for inherited AI code
 

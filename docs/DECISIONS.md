@@ -1463,3 +1463,19 @@ separate link files rot unread; see ADR 3).
     Enforcement mix after: force 47, half-force 12, steer 42 (C-169). Follow-up: the /plan adequacy
     finding from the same run (validates narrowness, not whether the objective serves the owner's goal)
     is its own ADR.
+
+67. 2026-08-10 - /plan step 1 checks the objective's adequacy (serves the owner's goal), not only
+    its narrowness. Trigger: a real /plan run in the Kinous session (calendar-app-fb) produced a
+    plan that passed every step - objective in one sentence, anchored inventory, vertical slice sized
+    to one session, risks first, decided/rejected/open log - and was wrong: the objective was "split
+    api-client behind a barrel" (a means, behavior-preserved) when the owner's declared goal was
+    "judge decisions". Step 1 checked only that the objective fits one sentence (plan/SKILL.md:15),
+    which is a narrowness test; a narrow, well-formed objective aimed at the wrong goal passes every
+    other step, because the form checks are blind to adequacy. The human caught it, not the rite.
+    Adopted: step 1 now requires the objective to be the owner's goal, not a means to it - name the
+    owner's goal explicitly and check the objective against it before narrowing. Rejected: leaving it
+    (a well-formed plan toward the wrong objective is the measured failure); a force gate (adequacy is
+    semantic, the rite cannot mechanically verify that an objective serves a goal). Honest limit:
+    steer - the rite forces the QUESTION at the right moment (like the deliberation-nudge), but
+    whether the answer is honest stays the human's replica; the wired half is only the form gate on
+    the card. Enforcement mix after: force 47, half-force 12, steer 43 (C-170).

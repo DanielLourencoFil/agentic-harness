@@ -12,8 +12,13 @@ to be refined by real use at the first project kickoff.
 
 ## The steps, in order
 
-1. **Objective in one sentence.** If it does not fit in one sentence, the scope
-   is unclear — narrow it before proposing anything.
+1. **Objective in one sentence - and it must be the owner's goal, not a means to it.**
+   Confirm the objective IS what the human asked for before anything else: a plan can be
+   well-formed toward the WRONG objective and pass every step below, because the form checks
+   are blind to adequacy (a narrow, tidy objective aimed at the wrong goal passes clean, ADR
+   67). Adequacy is the human's call (steer), so name the owner's goal explicitly and check
+   the objective against it. Then, if it still does not fit one sentence, narrow the scope
+   before proposing anything.
 2. **Anchored inventory before proposing.** Read the relevant code and docs and
    state what already exists, each claim carrying a verified path (anchoring
    law). Never plan against an imagined repo.

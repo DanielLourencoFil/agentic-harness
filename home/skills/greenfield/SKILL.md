@@ -25,7 +25,16 @@ produces it. No scaffolding, no `pnpm install`, no code before step 3.
   (idempotency), any critical state mutation, any concurrent-write contention (atomicity)?
   A state-mutating action a user can repeat is a critical mutation even with no money in
   sight - ask by effect, or the noun-shaped question skips the pack that guards an invariant.
-- Which stack? (selects the Layer 1/2 template)
+- Who OPERATES this after v1, asked by capacity and never by identity: who maintains
+  it, who is woken when it breaks and what they can actually operate, the monthly cost
+  ceiling and what happens at zero, and what must survive a provider change. The answer
+  is a layer selector like the surfaces question, not prose for the spec: it is the
+  constraint that decides monolith vs services and portable vs managed, so a plan that
+  skips it defaults to the training corpus's answer instead of this project's.
+- Which stack, and which deploy target? These LOCK the project (ADR 52), so they are
+  not a bare selector: run them through `/decide` (alternatives, exit cost, when-NOT)
+  and land the dated ADR line in `docs/DECISIONS.md` before any scaffold. Selecting the
+  Layer 1/2 template is the consequence of that decision, not a substitute for it.
 
 ## 2. Write the spec, propose the harness
 
@@ -62,6 +71,9 @@ to stop (ADR 52).
 ## Verifiable output
 
 - `docs/SPEC.md` written: what / why / scope in-out / kill criteria / metric.
+- The operator answers (maintainer, on-call capacity, cost ceiling, portability
+  requirement) recorded and cited by name in the layer justifications they decide.
+- The stack and deploy-target ADR line in `docs/DECISIONS.md` BEFORE the scaffold.
 - The proposed harness subset, one justification line per layer.
 - Empty-scaffold `pnpm verify` output shown green before any feature code.
 - Every copied skill carrying its `source: agentic-harness@<sha>` stamp.

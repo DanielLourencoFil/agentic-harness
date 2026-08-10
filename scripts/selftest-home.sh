@@ -12,6 +12,9 @@
 #   3. env-dump-guard denies commands that would dump secrets into context;
 #   4. deliberation-nudge reminds on deliberation markers (nudge, never block)
 #      and stays silent on plain work prompts (ADR 19);
+#   4b. decision-nudge fires the /decide rite on the DECISION's shape — a stack or
+#      deploy commitment — and stays silent on the routine package.json edits
+#      (version bump, script tweak) that would otherwise kill it socially (ADR 68);
 #   5. recommendation-anchor blocks an answer that recommends without declaring
 #      what verified it, accepts an honest "não verificado", stays silent on
 #      plain work, and never blocks twice on one turn (ADR 30);
@@ -175,6 +178,82 @@ out="$(printf '{"prompt":"implementa o item 3 do plano aprovado"}' | python3 "$B
 test -z "$out" || { echo "FAIL: explicit go prompt was nudged" >&2; exit 1; }
 out="$(printf '{"prompt":"corrige o teste vermelho no CI e faz push"}' | python3 "$BIN/deliberation-nudge.py")"
 test -z "$out" || { echo "FAIL: plain work prompt was nudged" >&2; exit 1; }
+
+echo "==> decision-nudge: a stack/deploy commitment must nudge, routine edits stay silent"
+decision() { # $1 = payload json; stdout = hook output, stderr captured for the crash check
+  printf '%s' "$1" | python3 "$BIN/decision-nudge.py" 2>"$TMP/dn.err"
+}
+# stderr is checked on EVERY case, fires or silent. Without it the silence
+# assertions are satisfied by a hook that crashes on every input: a traceback
+# goes to stderr and stdout stays empty, so `test -z` passes while the gate is
+# dead. Found by the fresh-context audit of 2026-08-10 (ADR 69).
+dn_no_crash() { # $1 = case name
+  if [ -s "$TMP/dn.err" ]; then
+    echo "FAIL: $1 wrote to stderr - a crashing hook passes every silence assertion" >&2
+    cat "$TMP/dn.err" >&2; exit 1
+  fi
+}
+dn_fires() {
+  grep -q "decision-nudge" <<<"$2" || { echo "FAIL: $1 did not nudge" >&2; exit 1; }
+  dn_no_crash "$1"
+}
+dn_silent() {
+  test -z "$2" || { echo "FAIL: $1 was nudged (over-fire)" >&2; echo "$2" >&2; exit 1; }
+  dn_no_crash "$1"
+}
+dn_fires "a new Dockerfile" \
+  "$(decision '{"tool_name":"Write","tool_input":{"file_path":"/p/Dockerfile","content":"FROM node:22"}}')"
+dn_fires "a terraform file" \
+  "$(decision '{"tool_name":"Write","tool_input":{"file_path":"/p/infra/main.tf","content":"x"}}')"
+dn_fires "a compose file (legacy name)" \
+  "$(decision '{"tool_name":"Edit","tool_input":{"file_path":"/p/docker-compose.yml","new_string":"x"}}')"
+# The SAME artefact under its current name. Compose V2's documented default file
+# is compose.yaml, and a Dockerfile is routinely prefixed per environment. A
+# marker that only knows the legacy spelling is a naming gap, not a scope
+# question (audit 2026-08-10).
+dn_fires "a compose file under the Compose V2 default name" \
+  "$(decision '{"tool_name":"Write","tool_input":{"file_path":"/p/compose.yaml","content":"services:"}}')"
+dn_fires "an environment-prefixed Dockerfile" \
+  "$(decision '{"tool_name":"Write","tool_input":{"file_path":"/p/dev.Dockerfile","content":"FROM node:22"}}')"
+dn_fires "a workspace manifest (repo shape)" \
+  "$(decision '{"tool_name":"Write","tool_input":{"file_path":"/p/pnpm-workspace.yaml","content":"packages:"}}')"
+dn_fires "a dependency added to package.json" \
+  "$(decision '{"tool_name":"Edit","tool_input":{"file_path":"/p/package.json","new_string":"    \"zod\": \"^3.23.0\","}}')"
+# Dependency specs that do not start with a digit. workspace:* is the canonical
+# pnpm form, in the very repo family this hook watches via pnpm-workspace.yaml,
+# and it was invisible to the shipped regex (audit 2026-08-10).
+dn_fires "a workspace protocol dependency (pnpm monorepo)" \
+  "$(decision '{"tool_name":"Edit","tool_input":{"file_path":"/p/package.json","new_string":"    \"@app/core\": \"workspace:*\","}}')"
+dn_fires "a range spec that does not start with a digit" \
+  "$(decision '{"tool_name":"Edit","tool_input":{"file_path":"/p/package.json","new_string":"    \"react\": \">=18.0.0\","}}')"
+# Authoring a WHOLE manifest is the stack decision itself, so Write always fires
+# and the dependency gate applies to Edit only. Pinned because the shipped hook
+# reached the same outcome by accident - every real package.json contains the
+# literal "dependencies", so content-scanning fired even on a version bump.
+dn_fires "a whole-file Write of package.json (authoring the manifest)" \
+  "$(decision '{"tool_name":"Write","tool_input":{"file_path":"/p/package.json","content":"{\"name\":\"x\",\"version\":\"1.0.1\"}"}}')"
+# The load-bearing pair: package.json is edited constantly. If a release bump or a
+# script tweak nudges, the reader learns to ignore the hook and it dies socially
+# (the ADR 10 lesson) — which is also why migrations are not watched in v1.
+dn_silent "a version bump in package.json" \
+  "$(decision '{"tool_name":"Edit","tool_input":{"file_path":"/p/package.json","new_string":"  \"version\": \"1.0.1\","}}')"
+dn_silent "a script tweak in package.json" \
+  "$(decision '{"tool_name":"Edit","tool_input":{"file_path":"/p/package.json","new_string":"    \"test\": \"vitest run\","}}')"
+dn_silent "an ordinary source edit" \
+  "$(decision '{"tool_name":"Edit","tool_input":{"file_path":"/p/src/foo.ts","new_string":"const a = 1"}}')"
+dn_silent "a docs edit" \
+  "$(decision '{"tool_name":"Write","tool_input":{"file_path":"/p/docs/NOTES.md","content":"prose"}}')"
+dn_silent "a vendored manifest under node_modules" \
+  "$(decision '{"tool_name":"Write","tool_input":{"file_path":"/p/node_modules/x/package.json","content":"{\"dependencies\":{}}"}}')"
+# Metadata whose value is semver-shaped must not read as a dependency.
+dn_silent "a package.json field whose value merely looks like a version" \
+  "$(decision '{"tool_name":"Edit","tool_input":{"file_path":"/p/package.json","new_string":"  \"packageManager\": \"pnpm@9.1.0\","}}')"
+# Malformed input must be silent AND quiet: a hook is fed whatever the tool
+# layer sends, and a traceback on every call is noise the reader learns to skip.
+dn_silent "stdin that is not JSON"            "$(decision 'hello')"
+dn_silent "a payload with no tool_input"      "$(decision '{}')"
+dn_silent "a tool_input that is not an object" "$(decision '{"tool_input":"oops"}')"
+dn_silent "a file_path that is not a string"  "$(decision '{"tool_input":{"file_path":5}}')"
 
 echo "==> audit-reminder: a real gh pr create must nudge, everything else silent"
 out="$(printf '{"tool_input":{"command":"gh pr create --title x --body y"}}' | python3 "$BIN/audit-reminder.py")"
@@ -424,7 +503,7 @@ pg_allow "not a git push"           "$(push_guard '{"tool_name":"Bash","tool_inp
 
 python3 -c 'import json; json.load(open("'"$SETTINGS"'"))' \
   || { echo "FAIL: home/claude/settings.json is not valid JSON" >&2; exit 1; }
-for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py evidence-gate.py skill-activation.py backlog-inject.py push-guard.py; do
+for script in secret-scan.py env-dump-guard.py write-containment.py deliberation-nudge.py decision-nudge.py audit-reminder.py recommendation-anchor.py shelf-inventory.py evidence-gate.py skill-activation.py backlog-inject.py push-guard.py; do
   grep -q "$script" "$SETTINGS" || { echo "FAIL: $script not wired in settings.json" >&2; exit 1; }
   test -x "$BIN/$script" || { echo "FAIL: $BIN/$script missing or not executable" >&2; exit 1; }
   # The mode GIT records, not the one on disk. This machine has core.fileMode
@@ -440,5 +519,27 @@ for script in secret-scan.py env-dump-guard.py write-containment.py deliberation
 done
 grep -q '"Write|Edit|MultiEdit|NotebookEdit"' "$SETTINGS" \
   || { echo "FAIL: containment matcher must cover Write/Edit/NotebookEdit" >&2; exit 1; }
+
+# The loop above only proves the FILENAME appears somewhere in settings.json. It
+# says nothing about the event or the matcher the hook is bound to, and a hook
+# bound to the wrong one is as dead as a hook that is absent. Measured by the
+# fresh-context audit of 2026-08-10: swapping decision-nudge's matcher to "Bash"
+# — where the payload never carries file_path, so the hook is structurally
+# unable to fire — left this whole selftest green (ADR 69).
+python3 - "$SETTINGS" <<'PY' || exit 1
+import json, sys
+settings = json.load(open(sys.argv[1]))
+# hook script -> (event, exact matcher) it must be bound to for its input to exist.
+REQUIRED = {"decision-nudge.py": ("PreToolUse", "Write|Edit")}
+for script, (event, matcher) in REQUIRED.items():
+    found = [b.get("matcher") for b in settings.get("hooks", {}).get(event, [])
+             if any(script in h.get("command", "") for h in b.get("hooks", []))]
+    if not found:
+        sys.exit(f"FAIL: {script} is not wired under {event} at all")
+    if matcher not in found:
+        sys.exit(f"FAIL: {script} is wired under {event} with matcher {found},"
+                 f" expected {matcher!r} — it reads tool_input.file_path, so any"
+                 f" other matcher makes it structurally unable to fire")
+PY
 
 echo "SELFTEST-HOME OK — containment blocks escapes (plain, ../, symlink), allowlist holds, secret gates fire, deliberation + audit nudges fire and stay silent correctly, wiring intact."

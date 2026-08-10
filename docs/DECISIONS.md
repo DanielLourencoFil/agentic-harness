@@ -1586,3 +1586,25 @@ separate link files rot unread; see ADR 3).
     is how the missing ordering test was found - a surviving mutation means a missing test, never a
     harmless change. Enforcement mix after: force 48, half-force 14, steer 44 (C-174 supersedes
     C-153).
+71. 2026-08-10 - Every hook is asserted against the event AND the tools whose payload it needs, by
+    inclusion rather than string equality. Trigger: ADR 69 fixed this for decision-nudge alone and
+    logged the generalization as a candidate; asked what the candidate was, two more mutations were
+    measured and both left the selftest fully green. push-guard moved from the Bash block to the
+    Write block, where it never sees a command again and the default branch loses its wall; and
+    write-containment swapped blocks with shelf-inventory, so containment covers only Write and an
+    Edit escapes the project root. Both printed "wiring intact". The cause is that the wiring loop
+    ran grep -q "$script" settings.json, which proves the FILENAME is present and nothing about
+    where it is bound - eleven hooks were validated that way. Adopted: a table of the twelve hooks
+    mapping each to its event and the tool set its payload requires, checked by splitting the
+    matcher on the alternation and testing INCLUSION, so widening a matcher with a new tool passes
+    while dropping a needed one fails; a matcher that is not a plain alternation is reported as
+    unverifiable instead of silently mis-parsed. Five negative cases are seen rejected, including
+    the widening case, which must PASS - the check must not punish the direction it wants.
+    Rejected: exact string equality (the shape ADR 69 shipped, which rejects a safe widening);
+    asserting the hook list is exhaustive (a new hook with no table entry is a real gap, but making
+    that fail would block adding a hook and its row in one commit - left as a candidate). Honest
+    limits: the table is hand-maintained, so it states what the author believed the payload needs,
+    not what the runtime actually delivers; and the check reads settings.json in the repo, which is
+    the symlink source for this machine only - a machine that never ran bootstrap.sh is unprotected
+    and this proves nothing about it. Enforcement mix after: force 49, half-force 14, steer 44
+    (C-175).

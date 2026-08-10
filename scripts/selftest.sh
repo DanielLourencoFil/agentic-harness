@@ -430,4 +430,30 @@ grep -qE "^ +lint +already-ratcheted" baseline-ratcheted.log || { echo "FAIL: a 
 grep -qE "^ +types +zero-cost-day-1" baseline-ratcheted.log || { echo "FAIL: an undeclared passing gate must still read zero-cost-day-1" >&2; cat baseline-ratcheted.log >&2; exit 1; }
 rm -rf src .harness
 
-echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone + stranded budgets hold, diff-size nudge warns, mutation kills a weak test, brownfield baseline classifies every gate, adapts to a per-repo override, and does not false-clean an already-ratcheted gate."
+echo "==> Claim 12: the shipped gate-selftest catches a blind counting gate (ADR 65)"
+# The correctness layer is code too, and unverified gate code is the least-tested code in a
+# repo. selftest.sh effect-tests the harness's OWN gates but is not shipped; gate-selftest.sh is
+# the shipped equivalent, so a generated repo can see its gates actually reject. Prove it is a
+# gate not decoration: (a) it ships and CI runs it, (b) it passes on honest gates, (c) blinding
+# each counting gate (a no-op swap) makes it FAIL - so it truly exercises that gate, not just
+# asserts a test file exists. This is the wired half of "every gate is seen rejecting", extended
+# to the gates' own code (ADR 65).
+rm -rf src && mkdir -p src/lib
+test -f scripts/gate-selftest.sh || { echo "FAIL: the template ships no scripts/gate-selftest.sh (gate code would be unverified in a generated repo)" >&2; exit 1; }
+grep -q "gate-selftest" .github/workflows/ci.yml || { echo "FAIL: ci.yml ships no gate-selftest job - gate code goes unverified in CI" >&2; exit 1; }
+pnpm gate-selftest > gate-honest.log 2>&1 || { echo "FAIL: gate-selftest failed on honest gates" >&2; cat gate-honest.log >&2; exit 1; }
+for gate in clone-budget-check stranded-logic-check; do
+  cp "scripts/$gate.mjs" "scripts/$gate.mjs.bak"
+  echo 'process.exit(0);' > "scripts/$gate.mjs"
+  if pnpm gate-selftest > "gate-blind.log" 2>&1; then
+    mv "scripts/$gate.mjs.bak" "scripts/$gate.mjs"
+    echo "FAIL: gate-selftest PASSED with $gate blinded (no-op) - it does not exercise that gate (decoration)" >&2
+    cat gate-blind.log >&2
+    exit 1
+  fi
+  mv "scripts/$gate.mjs.bak" "scripts/$gate.mjs"
+  grep -qi "blind" gate-blind.log || { echo "FAIL: gate-selftest caught $gate blinded but did not name it blind" >&2; cat gate-blind.log >&2; exit 1; }
+done
+rm -rf src
+
+echo "SELFTEST OK — empty-scaffold verify green, hook fires on commit #1, guard blocks, gate rejects, clone + stranded budgets hold, diff-size nudge warns, mutation kills a weak test, brownfield baseline classifies every gate, adapts to a per-repo override, does not false-clean an already-ratcheted gate, and the shipped gate-selftest catches a blind gate."

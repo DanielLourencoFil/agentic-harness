@@ -25,6 +25,28 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm verify
 
+  gate-selftest:
+    # The correctness layer is code too, and unverified gate code is the least-tested
+    # code in most repos (ADR 65). This runs each counting gate against a planted
+    # violation and requires rejection - a gate that passes a fixture is blind, exactly
+    # how a real budget check read 0 for its whole life because its perimeter missed the
+    # code it counted. Separate job, not a step in verify: it plants and removes fixtures,
+    # which has no place inside a pre-commit hook.
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm gate-selftest
+
   mutation:
     # The wired half of "every test must fail if the logic breaks" (ADR 38/39):
     # a surviving mutant fails the build. Blocking by default, relaxed only on

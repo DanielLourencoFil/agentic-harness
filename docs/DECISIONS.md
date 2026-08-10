@@ -1411,3 +1411,29 @@ separate link files rot unread; see ADR 3).
     as process-rite steer (it clarifies an existing rite step to stop self-colliding with layer-A item
     7, not a new quality doctrine). Change is docs only (brownfield SKILL.md + PLAYBOOK step 1), no
     code or selftest. Enforcement mix after: force 46, half-force 12, steer 40 (C-166).
+
+65. 2026-08-10 - Gate code must be verified inside the target repo, not only inside the harness.
+    Trigger: the Kinous /brownfield run (fourth finding, session calendar-app-fb) plus a measurement
+    on ts-base showed the correctness layer is the least-verified code in a generated repo. ts-base
+    ships 6 gate scripts in scripts/ but its vitest include is tests/ + src/ only (and .ts only), so
+    scripts/ is outside the test perimeter by construction and no shipped test covers them; the harness
+    effect-tests its own gates in selftest.sh (plant a violation, assert rejection) but selftest.sh is
+    not shipped. Measured live bug: the Kinous lint-budget-check reported 0 warnings for its whole
+    existence because untested (the web ratchet read 0 with 4). The doctrine "every gate is seen
+    rejecting a violation" held only inside the harness, not inside repos it generates. Adopted: A -
+    ts-base ships scripts/gate-selftest.sh (the selftest.sh gate claims, packaged: it plants a known
+    violation for each counting gate and requires rejection, cleaning up via a trap), wired as its own
+    ci.yml job (not pre-commit verify: it plants fixtures); selftest.sh Claim 12 proves it ships, runs
+    in CI, passes on honest gates, and FAILS when each counting gate is blinded by a no-op swap - so it
+    exercises the gate, not merely asserts a test file exists; and a brownfield rite line (skill step 2)
+    requires the target repo's own gate code to be tested and inside the test/CI perimeter, the
+    path-filter half tying to C-097. Rejected: B unit tests per gate (brittle, and a unit test passes
+    while the gate is blind on wiring - the exact measured failure mode); C meta-gate alone (a test
+    file exists is vacuous-satisfiable - folded into A as the blind-each-gate proof, not a substitute);
+    D do nothing (ships blind gates, already produced a live bug). Honest limit: the proof blinds each
+    counting gate so coverage is real, but a lazy effect-test with a weak assertion could still pass;
+    that residue is steer, mitigated by effect-tests being harder to fake than unit tests. This touched
+    guards, so it was implemented only on the explicit go. Enforcement mix after: force 47, half-force
+    12, steer 41 (C-167 force, C-168 steer). Follow-up (BACKLOG): gate-selftest covers the two counting
+    gates (clones, stranded); extend to deletion-guard/diff-size (hook-lifecycle) and to the
+    next/react/vue starters with the ADR 60-63 ports.

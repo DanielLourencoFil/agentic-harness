@@ -10,6 +10,7 @@
     "mutants": "stryker run",
     "mutants:ci": "stryker run --incremental",
     "baseline": "bash scripts/brownfield-baseline.sh",
+    "gate-selftest": "bash scripts/gate-selftest.sh",
     "prepare": "husky"
   },
   "lint-staged": {

@@ -31,6 +31,11 @@ They never touch legacy: prettier via lint-staged (staged files only), deletion 
 commit conventions, secrets read-block, CI running whatever is already green. Plus every
 gate the baseline (step 3) shows PASSING today: those become blocking now, for free.
 
+The gate code is code too, and unverified it is the least-tested code in the repo. Each gate
+runs against a planted violation and must reject (as `gate-selftest` does), and the gate code
+sits INSIDE the test and CI perimeter: a test glob or CI path filter that excludes it lets a
+gate read zero forever, and that exclusion is C-097's exemption outliving its reason (ADR 65).
+
 ## 3. Baseline + ratchet for everything else
 
 Run `pnpm baseline` first: it runs the FULL gate set once against the untouched repo,
